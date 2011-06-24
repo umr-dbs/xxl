@@ -1,0 +1,28 @@
+<HTML>
+	<BODY>
+		The package <tt>xxl.core.cursors.joins</tt> provides miscellaneous
+		implementations of the join operator on cursors. This operation can be
+		performed in different ways:
+		<ul>
+		    <li>
+		        As a theta-join, that returns a result-tuples if and only if a
+		        user-defined predicate evaluated on this tuple is <tt>true</tt>.
+		    </li>
+		    <li>
+		        As a left outer-join, taht returns a result-tuple if a
+		        user-defined predicate evaluated on this tuple is <tt>true</tt>
+		        as well as all elements of the left (first) input iteration.
+		    </li>
+		    <li>
+		        As a right outer-join, that returns a result-tuple if a
+		        user-defined predicate evaluated on this tuple is <tt>true</tt>
+		        as well as all elements of the right (first) input iteration.
+		    </li>
+		    <li>
+		        A full outer-join, that returns the result-tuples for which a
+		        user-defined predicate is <tt>true</tt> as well as all tuples
+		        additionally returned by the left and right outer-join.
+		    </li>
+		</ul>
+	</BODY>
+</HTML>

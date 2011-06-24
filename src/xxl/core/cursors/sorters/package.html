@@ -1,0 +1,21 @@
+<HTML>
+	<BODY>
+		The package <tt>xxl.core.cursors.sorters</tt> provides miscellaneous
+		implementations of sort operators on cursors. Regardless of using main
+		memory or external memory for performing the sort operation, a comparator
+		must be given that defines an order on the elements of the input
+		iteration. The external sorting (i.e., the "logical" sort-operator) can
+		be implemented (with "physical" operators) in two ways:
+		<ol>
+		    <li>
+		        Create sorted runs and merge them recursively
+		        (external merge-sort) or
+		    </li>
+		    <li>
+		        divide the input recursively into partitions until each partition
+		        fits into main memory. Then the sort-operation is performed with
+		        a main-memory sorting-algorithm (external distribution-sort).
+		    </li>
+		</ol>
+	</BODY>
+</HTML>

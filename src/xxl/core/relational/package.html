@@ -1,0 +1,64 @@
+<HTML>
+	<BODY>
+		Provides a implementation of the relational algebra based on
+		the Java ResultSet interface.
+		<p>
+		In erlier versions of xxl, the classes for processing data with 
+		and without metadata were completly separated. So, two kinds
+		of algorithms (in xxl.core.cursors and in xxl.core.relational) had to be 
+		maintained. Now, the algorithms in cursors has been extended
+		with the concept of MetaDataCursors, so that they can be used 
+		in relational. 
+		</p>
+		<p>
+		Using the cursors package has had some effects on the constructors,
+		because the cursor package uses Predicates and Functions. The new
+		relational package uses the {@link xxl.core.cursors.MetaDataCursor} instead of
+		ResultSet. But there are also constructors that use ResultSets as
+		input parameters. These ResultSets are wrapped to MetaDataCursors
+		using the class {@link xxl.core.relational.cursors.ResultSetMetaDataCursor}.
+		</p>
+		<p>
+		<b>Be careful when you have null values inside your sources!</b> Then,
+		your Predicates and Comparators have to be able to handle this. The
+		objects returned from methods in {@link xxl.core.relational.Tuples} support 
+		this handling. To convert a comparator to handle null-values see {@link xxl.core.comparators.Comparators}.
+		For predicates: {@link xxl.core.predicates.Predicates}.
+		</p>
+		<h3>Some major changes compared to the old relational package</h3>
+		<p>
+		<ul>
+		<li>	The ResultSetCursor has been renamed to ResultSetMetaDataCursor.
+		</li>
+		<li>
+			In earlier versions of XXL it was possible to hand over a string array
+ 			to the constructor of the operators instead of an array of indices. 
+ 			To get this functionality, use <b>ResultSets.getColumnIndices(resultSet, onColumns)</b>.
+ 		</li>
+		<li>
+			All MetaDataCursors that are used in this package are assumed
+			to contain objects of type Tuple! If not, it is specified in 
+			the documentation.
+		</li>
+ 		<li>
+			<p>
+			The function createTuple is always used to convert something into a 
+			{@link xxl.core.relational.Tuple Tuple}.
+			There are two caling styles:
+			<code><pre>
+			ResultSet --> Tuple<br>
+			Object [] x ResultSetMetaData --> Tuple<br>
+			</pre></code>
+			To use an ArrayTuple you can simply hand over (<code>ArrayTuple.FACTORY_METHOD</code>).
+			Sometimes, you have to distinguish from creating Tuples from
+			an input ResultSet and creating Tuples as output. 
+			</p>
+			<p>
+			If no createTuple function has to be provided for the output, you can assume
+			that the objects remain unchanged in structure.
+			</p>
+		</li>
+		</ul>
+		</p>
+	</BODY>
+</HTML>

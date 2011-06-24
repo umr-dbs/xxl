@@ -1,0 +1,16 @@
+<HTML>
+	<BODY>
+	This package provides so-called {@link xxl.core.collections.sweepAreas.SweepArea SweepAreas}.
+	A SweepArea is a highly dynamic datastructure with flexible insertion, 
+	retrieval and reorganization capabilities. It is utilized to remain the 
+	state of an operation. <br>
+	In order to decouple the reorganization capabilities of a SweepArea from
+	its concrete implementation, the design pattern <i>Bridge</i> was chosen. 
+	Therefore, each SweepArea relies on a {@link xxl.core.collections.sweepAreas.SweepAreaImplementor SweepAreaImplementor}.
+	Such an implementor represents the underlying datastructure of a SweepArea, which
+	can be list-, hash- or bag-based for instance. <br>
+	SweepAreas are predominantly used in join operations. Hence, to understand 
+	their usage and semantics, please take a closer look at the package
+	{@link xxl.core.cursors.joins}.
+	</BODY>
+</HTML>

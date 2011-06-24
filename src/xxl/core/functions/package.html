@@ -1,0 +1,36 @@
+<HTML>
+	<BODY>
+	Functions are an extremely important concept to encapsulate abstractions. This 
+	generally holds, but we found that the functional paradigm is of utmost importance 
+	when designing and implementing a query processing library like XXL. So far, the 
+	functional paradigm received little attention in the database community, at least 
+	with respect to implementation issues of query processing algorithms. Therefore, 
+	we first give a brief review on the implementation of the functional concept in 
+	XXL. Since Java does not support a function as a first-class citizen nor higher-order 
+	functions, XXL contains an abstract class Function where these concepts are provided 
+	in an elegant way. A new function can be implemented by defining a subclass of 
+	Function. The desired functionality is brought in by redefining one of its abstract 
+	invoke methods. In order to reduce the number of explicit classes, subclasses 
+	of Function are frequently implemented as anonymous classes. This is a specific 
+	concept in Java where the implementation of a subclass occurs at the same position 
+	in the code where an object of the class is created. A call of the invoke method 
+	of the object eventually causes the evaluation of the target function. Moreover, 
+	the class Function also supports higher-order functions in a similar way as it 
+	is known from Smalltalk's blocks. Within the class Function the method compose 
+	allows to create new functions through compositions of other functions at runtime. 
+	This is easy to support in Java because of its feature of anonymous classes. For 
+	example, consider that the mathematical functions <tt>sin</tt>, <tt>cos</tt> and <tt>div</tt> 
+	are implemented as objects of the class <tt>Function</tt>. Then, <br>
+	<code>Function tan = div.compose( sin, cos); </code> <br>
+	defines a new function whose evaluation is simply initiated by calling invoke. 
+	Moreover, our approach allows that a function object may have a state (similar 
+	to C where the static variables of a procedure survive a call). This powerful 
+	feature is used in XXL, for example, when aggregate functions are implemented 
+	in an incremental manner where the partial results are delivered through an 
+	iterator. Since predicates are functions with a high relevance to query processing, 
+	we decided to introduce special classes for creating predicate objects. An arbitrary 
+	WHERE clause of an SQL statement can be expressed in XXL as an object of the 
+	class Predicate. There are no limitations on the complexity of a predicate which 
+	also can cope with subqueries.
+</BODY>
+</HTML>

@@ -1,0 +1,21 @@
+<HTML>
+<BODY>
+The package xxl.core.math.statistics adresses several issues of statistical applications. We focus on methods of statistical inference in contrast to
+descriptive statistics. Generally, statistical inference differs between parametric and
+nonparametric methods. In the parametric case, an unknown
+distribution belongs to a distribution class with unknown
+parameters theta in R^k. These can in turn be
+estimated with appropriate estimators and a given sample. 
+In nonparametric statistics, theta not in R^k,
+e.g., the pdf or cdf are unknown. Methods of nonparametric
+statistics are driven directly by the structure in the data and
+provide a more sophisticated data analysis. 
+<br>
+Picking up the idea of online aggregation as discussed in [HHW97]: J. Hellerstein, P. Haas, and H. Wang. Online Aggregation. 1997, we provide
+running aggregates over a data stream that in turn are parametric or nonparametric estimators. These are based on the data
+seen so far and are incrementally maintained. Our framework allows to include user-defined estimators and also provides a rich set of ready-to-use
+estimators based on parametric estimators and kernel-based estimators. Generally, two methods are applicable for the generation of complex 
+statistical estimators: a reservoir-based one that computes iid-samples of the data stream during runtime, and an iteratively-compressed method
+that compresses the current estimate with its cubic Bezier-spline interpolate in each step.
+</BODY>
+</HTML>

@@ -1,0 +1,57 @@
+<HTML>
+	<BODY>
+<p>This part is an implementation of the FAT12/16/32-filesystem based on raw 
+  access. You can create devices with it and use them as a file system with direct 
+  access to the underlying storage. The type of the devices can be RAM, RAF, or 
+  Native.</p>
+<ol>
+  <li>RAM-devices will be created directly in the memory of your system.</li>
+  <li>RAF-devices will be created as a file on your hard disk.</li>
+  <li>With Native-devices you have raw (direct) access to your hard disk. </li>
+</ol>
+<p>The first two types of devices can be created by everybody, for the last one 
+  you need administrator access to your computer. To create a native-device the 
+  name of the device must equal the system dependant name of the device you want 
+  to access. For Unix-systems to access the first floppy device the name of the 
+  device must be <i>/dev/fd0.</i> For Windows-systems it's <i>a:</i>. You have 
+  to be very carefully and you should know what you are doing, because all information 
+  of the device that you access as native device get lost. They will be overwritten 
+  by the new file system. To use the native-device you need a Win2000, NT, XP, 
+  or a Unix/Linux system.</p>
+<p>Information about each device except the RAM-device that you create will be 
+  stored in a text-file. So you don't need to remember all the device names and 
+  types that you create. If you don't specify the file to store all this device 
+  information a default file will be used. The default filename is <i>filesystem.txt</i>. 
+  Normally you don't need to manipulate this file manually, because this program
+  is able to manipulate the file. In case you want to manipulate it manually here 
+  is the format specification: Each line contains information about one device. 
+  The first string is the name of the device. The second string is the size in 
+  bytes of the device and the last string of each line is the type of the device 
+  (<i>RAM, RAF, Native</i>). All strings are separated by a tabular sign and each 
+  line must end with a <i>cr</i> and <i>lf</i>.</p>
+<p>Independent of the device type there are restrictions about the size in blocks 
+  for each FAT-type. One block has a fixed size of 512 bytes. The smallest devices 
+  can be made as a FAT12-filesystem. The maximum number of blocks for that file system 
+  is 4084. A FAT16-filesystem has a minimum size of 32680 blocks and maximum size 
+  of 4194304 blocks. For a FAT32-filesystem you must spend at least 532480 number 
+  of blocks.</p>
+<p>Since you have raw (direct) access to the underlying storage without a buffer 
+  of your 'real' file system you should not worry if some operations take a longer 
+  time than you are used to. You should take the chance to implement a benchmark 
+  for disk access or whatever, with the guarantee that no system buffer fakes 
+  your results.</p>
+<p>There is another thing you should know. Since you are able to store a RAF-device 
+  on an other device (or path) than your working device (and path), the name of 
+  your created device exists of components of a 'real' device name, i.e. your 
+  working directory is 'c:\xxl' and you create a RAF-device 'fat12' at 'd:\dir'' 
+  then the 'real' name of the device is 'd:\dir\fat12' except than 'fat12'. This 
+  is exactly the name shown at the device tree. But if you use the RawExplorer 
+  to operate on a device you should always use the name 'fat12' only, since this 
+  is the interior name of the device. For example if you want to create a file 
+  'text.dat' on your device 'd:\dir\fat12' and you are asked for the device name 
+  you should enter 'fat12', since the interior path is 'fat12:\text.dat' and not 
+  'd:\dir\fat12\text.dat'. Otherwise the file system will handle 'dir' and 'fat12' 
+  as folders.</p>
+
+	</BODY>
+</HTML>

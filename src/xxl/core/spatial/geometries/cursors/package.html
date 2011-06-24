@@ -1,0 +1,23 @@
+<html>
+<body>
+	A collection of spatial queries. Some other queries not included in this package can easily 
+	be derived from the existing ones:
+	<br>
+	For example, the DistanceQuery, which returns all objects whose distance to the query object
+	is less than a given maximum can either be implemented using a RegionQuery or a NearestNeighbourQuery
+	<br>
+	<code><pre>  
+	// Distance query using a RegionQuery and a buffer around the query- object
+	Cursor distanceQuery1 = new RegionQuery(index, queryObject.buffer( distance ), loadGeometry);
+	   
+	// Distance query using a WhileTaker and a NearestNeighbourQuery
+	Cursor distanceQuery2 = 
+		new WhileTaker(
+	       new NearestNeighbourQuery( index, queryObject,
+	    		                      distDescToGeo, distGeoToGeo,
+	    		                      loadGeometry),
+	       new DistanceWithin( distance, 2)
+		);  
+	</pre></code>
+</body>
+</html>

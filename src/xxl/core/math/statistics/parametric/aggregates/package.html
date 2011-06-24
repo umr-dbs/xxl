@@ -1,0 +1,10 @@
+<HTML>
+<BODY>
+The package xxl.core.math.statistics.parametric.aggregates provides implementations of the techniques proposed in [HHW97]: J. Hellerstein, P. Haas, and
+H.&nbsp;Wang, 1997. There, parametric estimators are computed online over a data stream and in some cases they are even equipped with the according
+confidence intervals. The online computation of the aggregation functions relies on the {@link xxl.core.cursors.mappers.Aggregator aggregator cursor}.
+An aggregate is computed by an aggregation function inductively with agg_n = f (agg_n-1, next).
+This means an aggregation function must be a two-figured function expecting as first argument the previous computed aggregation value and as second argument the next object to use for 
+computation. 
+</BODY>
+</HTML>
