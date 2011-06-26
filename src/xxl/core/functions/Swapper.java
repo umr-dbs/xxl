@@ -17,11 +17,11 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 Lesser General Public License for more details.
 
 You should have received a copy of the GNU Lesser General Public
-License along with this library;  If not, see <http://www.gnu.org/licenses/>. 
+License along with this library;  If not, see <http://www.gnu.org/licenses/>.
 
     http://code.google.com/p/xxl/
 
-*/
+ */
 
 package xxl.core.functions;
 
@@ -67,7 +67,7 @@ public class Swapper<P, R> extends DecoratorFunction<P, R> {
 		/* OLD FUNCITONALITY
 		this(function);
 		this.swap = swap;
-		*/
+		 */
 		this(function, swap ? Predicates.TRUE : Predicates.FALSE);
 	}
 
@@ -79,7 +79,7 @@ public class Swapper<P, R> extends DecoratorFunction<P, R> {
 	public Swapper(Function<P, R> function) {
 		/* OLD FUNCTIONALITY
 		super(function);
-		*/
+		 */
 		this(function, Predicates.FALSE);
 	}
 
@@ -96,8 +96,8 @@ public class Swapper<P, R> extends DecoratorFunction<P, R> {
 	 */
 	public R invoke(boolean doSwap, P argument0, P argument1) {
 		return doSwap ?
-			function.invoke(argument1, argument0) :	//return call to decorated function where arguments are swapped
-			function.invoke(argument0, argument1);	//return call to decorated function
+				(R) function.invoke(argument1, argument0) :	//return call to decorated function where arguments are swapped
+					(R) function.invoke(argument0, argument1);	//return call to decorated function
 	}
 
 	/**

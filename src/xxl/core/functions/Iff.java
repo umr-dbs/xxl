@@ -17,11 +17,11 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 Lesser General Public License for more details.
 
 You should have received a copy of the GNU Lesser General Public
-License along with this library;  If not, see <http://www.gnu.org/licenses/>. 
+License along with this library;  If not, see <http://www.gnu.org/licenses/>.
 
     http://code.google.com/p/xxl/
 
-*/
+ */
 
 package xxl.core.functions;
 
@@ -99,12 +99,12 @@ public class Iff<P, R> extends AbstractFunction<P, R> {
 	 */
 	@Override
 	public R invoke(List<? extends P> arguments) {
-		return predicate.invoke(arguments) ? 
-			f1.invoke(arguments) :
-			f2.invoke(arguments);
+		return predicate.invoke(arguments) ?
+				(R) f1.invoke(arguments) :
+					(R) f2.invoke(arguments);
 
-		//old implementation:
-		/*if (predicate.invoke(arguments))
+				//old implementation:
+				/*if (predicate.invoke(arguments))
 			return f1.invoke(arguments);
 		else
 			return f2.invoke(arguments);*/
