@@ -61,9 +61,14 @@ import xxl.core.predicates.AbstractPredicate;
 import xxl.core.predicates.Predicate;
 
 /**
+ * This Class is an implementation of MVBT index structure
+ * "An asymptotically optimal multiversion B-tree"
+ * Becker Bruno, Gschwind Stephan, Ohler Thomas,  Seeger Bernhard and Widmayer, Peter
+ *  VLDB 1996
+ * 
  */
 public class MVBTree extends BPlusTree {
-	/** Defalut value für KeyDomain minValue*/
+	/** Defalut value for KeyDomain minValue*/
 	public static final Integer DEAFUALT_KEYDOMAIN_MINVALUE = Integer.MIN_VALUE;
 	
 	/** Is used to define the bounds of the <tt>strong version condition</tt>.*/
@@ -2016,10 +2021,10 @@ public class MVBTree extends BPlusTree {
 			
 			
 			/*
-			 * 3 Fälle 
+			 * 3 Faelle 
 			 * 1. Unterlauf+Merge
 			 * 2. Unterlauf+Merge+KeySplit
-			 * 3. Überlauf+KeySplit
+			 * 3. Ueberlauf+KeySplit
 			 */
 			MVSeparator getMVSeparatorOfVersionSplitNode() {
 				MVSeparator mvSeparator = (MVSeparator)oldSeparator.clone();

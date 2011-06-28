@@ -173,7 +173,7 @@ public class KPE extends ArrayTuple implements Convertable {
 	 */
 	public void read(DataInput dataInput) throws IOException {
 		Object[] newTuple = converter.read(dataInput, this).toArray();
-		// XXX: CHANGE (20.11.2005 by Daniel Schäfer)
+		// XXX: CHANGE (20.11.2005 by Daniel Schaefer)
 		System.arraycopy(newTuple,0, this.tuple, 0, tuple.length);
 		// END OF CHANGE
 	}

@@ -288,7 +288,7 @@ public class FAT
 			{
 				Long tmp = new Long(clusterNumber);
 				if (!freeClusters.contains(tmp))
-					freeClusters.add(tmp);	//einfügen nicht gerade geistreich
+					freeClusters.add(tmp);	//einfuegen nicht gerade geistreich
 			}
 		}	//end addFreeCluster(clusterNumber)
 

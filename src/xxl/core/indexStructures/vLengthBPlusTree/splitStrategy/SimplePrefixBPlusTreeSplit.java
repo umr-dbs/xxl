@@ -38,6 +38,11 @@ import xxl.core.indexStructures.vLengthBPlusTree.VariableLengthBPlusTree.Node.Sp
  * Implements a shortest key strategy for the split of the index nodes and simple prefix strategy for the leaf nodes. 
  * It searches in the bounds [min, max] which defined by the minimal allowed byte capacity of the node for the shortest key (in bytes).   
  * Assumption: keys are strings. 
+ * see
+ * "Prefix B-trees" 
+ * Bayer, Rudolf and Unterauer, Karl
+ * ACM Trans. Database Syst. 1977
+ * 
  */
 public class SimplePrefixBPlusTreeSplit extends ShortestKeyStrategy<Object, String> {
 	

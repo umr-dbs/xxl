@@ -59,7 +59,7 @@ public class DefaultMemoryManageableSA<I,E> extends MemoryManageableSA<I,E> {
 	 * <code>p/q</code>.
 	 */
 	public static class EveryQth<E> extends AbstractPredicate<E> {
-	// Für q=1 verhält sich EveryQth(p,q) identisch zu xxl.predicates.EveryNth(p).
+	// Fuer q=1 verhaelt sich EveryQth(p,q) identisch zu xxl.predicates.EveryNth(p).
 	// Ansonsten ist EveryQth die Verallgemeinerung von EveryNth auf rationale Zahlen p/q.
 
 		/**

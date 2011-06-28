@@ -558,8 +558,8 @@ public class RevisedRTree extends RTree{
 		protected Tree.Node.SplitInfo split (Stack path) {
 			final Node node = (Node) node(path);
 			final IndexEntry indexEntry = (IndexEntry)indexEntry(path);
-//			 chooseSubTree aktulisiert den Descriptor von IndexEntry von Übergelaufenen Knoten	
-			// zur jeder Dim 2(M-2m+2) mögliche Distr
+//			 chooseSubTree aktulisiert den Descriptor von IndexEntry von Uebergelaufenen Knoten	
+			// zur jeder Dim 2(M-2m+2) moegliche Distr
 			Iterator<List<Distribution>>  itListDistr = getAllDistributions(node);
 			Iterator<Distribution> iteratorWeightedDist = null;
 			if (node.level()> 0){ //inner Nodes
@@ -646,7 +646,7 @@ public class RevisedRTree extends RTree{
 		 * 
 		 * @param m  min number of entries in the node
 		 * @param max number max Numebr of entries in the node
-		 * @param pMax max Margin value für Split Distribution 
+		 * @param pMax max Margin value for Split Distribution 
 		 * @param middlePointN old middle point of nodes mbb  
 		 * @param middlePointOld new middle point of nodes mbb
 		 * @param deltas array of deltas 

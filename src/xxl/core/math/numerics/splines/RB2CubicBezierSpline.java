@@ -33,7 +33,7 @@ import xxl.core.util.DoubleArrays;
  * of the variables precomputed, this class only implements the method <code>solveLGS</code>.
  * This method solves a linear equation system whose solution uniquely determines the Bezier-coefficients. 
  * For solving the linear equation system, a modified version of the
- * {@link xxl.core.math.Maths#triDiagonalGaussianLGS(double[],double[],double[],double[]) Gauﬂ algorithm}
+ * {@link xxl.core.math.Maths#triDiagonalGaussianLGS(double[],double[],double[],double[]) Gauss algorithm}
  * is used because the system contains a tridiagonal matrix and this permits an efficient computation.
  *
  * @see xxl.core.math.numerics.splines.CubicBezierSpline

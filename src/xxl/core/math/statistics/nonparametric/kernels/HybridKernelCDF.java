@@ -42,7 +42,7 @@ import xxl.core.math.Statistics;
  * <br>
  * This class implements a special kind of kernel cdf estimators using a hybrid
  * technique first performed by Blohsfeld et. al. in <BR>
- * [BKS99]: Björn Blohsfeld, Dieter Korus, Bernhard Seeger:
+ * [BKS99]: Bjoern Blohsfeld, Dieter Korus, Bernhard Seeger:
  * A Comparison of Selectivity Estimators for Range Queries on Metric Attributes.
  * SIGMOD Conference 1999: 239-250. 
  * <BR>

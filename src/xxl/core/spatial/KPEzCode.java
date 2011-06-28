@@ -57,7 +57,7 @@ public class KPEzCode extends KPE implements Comparable{
 			},
 			new Converter[]{
 				ConvertableConverter.DEFAULT_INSTANCE,
-				// XXX: CHANGE 23.11.2005 Daniel Schäfer
+				// XXX: CHANGE 23.11.2005 Daniel Schaefer
 				// IntegerConverter.DEFAULT_INSTANCE,
 				
 				// Default Container-Ids are of type Long

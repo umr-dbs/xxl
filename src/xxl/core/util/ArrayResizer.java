@@ -217,7 +217,7 @@ public class ArrayResizer {
  	 *     </pre></li>
  	 * </ul>
 	 */
-	protected double fmin; // minimaler Füllgrad
+	protected double fmin; // minimaler Fuellgrad
 
 	/**
 	 * <code>fover</code> is a parameter specifying the array's logical size in
