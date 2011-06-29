@@ -25,10 +25,10 @@ License along with this library;  If not, see <http://www.gnu.org/licenses/>.
 package xxl.core.spatial.geometries;
 
 /** A Surface is a two-dimensional geometric object. The OpenGIS Abstract
- *  Specification defines a simple Surface as consisting of a single ‘patch’ 
- *  that is associated with one ‘exterior boundary’ and 0 or more ‘interior’
+ *  Specification defines a simple Surface as consisting of a single patch 
+ *  that is associated with one exterior boundary and 0 or more interior
  *  boundaries. The boundary of a simple Surface is the set of closed curves
- *  corresponding to its ‘exterior’ and ‘interior boundaries.  
+ *  corresponding to its exterior and interior boundaries.  
  *  The only instantiable subclass of Surface defined in the SFS is Polygon,
  *  a simple Surface that is planar.
  *  <br><br>See <a href="./doc-files/ogc_sfs.pdf">Simple Feature Specification (pdf)</a>.

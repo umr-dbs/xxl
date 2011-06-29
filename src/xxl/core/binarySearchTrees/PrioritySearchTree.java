@@ -322,7 +322,7 @@ public class PrioritySearchTree <T> {
 	 * 
 	 * @param node the root of the subtree to traverse
 	 * @param xMax the upper bound for x values (not inclusive)
-	 * @param yRange the range for y values (inclusive)´
+	 * @param yRange the range for y values (inclusive)
 	 * @param results an Arraylist for collecting the results 
 	 */
 	private void query (Node node, T xMax, Interval1D yRange, List<Interval1D> results) {

@@ -68,7 +68,7 @@ public class BPB
 	
 	/**
 	 * "MSWIN4.1" There are many misconceptions about this field. It is
-	 * only a name string. Microsoft operating systems don’t pay any
+	 * only a name string. Microsoft operating systems don't pay any
 	 * attention to this field. Some FAT drivers do. This is the reason that
 	 * the indicated string, "MSWIN4.1", is the recommended setting,
 	 * because it is the setting least likely to cause compatibility problems.
@@ -109,7 +109,7 @@ public class BPB
 	 * first sector of the volume. This field must not be 0. For FAT12 and FAT16 volumes,
 	 * this value should never be anything other than 1. For FAT32 volumes, this value
 	 * is typically 32. There is a lot of FAT code in the world "hard wired" to 1 
-	 * reserved sector for FAT12 and FAT16 volumes and that doesn’t bother to check this
+	 * reserved sector for FAT12 and FAT16 volumes and that doesn't bother to check this
 	 * field to make sure it is 1. Microsoft operating systems will properly support any
 	 * non-zero value in this field.
 	 */
@@ -119,7 +119,7 @@ public class BPB
 	 * The count of FAT data structures on the volume. This field should always contain
 	 * the value 2 for any FAT volume of any type. Although any value greater than or
 	 * equal to 1 is perfectly valid, many software programs and a few operating systems
-	 * ’ FAT file system drivers may not function properly if the value is something other
+	 * FAT file system drivers may not function properly if the value is something other
 	 * than 2. All Microsoft file system drivers will support a value other than 2, but
 	 * it is still highly recommended that no value other than 2 be used in this field.
 	 * The reason the standard value for this field is 2 is to provide redundancy for the
@@ -305,7 +305,7 @@ public class BPB
 	 * This is set to the cluster number of the first cluster of the root directory, usually 2
 	 * but not required to be 2. NOTE: Disk utilities that change the location of the root
 	 * directory should make every effort to place the first cluster of the root directory in
-	 * the first non-bad cluster on the drive (i.e., in cluster 2, unless it’s marked bad).
+	 * the first non-bad cluster on the drive (i.e., in cluster 2, unless it's marked bad).
 	 * This is specified so that disk repair utilities can easily find the root directory if
 	 * this field accidentally gets zeroed.
 	 */
@@ -1196,6 +1196,7 @@ public class BPB
 	 * 
 	 * @return the values of the BPB-Structure as a string
 	 */
+	@Override
 	public String toString()
 	{
 		String res = "";

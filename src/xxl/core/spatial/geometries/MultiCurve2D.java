@@ -34,7 +34,7 @@ package xxl.core.spatial.geometries;
  *        are simple, the only intersections between any two elements
  *        occur at points that are on the boundaries of both elements. 
  *       </li>
- *   <li> The boundary of a MultiCurve is obtained by applying the ‘mod 2’ 
+ *   <li> The boundary of a MultiCurve is obtained by applying the mod 2 
  *        union rule: A point is in the boundary of a MultiCurve if it is 
  *        in the boundaries of an odd number of elements of the MultiCurve. 
  *       </li>

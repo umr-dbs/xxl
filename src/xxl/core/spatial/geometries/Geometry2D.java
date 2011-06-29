@@ -109,63 +109,63 @@ public interface Geometry2D extends Comparable<Geometry2D>,  Serializable{
 		 */
 		public Geometry2D getBoundary(); 		
 					
-		/** Returns <tt>true</tt> if this Geometry2D is ‘spatially equal’ to another Geometry2D.
+		/** Returns <tt>true</tt> if this Geometry2D is spatially equal to another Geometry2D.
 		 * @param other the other Geometry2D
-		 * @return <tt>true</tt> if this Geometry2D is ‘spatially equal’ to another Geometry2D
+		 * @return <tt>true</tt> if this Geometry2D is spatially equal to another Geometry2D
 		 */
 		public boolean equals(Geometry2D other); 
 		
-		/** Returns <tt>true</tt> if this Geometry2D is ‘spatially disjoint’ from another Geometry2D.
+		/** Returns <tt>true</tt> if this Geometry2D is spatially disjoint from another Geometry2D.
 		 * @param other the other Geometry2D
-		 * @return <tt>true</tt> if this Geometry2D is ‘spatially disjoint’ from another Geometry2D.
+		 * @return <tt>true</tt> if this Geometry2D is spatially disjoint from another Geometry2D.
 		 */
 		public boolean isDisjoint(Geometry2D other);
 		
-		/** Returns <tt>true</tt> if this Geometry2D ‘spatially intersects’ another Geometry2D.
+		/** Returns <tt>true</tt> if this Geometry2D spatially intersects another Geometry2D.
 		 * @param other the other Geometry2D
-		 * @return <tt>true</tt> if this Geometry2D ‘spatially intersects’ another Geometry2D.
+		 * @return <tt>true</tt> if this Geometry2D spatially intersects another Geometry2D.
 		 */
 		public boolean intersects(Geometry2D other);
 		
-		/** Returns <tt>true</tt> if this Geometry2D ‘spatially touches’ another Geometry2D.
+		/** Returns <tt>true</tt> if this Geometry2D spatially touches another Geometry2D.
 		 * @param other the other Geometry2D
-		 * @return <tt>true</tt> if this Geometry2D ‘spatially touches’ another Geometry2D.
+		 * @return <tt>true</tt> if this Geometry2D spatially touches another Geometry2D.
 		 */
 		public boolean touches(Geometry2D other);
 		
-		/** Returns <tt>true</tt> if this Geometry2D ‘spatially crosses’ another Geometry2D.
+		/** Returns <tt>true</tt> if this Geometry2D spatially crosses another Geometry2D.
 		 * @param other the other Geometry2D
-		 * @return <tt>true</tt> if this Geometry2D ‘spatially crosses’ another Geometry2D.
+		 * @return <tt>true</tt> if this Geometry2D spatially crosses another Geometry2D.
 		 */
 		public boolean crosses(Geometry2D other);
 		
-		/** Returns <tt>true</tt> if this Geometry2D is ‘spatially within’ another Geometry2D.
+		/** Returns <tt>true</tt> if this Geometry2D is spatially within another Geometry2D.
 		 * @param other the other Geometry2D
-		 * @return <tt>true</tt> if this Geometry2D is ‘spatially within’ another Geometry2D.
+		 * @return <tt>true</tt> if this Geometry2D is spatially within another Geometry2D.
 		 */
 		public boolean isWithin(Geometry2D other);
 		
-		/** Returns <tt>true</tt> if this Geometry2D ‘spatially contains’ another Geometry2D.
+		/** Returns <tt>true</tt> if this Geometry2D spatially contains another Geometry2D.
 		 * @param other the other Geometry2D
-		 * @return <tt>true</tt> if this Geometry2D ‘spatially contains’ another Geometry2D.
+		 * @return <tt>true</tt> if this Geometry2D spatially contains another Geometry2D.
 		 */
 		public boolean contains(Geometry2D other); 
 		
-		/** Returns <tt>true</tt> if this Geometry2D ‘spatially covers’ another Geometry2D.
+		/** Returns <tt>true</tt> if this Geometry2D spatially covers another Geometry2D.
 		 * @param other the other Geometry2D
-		 * @return <tt>true</tt> if this Geometry2D ‘spatially covers’ another Geometry2D.
+		 * @return <tt>true</tt> if this Geometry2D spatially covers another Geometry2D.
 		 */
 		public boolean covers(Geometry2D other);
 
-		/** Returns <tt>true</tt> if this Geometry2D is ‘spatially covered’ by another Geometry2D.
+		/** Returns <tt>true</tt> if this Geometry2D is spatially covered by another Geometry2D.
 		 * @param other the other Geometry2D
-		 * @return <tt>true</tt> if this Geometry2D is ‘spatially covered’ by another Geometry2D.
+		 * @return <tt>true</tt> if this Geometry2D is spatially covered by another Geometry2D.
 		 */
 		public boolean isCoveredBy(Geometry2D other);
 		
-		/** Returns <tt>true</tt> if this Geometry2D ‘spatially overlaps’ another Geometry2D. 
+		/** Returns <tt>true</tt> if this Geometry2D spatially overlaps another Geometry2D. 
 		 * @param other the other Geometry2D
-		 * @return <tt>true</tt> if this Geometry2D ‘spatially overlaps’ another Geometry2D.
+		 * @return <tt>true</tt> if this Geometry2D spatially overlaps another Geometry2D.
 		 */
 		public boolean overlaps(Geometry2D other); 
 		
