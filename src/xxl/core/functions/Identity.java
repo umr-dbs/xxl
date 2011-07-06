@@ -30,7 +30,10 @@ package xxl.core.functions;
  *
  * @param <T> the type of the identity-functions parameters (and it's return
  *        type.
+ * @deprecated replaced by {@link Functional.Identity}
  */
+@SuppressWarnings("serial")
+@Deprecated
 public class Identity<T> extends AbstractFunction<T, T> {
 
 	/**

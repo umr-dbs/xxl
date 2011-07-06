@@ -29,9 +29,11 @@ import java.util.List;
 
 /**
  * A constant is a function that returns a constant value.
- * 
+ * @deprecated  replaced by {@link Functional.UnaryFunction} 
  * @param <T> the type of the constant to be returned.
  */
+@SuppressWarnings("serial")
+@Deprecated
 public class Constant<T> extends AbstractFunction<Object, T> {
 
 	/**

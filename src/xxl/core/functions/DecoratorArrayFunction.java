@@ -46,6 +46,7 @@ import java.util.List;
  * @param <R> the most general return type of the component type of the list
  *        returned by the decorator list-function's invoke method.
  */
+@SuppressWarnings("serial")
 public class DecoratorArrayFunction<P, R> extends AbstractFunction<P, List<R>> {
 
 	/**

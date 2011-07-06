@@ -48,7 +48,6 @@ import xxl.core.xxlinq.AdvResultSetMetaData;
 import xxl.core.xxlinq.AdvTupleCursor;
 import xxl.core.xxlinq.AdvTupleCursor.CachingStrategy;
 import xxl.core.xxlinq.CorrTuplesReceiver;
-import xxl.core.xxlinq.columns.Column.SubQueryType;
 
 /**
  * This class represents a single value/object, among other things to be used in 

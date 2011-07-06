@@ -27,7 +27,6 @@ package xxl.core.collections.sweepAreas;
 
 import java.util.Iterator;
 
-import xxl.core.collections.sweepAreas.ImplementorBasedSweepArea.RemovingIterator;
 import xxl.core.cursors.filters.Remover;
 import xxl.core.cursors.sources.EmptyCursor;
 import xxl.core.predicates.Equal;

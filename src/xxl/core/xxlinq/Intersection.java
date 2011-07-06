@@ -25,7 +25,6 @@ License along with this library;  If not, see <http://www.gnu.org/licenses/>.
 
 package xxl.core.xxlinq;
 
-import java.util.BitSet;
 import java.util.Iterator;
 
 import xxl.core.cursors.AbstractCursor;

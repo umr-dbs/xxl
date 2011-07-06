@@ -38,6 +38,7 @@ import xxl.core.predicates.Predicate;
  * @see xxl.core.functions.Function
  * @see xxl.core.predicates.Predicate
  */
+@SuppressWarnings("serial")
 public class PredicateFunction<P> extends AbstractFunction<P, Boolean> {
 
 	/**

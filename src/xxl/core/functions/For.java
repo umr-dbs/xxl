@@ -43,6 +43,7 @@ public class For<P, R> extends DecoratorFunction<P, R> {
 	 * <code>new Integer(n)</code> is the input-argument
 	 * <code>new Integer(n+1)</code> is returned.
 	 */
+	@SuppressWarnings("serial")
 	public static class IntegerIncrement extends AbstractFunction<Integer, Integer> {
 	
 		/** 
@@ -81,6 +82,7 @@ public class For<P, R> extends DecoratorFunction<P, R> {
 	 * @param f2 code to be executed if predicate returns false.
 	 * @param newState computes new arguments for consequent call of f1.
 	 */
+	@SuppressWarnings("serial")
 	public <T> For(Predicate<? super P> predicate, final Function<? super P, ? extends T> f1, final Function<? super P, ? extends R> f2, final Function<? super T, ? extends P> newState) {
 		super();												//should be "super(new Iff..." (early bind of compiler prob)
 		function = new Iff<P, R>(

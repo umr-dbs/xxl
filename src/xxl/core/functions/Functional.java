@@ -25,8 +25,14 @@ License along with this library;  If not, see <http://www.gnu.org/licenses/>.
 
 package xxl.core.functions;
 
+import java.util.Iterator;
+
+import xxl.core.predicates.PredicateFunctional.UnaryPredicate;
+
 public class Functional {
 
+	private Functional(){}
+	
 	public interface NullaryFunction<T>{
 		public T invoke();
 	}
@@ -39,6 +45,10 @@ public class Functional {
 		public O invoke(I0 arg0, I1 arg1);
 	}
 
+	public interface TrinaryFunction<I0, I1, I2, O>{
+		public O invoke(I0 arg0, I1 arg1, I2 arg2);
+	}
+	
 	public static <I0,I1,O> UnaryFunction<I0,O> rightBind(final BinaryFunction<I0,I1,O> f, final I1 rightArg){
 		return new UnaryFunction<I0,O>(){
 			public O invoke(I0 leftArg) {
@@ -67,5 +77,82 @@ public class Functional {
 		public I invoke(I arg) {
 			return arg;
 		};
-	}		
+	}
+	public static class ArrayFactory<I1, I2, T> implements BinaryFunction<I1, Iterator<I2>, T[]>{
+
+		/**
+		 * A factory method that gets one parameter and returns an array.
+		 */
+		protected UnaryFunction<I1, T[]> newArrayFactory;
+		
+		/**
+		 * A factory method that gets one parameter and returns an object used for
+		 * initializing the array.
+		 */
+		protected UnaryFunction<I2, ? extends T> newObjectFactory;
+		
+		/**
+		 * Creates a new ArrayFactory.
+		 * 
+		 * @param newArray factory method that returns an array.
+		 * @param newObject factory method that returns the elements of the array.
+		 */
+		public ArrayFactory(UnaryFunction<I1, T[]> newArrayFactory, UnaryFunction<I2, ? extends T> newObjectFactory) {
+			this.newArrayFactory = newArrayFactory;
+			this.newObjectFactory = newObjectFactory;
+		}
+		/**
+	     * Returns the result of the ArrayFactory as a typed array. This method
+	     * calls the invoke method of the newArray function which returns an array
+	     * of typed objects. After this, the invoke method of the newObject
+	     * function is called, so many times as the length of the array. As
+	     * parameter to the function an element of the iterator is given that is
+	     * specified as second argument.
+	     * 
+	     * @param must be an object used as argument to the newArrayFactory function.
+	     *        The second argument must be an iterator holding the arguments to
+	     *        the newObject function.
+	     * @param must be an iterator holding the arguments to the newObjectFactory function.
+	     * @return the initialized array.
+	     */
+		@Override
+		public T[] invoke(I1 arg0, Iterator<I2> arg1) {
+			T[] array = newArrayFactory.invoke(arg0);
+			for (int i = 0; i < array.length; i++)
+				array[i] = newObjectFactory.invoke(arg1.hasNext() ? arg1.next() : null);	
+			return array;
+		}
+	}
+
+	public static class Iff<I0, I1, I2, O> implements TrinaryFunction<I0, I1, I2, O> {
+
+		/**
+		 * providing the functionality of an if-clause.
+		 */
+		protected UnaryPredicate<? super I0> predicate;
+		
+		/**
+		 * using in the case of TRUE.
+		 */
+		protected UnaryFunction<? super I1, ? extends O> f1;
+
+		/**
+		 * using in the case of FALSE.
+		 */
+		protected UnaryFunction<? super I2, ? extends O> f2;
+		
+		public Iff(UnaryPredicate<? super I0> predicate, UnaryFunction<? super I1, ? extends O> f1, UnaryFunction<? super I2, ? extends O> f2){
+			this.predicate = predicate;
+			this.f1 = f1;
+			this.f2 = f2;
+		}
+
+		@Override
+		public O invoke(I0 arg0, I1 arg1, I2 arg2) {
+			return predicate.invoke(arg0) ? 
+					f1.invoke(arg1) :
+				    f2.invoke(arg2);
+		}
+	}
+
 }

@@ -32,6 +32,7 @@ package xxl.core.functions;
  * join-trees. 
  *
  */
+@SuppressWarnings("serial")
 public class NTuplify extends AbstractFunction<Object, Object[]> {
 
 	/**

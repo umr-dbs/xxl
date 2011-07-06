@@ -30,6 +30,7 @@ import java.util.List;
 /** 
  * Maps the arguments to a tuple (=Object[]). 
  */
+@SuppressWarnings("serial")
 public class Tuplify extends AbstractFunction<Object, Object[]> {
 
 	/**

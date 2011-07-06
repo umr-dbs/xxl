@@ -72,6 +72,7 @@ public class Functions {
 	 * @param f the <it>inner</it> function to be composed.
 	 * @return the result of the composition.
 	 */
+	@SuppressWarnings("serial")
 	public static <P, R, T> Function<T, R> composeMulti(final Function<P, R> g, final Function<? super T, ? extends List<? extends P>> f) {
 		return new AbstractFunction<T, R>() {
 			@Override
@@ -177,6 +178,7 @@ public class Functions {
 	 * @param aggregateFunction aggregation function to provide as an unary function
 	 * @return an unary function wrapping an aggregation function
 	 */
+	@SuppressWarnings("serial")
 	public static <P, R> Function<P, R> aggregateUnaryFunction(final AggregationFunction<P, R> aggregateFunction) {
 		return new AbstractFunction<P, R>() {
 			R agg = null;
@@ -199,6 +201,7 @@ public class Functions {
 	 * @return a {@link xxl.core.functions.Function Function} performing an
 	 *         absolute of numerical data.
 	 */
+	@SuppressWarnings("serial")
 	public static Function<Number, Double> abs() {
 		return new AbstractFunction<Number, Double>() {
 			@Override
@@ -216,6 +219,7 @@ public class Functions {
 	 * @return a {@link xxl.core.functions.Function Function} performing a
 	 *         negation of numerical data.
 	 */
+	@SuppressWarnings("serial")
 	public static Function<Number, Double> minus() {
 		return new AbstractFunction<Number, Double>() {
 			@Override
@@ -233,6 +237,7 @@ public class Functions {
 	 * @return a {@link xxl.core.functions.Function Function} performing a
 	 *         multiplication of numerical data.
 	 */
+	@SuppressWarnings("serial")
 	public static Function<Number, Double> mult() {
 		return new AbstractFunction<Number, Double>() {
 			@Override
@@ -250,6 +255,7 @@ public class Functions {
 	 * @return a {@link xxl.core.functions.Function Function} performing a
 	 *         division of numerical data.
 	 */
+	@SuppressWarnings("serial")
 	public static Function<Number, Double> div() {
 		return new AbstractFunction<Number, Double>() {
 			@Override
@@ -267,6 +273,7 @@ public class Functions {
 	 * @return a {@link xxl.core.functions.Function Function} performing a
 	 *         summation of numerical data.
 	 */
+	@SuppressWarnings("serial")
 	public static Function<Number, Double> add() {
 		return new AbstractFunction<Number, Double>() {
 			@Override
@@ -284,6 +291,7 @@ public class Functions {
 	 * @return a {@link xxl.core.functions.Function Function} performing a
 	 *         subtraction of numerical data.
 	 */
+	@SuppressWarnings("serial")
 	public static Function<Number, Double> sub() {
 		return new AbstractFunction<Number, Double>() {
 			@Override
@@ -301,6 +309,7 @@ public class Functions {
 	 * @return a {@link xxl.core.functions.Function Function} performing an
 	 *         exponentiation of numerical data.
 	 */
+	@SuppressWarnings("serial")
 	public static Function<Number, Double> exp() {
 		return new AbstractFunction<Number, Double>() {
 			@Override
@@ -318,6 +327,7 @@ public class Functions {
 	 * @return a {@link xxl.core.functions.Function Function} providing the
 	 *         trigonometric sine of an angle.
 	 */
+	@SuppressWarnings("serial")
 	public static Function<Number, Double> sin() {
 		return new AbstractFunction<Number, Double>() {
 			@Override
@@ -335,6 +345,7 @@ public class Functions {
 	 * @return a {@link xxl.core.functions.Function Function} providing the
 	 *         trigonometric cosine of an angle.
 	 */
+	@SuppressWarnings("serial")
 	public static Function<Number, Double> cos() {
 		return new AbstractFunction<Number, Double>() {
 			@Override
@@ -352,6 +363,7 @@ public class Functions {
 	 * @return a {@link xxl.core.functions.Function Function} providing the
 	 *         trigonometric tangent of an angle.
 	 */
+	@SuppressWarnings("serial")
 	public static Function<Number, Double> tan() {
 		return new AbstractFunction<Number, Double>() {
 			@Override
@@ -369,6 +381,7 @@ public class Functions {
 	 * @return a {@link xxl.core.functions.Function Function} providing the
 	 *         trigonometric cosine of an angle.
 	 */
+	@SuppressWarnings("serial")
 	public static Function<Number, Double> sum() {
 		return new AbstractFunction<Number, Double>() {
 			@Override
@@ -389,6 +402,7 @@ public class Functions {
 	 * @return a {@link xxl.core.functions.Function Function} performing a
 	 *         concatenation of two object's string representation.
 	 */
+	@SuppressWarnings("serial")
 	public static Function<Object, String> concat() {
 		return new AbstractFunction<Object, String>() {
 			@Override
@@ -405,6 +419,7 @@ public class Functions {
 	 * 
 	 * @return the hash-value of the given object.
 	 */
+	@SuppressWarnings("serial")
 	public static Function<Object, Integer> hash() {
 		return new AbstractFunction<Object, Integer>() {
 			@Override
@@ -446,6 +461,7 @@ public class Functions {
 	 *        the end).
 	 * @return the desired function
 	 */
+	@SuppressWarnings("serial")
 	public static <P, R> Function<P, R> printlnDecoratorFunction(final Function<? super P, ? extends R> f, final PrintStream ps, final boolean showArgs, final String beforeArgs, final String argDelimiter, final String beforeResultDelimiter, final String afterResultDelimiter) {
 		return new AbstractFunction<P, R>() {
 			@Override
@@ -480,6 +496,7 @@ public class Functions {
 	 * @param ascending true iff the order is ascending, else false.
 	 * @return the desired function.
 	 */
+	@SuppressWarnings("serial")
 	public static <T> Function<T, T> comparatorTestMapFunction(final Comparator<? super T> c, final boolean ascending) {
 		return new AbstractFunction<T, T>() {
 			boolean first = true;
@@ -509,6 +526,7 @@ public class Functions {
 	 * @param defaultValue the default value.
 	 * @return the function able to handle null values.
 	 */
+	@SuppressWarnings("serial")
 	public static <P, R> Function<P, R> newNullSensitiveFunction(final Function<? super P, ? extends R> function, final R defaultValue) {
 		return new AbstractFunction<P, R>() {
 			@Override
@@ -530,6 +548,7 @@ public class Functions {
 	 * @return a function the selects to <code>index</code>th argument of its
 	 *         input parameters and returns it.
 	 */
+	@SuppressWarnings("serial")
 	public static <T> Function<T, T> select(final int index) {
 		return new AbstractFunction<T, T>() {
 			@Override

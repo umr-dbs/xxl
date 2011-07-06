@@ -33,6 +33,7 @@ package xxl.core.functions;
  * @param <R> the return type of the function.
  * @param <M> the type of the meta data provided by this function.
  */
+@SuppressWarnings("serial")
 public abstract class AbstractMetaDataFunction<P, R, M> extends AbstractFunction<P, R> implements MetaDataFunction<P, R, M> {
 	
 	@Override

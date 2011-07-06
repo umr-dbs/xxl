@@ -44,6 +44,7 @@ import java.util.List;
  * 
  * @param <T> the parameter type as well as the return type of this function.
  */
+@SuppressWarnings("serial")
 public class Print<T> extends AbstractFunction<T, T> {
 
 	/**

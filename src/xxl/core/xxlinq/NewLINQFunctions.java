@@ -29,7 +29,6 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.TypeVariable;
 import java.sql.SQLException;
 import java.util.Iterator;
-import java.util.AbstractCollection;
 import xxl.core.functions.Functional.BinaryFunction;
 import xxl.core.functions.Functional.UnaryFunction;
 import xxl.core.relational.metaData.ColumnMetaData;

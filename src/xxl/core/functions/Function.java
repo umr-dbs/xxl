@@ -39,7 +39,9 @@ import java.util.List;
  * 
  * @param <P> the type of the function's parameters.
  * @param <R> the return type of the function.
+ * @deprecated replaced {@link Functional} 
  */
+@Deprecated
 public interface Function<P, R> {
 
 	/**

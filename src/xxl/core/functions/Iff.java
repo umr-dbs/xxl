@@ -34,7 +34,10 @@ import xxl.core.predicates.Predicate;
  *
  * @param <P> the type of the function's parameters.
  * @param <R> the return type of the function.
+ * @deprecated replaced by {@link Functional.Iff}
  */
+@SuppressWarnings("serial")
+@Deprecated
 public class Iff<P, R> extends AbstractFunction<P, R> {
 
 	/**

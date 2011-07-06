@@ -49,6 +49,7 @@ import xxl.core.util.Distance;
  * 
  * @param <T> the type of the objects to be projected, i.e., the object-space.
  */
+@SuppressWarnings("serial")
 public class FastMapProjection<T> extends AbstractFunction<T, double[]> {
 
 	/**

@@ -40,6 +40,7 @@ import java.lang.reflect.Array;
  * @see xxl.core.functions.Function
  * @see xxl.core.functions.FastMapProjection
  */
+@SuppressWarnings("serial")
 public class Projection<T> extends AbstractFunction<T[], T[]> {
 
 	/**

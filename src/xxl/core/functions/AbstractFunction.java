@@ -67,7 +67,10 @@ import java.util.List;
  * 
  * @param <P> the type of the function's parameters.
  * @param <R> the return type of the function.
+ * @deprecated  replaced by {@link Functional}
  */
+@SuppressWarnings("serial")
+@Deprecated
 public abstract class AbstractFunction<P, R> implements Function<P, R>, Serializable {
 
 	/**

@@ -26,12 +26,10 @@ License along with this library;  If not, see <http://www.gnu.org/licenses/>.
 package xxl.core.xxlinq;
 
 import xxl.core.functions.AbstractFunction;
-import xxl.core.functions.Function;
 import xxl.core.relational.metaData.ColumnMetaData;
 import xxl.core.relational.tuples.ArrayTuple;
 import xxl.core.relational.tuples.Tuple;
 import xxl.core.xxlinq.AdvResultSetMetaData;
-import xxl.core.xxlinq.AdvTupleCursor;
 import xxl.core.xxlinq.columns.Column;
 
 //TODO Refactoren zu AbstractFunction<Tuple, Tuple>

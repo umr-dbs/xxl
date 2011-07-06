@@ -37,7 +37,10 @@ import xxl.core.cursors.sources.EmptyCursor;
  * stored in the array.
  * 
  * @param <T> the component type of the array to be returned.
+ * @deprecated replaced by {@link Functional.ArrayFactory}
  */
+@SuppressWarnings("serial")
+@Deprecated
 public class ArrayFactory<T> extends AbstractFunction<Object, T[]> {
 
 	/**

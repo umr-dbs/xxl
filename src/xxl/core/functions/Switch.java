@@ -52,6 +52,7 @@ import xxl.core.cursors.mappers.Mapper;
  * @param <R> the result type of the switch function, i.e., a supertype for all
  *        given functions modeling the cases of the switch function.
  */
+@SuppressWarnings("serial")
 public class Switch<I, R> extends AbstractFunction<Object, R> {
 
 	/**
@@ -252,6 +253,7 @@ public class Switch<I, R> extends AbstractFunction<Object, R> {
      * @return an iteration containing the functions dealing with the cases of
      *         this switch function.
      */
+	@SuppressWarnings("unchecked")
 	public Cursor<Function<Object, ? extends R>> functions() {
 		return new Mapper<I, Function<Object, ? extends R>>(
 			new AbstractFunction<I, Function<Object, ? extends R>>() {
