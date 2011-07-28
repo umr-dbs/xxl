@@ -530,10 +530,11 @@ public class SpaceFillingCurves {
 		int i;
 		for( i = 64; 
 		((mask & zvalueLeft)  == (mask & zvalueRight)) & i  >= 0;
-		i--, mask = mask >> 1 );
+		i--, mask = mask >>> 1 ){ System.out.println(Long.toBinaryString(mask)); };
+		
 		i = 64-i; // prefix length
 		boolean ones = (((1L<<(64-i))-1) & zvalueRight ) == (((1L<<(64-i))-1));
-		boolean nulls = (((1L<<(64-i))-1) & zvalueLeft ) == 0L;
+		boolean nulls = (((1L<<(64-i-1))) & zvalueLeft ) == 0L;
 		boolean continuesSequence = ones && nulls;
 		if(continuesSequence){
 			leftResult = new LinkedList<long[]>();
@@ -561,7 +562,7 @@ public class SpaceFillingCurves {
 	 */
 	private static int[] cut(long zvalueLeft,
 			long zvalueRight, int bitsProDim, int dimension, int prefix, boolean low){
-		int position = prefix+1; // Greatest dimension on which we cut the box;
+		int position = prefix+2; // Greatest dimension on which we cut the box;
 		position =  position / dimension; // position in dimension from left to right
 		// check to which dimension belong this value
 		int dim = (prefix) % dimension;
@@ -571,8 +572,9 @@ public class SpaceFillingCurves {
 			// extract dimension 
 			int dimvalue = readDimension(output, dim, dimension, bitsProDim);
 			// set one on the position with a trailing 0 
-			int mask = 1 << (32 - position);
+			int mask = 1 << (32 - position );
 			dimvalue = (dimvalue >> (32-position)) << (32-position);
+		
 			dimvalue |=mask; // write value
 			output = writeDimension(output, dimvalue, dim, bitsProDim, dimension);
 			return computePointFromZKey(output, bitsProDim, dimension);
@@ -586,6 +588,23 @@ public class SpaceFillingCurves {
 		dimvalue |=mask; // write value
 		output = writeDimension(output, dimvalue, dim, bitsProDim, dimension);
 		return computePointFromZKey(output, bitsProDim, dimension);
+	}
+	
+	
+	public static void main(String[] args) {
+////		int[] left = {14,4};
+////		int[] right = {19,9};
+//		int[] left = {0,2};
+//		int[] right = {5,7};
+////		int[] left = {4,2};
+////		int[] right = {5,7};
+//		int bitsProdim = 8;
+//		int dimension = 2;
+//		List<long[]> result = computeZBoxRanges(left,
+//				right, bitsProdim, dimension );
+//		for(long[] l : result){
+//			System.out.println(Arrays.toString(l));
+//		}
 	}
 	
 }
