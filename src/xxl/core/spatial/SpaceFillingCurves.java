@@ -526,29 +526,36 @@ public class SpaceFillingCurves {
 		List<long[]> rightResult = null;
 		long zvalueLeft = computeZCode(lPoint, bitsProDim);
 		long zvalueRight = computeZCode(rPoint, bitsProDim);
-		long mask= 1L << 63;
-		int i;
-		for( i = 64; 
-		((mask & zvalueLeft)  == (mask & zvalueRight)) & i  >= 0;
-		i--, mask = mask >>> 1 ){ System.out.println(Long.toBinaryString(mask)); };
-		
-		i = 64-i; // prefix length
-		boolean ones = (((1L<<(64-i))-1) & zvalueRight ) == (((1L<<(64-i))-1));
-		boolean nulls = (((1L<<(64-i-1))) & zvalueLeft ) == 0L;
+		if (zvalueLeft == zvalueRight ) {    // case the same point
+			leftResult = new LinkedList<long[]>();
+			leftResult.add(new long[]{zvalueLeft, zvalueRight});
+			return  leftResult;
+		}
+       	long mask= 1L << 63;
+		int suffix; // last position of common prefix
+		int prefix = 0;
+		for( suffix = 64; 
+		((mask & zvalueLeft)  == (mask & zvalueRight)) & suffix  >= 0;
+		suffix--, mask = mask >>> 1, prefix++ ){ 
+//			System.out.println(Long.toBinaryString(mask)); 
+		};
+		long onesSuffix = (1L<<(suffix))-1;
+		// cae prefix.1111111 := 1 << suffix 
+		boolean ones = ( onesSuffix & zvalueRight ) == (onesSuffix);
+		boolean nulls = (onesSuffix & zvalueLeft ) == 0L;
 		boolean continuesSequence = ones && nulls;
 		if(continuesSequence){
 			leftResult = new LinkedList<long[]>();
 			leftResult.add(new long[]{zvalueLeft, zvalueRight});
 			return  leftResult;
 		}
-		int[] newLow = cut(zvalueLeft, zvalueRight,  bitsProDim,  dimension,  i, true);
-		int[] newHigh = cut(zvalueLeft, zvalueRight,  bitsProDim,  dimension, i, false);
+		int[] newLow = cut(zvalueLeft, zvalueRight,  bitsProDim,  dimension,  prefix, true);
+		int[] newHigh = cut(zvalueLeft, zvalueRight,  bitsProDim,  dimension, prefix, false);
 		leftResult = computeZBoxRanges(lPoint, newHigh, bitsProDim,  dimension);
 		rightResult = computeZBoxRanges(newLow, rPoint, bitsProDim,  dimension);
 		leftResult.addAll(rightResult);
 		return leftResult;
 	}
-	
 	
 	/**
 	 * helper method, which cuts the space in along the hyperplane
@@ -562,8 +569,10 @@ public class SpaceFillingCurves {
 	 */
 	private static int[] cut(long zvalueLeft,
 			long zvalueRight, int bitsProDim, int dimension, int prefix, boolean low){
-		int position = prefix+2; // Greatest dimension on which we cut the box;
-		position =  position / dimension; // position in dimension from left to right
+		int highestBitPosition = 64 - bitsProDim * dimension;
+		prefix = prefix - highestBitPosition;
+		int position = prefix; // Greatest dimension on which we cut the box;
+		position =  position / dimension  ; // position in dimension from left to right
 		// check to which dimension belong this value
 		int dim = (prefix) % dimension;
 		long output = 0L;
@@ -572,8 +581,8 @@ public class SpaceFillingCurves {
 			// extract dimension 
 			int dimvalue = readDimension(output, dim, dimension, bitsProDim);
 			// set one on the position with a trailing 0 
-			int mask = 1 << (32 - position );
-			dimvalue = (dimvalue >> (32-position)) << (32-position);
+			int mask = 1 << (bitsProDim -position-1);
+			dimvalue = (dimvalue >> (bitsProDim -position-1)) << (bitsProDim -position-1);
 		
 			dimvalue |=mask; // write value
 			output = writeDimension(output, dimvalue, dim, bitsProDim, dimension);
@@ -583,8 +592,8 @@ public class SpaceFillingCurves {
 		// extract dimension 
 		int dimvalue = readDimension(output, dim, dimension, bitsProDim);
 		// set 0 on the position with trailing 1;
-		int mask = (1 << (32 - position))-1;
-		dimvalue = (dimvalue >> (32-position+1)) << (32-position+1);
+		int mask = (1 << (bitsProDim -position-1))-1;
+		dimvalue = (dimvalue >> (bitsProDim -position)) << (bitsProDim -position);
 		dimvalue |=mask; // write value
 		output = writeDimension(output, dimvalue, dim, bitsProDim, dimension);
 		return computePointFromZKey(output, bitsProDim, dimension);
@@ -592,19 +601,19 @@ public class SpaceFillingCurves {
 	
 	
 	public static void main(String[] args) {
-////		int[] left = {14,4};
-////		int[] right = {19,9};
+		int[] left = {1,0};
+		int[] right = {7,7};
 //		int[] left = {0,2};
 //		int[] right = {5,7};
 ////		int[] left = {4,2};
 ////		int[] right = {5,7};
-//		int bitsProdim = 8;
-//		int dimension = 2;
-//		List<long[]> result = computeZBoxRanges(left,
-//				right, bitsProdim, dimension );
-//		for(long[] l : result){
-//			System.out.println(Arrays.toString(l));
-//		}
+		int bitsProdim = 3;
+		int dimension = 2;
+		List<long[]> result = computeZBoxRanges(left,
+				right, bitsProdim, dimension );
+		for(long[] l : result){
+			System.out.println(Arrays.toString(l));
+		}
 	}
 	
 }
