@@ -1434,7 +1434,8 @@ public abstract class AbstractResultSet implements ResultSet {
 				"this method is not implemented yet.");
 	}
 
-	@Override
+	//@Override
+	//TODO: Java 7 
 	public <T> T getObject(int columnIndex, Class<T> type) throws SQLException {
 		Object result = getObject(columnIndex);
 		try {
@@ -1445,7 +1446,8 @@ public abstract class AbstractResultSet implements ResultSet {
 		}
 	}
 
-	@Override
+	//@Override
+	//TODO: Java 7 
 	public <T> T getObject(String columnLabel, Class<T> type)
 			throws SQLException {
 		int columnIndex = findColumn(columnLabel);

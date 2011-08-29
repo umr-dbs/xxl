@@ -4286,14 +4286,18 @@ public abstract class DecoratorResultSet implements ResultSet,
 		return resultSet;
 	}
 
-	@Override
+	//@Override
+	//TODO: Java 7 
 	public <T> T getObject(int columnIndex, Class<T> type) throws SQLException {
-		return getDecoree().getObject(columnIndex, type);
+		//return getDecoree().getObject(columnIndex, type);
+		return (T) getDecoree().getObject(columnIndex);
 	}
 
-	@Override
+	//@Override
+	//TODO: Java 7 
 	public <T> T getObject(String columnLabel, Class<T> type)
 			throws SQLException {
-		return getDecoree().getObject(columnLabel, type);
+		//return getDecoree().getObject(columnLabel, type);
+		return (T) getDecoree().getObject(columnLabel);
 	}
 }
