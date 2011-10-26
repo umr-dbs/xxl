@@ -25,6 +25,7 @@ License along with this library;  If not, see <http://www.gnu.org/licenses/>.
 
 package xxl.core.functions;
 
+import java.io.Serializable;
 import java.util.Iterator;
 
 import xxl.core.predicates.PredicateFunctional.UnaryPredicate;
@@ -33,19 +34,19 @@ public class Functional {
 
 	private Functional(){}
 	
-	public interface NullaryFunction<T>{
+	public interface NullaryFunction<T> extends Serializable {
 		public T invoke();
 	}
 	
-	public interface UnaryFunction<I, O>{
+	public interface UnaryFunction<I, O> extends Serializable {
 		public O invoke(I arg);
 	}
 	
-	public interface BinaryFunction<I0, I1, O>{
+	public interface BinaryFunction<I0, I1, O> extends Serializable {
 		public O invoke(I0 arg0, I1 arg1);
 	}
 
-	public interface TrinaryFunction<I0, I1, I2, O>{
+	public interface TrinaryFunction<I0, I1, I2, O> extends Serializable {
 		public O invoke(I0 arg0, I1 arg1, I2 arg2);
 	}
 	
