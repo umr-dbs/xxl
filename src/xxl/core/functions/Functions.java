@@ -33,6 +33,9 @@ import java.util.NoSuchElementException;
 
 import xxl.core.cursors.Cursors;
 import xxl.core.cursors.mappers.Mapper;
+import xxl.core.functions.Functional.BinaryFunction;
+import xxl.core.functions.Functional.NullaryFunction;
+import xxl.core.functions.Functional.UnaryFunction;
 import xxl.core.math.functions.AggregationFunction;
 
 
@@ -559,5 +562,48 @@ public class Functions {
 			}
 		};
 	}
+	
+	////////////////////////////////////////////////////////////////////////////////////
+	// compatibility methods
+	///////////////////////////////////////////////////////////////////////////////////
+	/**
+	 * Wrap to function object
+	 * @param nullaryFunction
+	 * @return
+	 */
+	public static <T> Function<Object,T> toFunction(final NullaryFunction<T> nullaryFunction){
+		return new AbstractFunction<Object, T>() {
+			public T invoke() {
+				return nullaryFunction.invoke();
+			};
+		};
+	}  
+	/**
+	 * Wraps old function object
+	 * @param unaryFunction
+	 * @return
+	 */
+	public static <I,O> Function<I,O> toFunction(final UnaryFunction<I, O> unaryFunction){
+		return new AbstractFunction<I, O>() {
+			public O invoke(I argument) {
+				return unaryFunction.invoke(argument);
+			};
+		};
+	}  
+	/**
+	 * 
+	 * @param binaryFunction
+	 * @return
+	 */
+	public static <I0, I1, O> Function<Object,O> toFunction(final BinaryFunction<I0, I1, O> binaryFunction){
+		return new AbstractFunction<Object, O>() {
+			@Override
+			public O invoke(Object argument0, Object argument1) {
+				return binaryFunction.invoke((I0)argument0, (I1)argument1);
+			}
+		};
+	}
+	
+	
 	
 }
