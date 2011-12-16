@@ -25,6 +25,11 @@ License along with this library;  If not, see <http://www.gnu.org/licenses/>.
 
 package xxl.core.cursors;
 
+import java.io.BufferedInputStream;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Collection;
 import java.util.Comparator;
@@ -40,14 +45,17 @@ import xxl.core.comparators.ComparableComparator;
 import xxl.core.comparators.InverseComparator;
 import xxl.core.cursors.groupers.Minimator;
 import xxl.core.cursors.mappers.Mapper;
+import xxl.core.cursors.sources.io.FileInputCursor;
 import xxl.core.cursors.wrappers.IteratorCursor;
 import xxl.core.functions.AbstractFunction;
 import xxl.core.functions.Function;
 import xxl.core.functions.Identity;
 import xxl.core.functions.PredicateFunction;
 import xxl.core.functions.Print;
+import xxl.core.io.converters.Converter;
 import xxl.core.predicates.Predicate;
 import xxl.core.util.ArrayResizer;
+import xxl.core.util.WrappingRuntimeException;
 
 /**
  * This class contains various <tt>static</tt> methods for manipulating
@@ -170,6 +178,7 @@ public abstract class Cursors {
 		// private access in order to ensure non-instantiability
 	}
 
+	
 	/**
 	 * Invokes the higher-order function on each set of elements given by the
 	 * input iterator array. The set contains one element per iterator and the
@@ -1080,4 +1089,41 @@ public abstract class Cursors {
 			}
 		};
 	}
+	
+	/**
+	 * Extends {@link FileInputCursor} with simple reset method; 
+	 * the reset method closes internal data stream from the file, and reopens it.    
+	 * @param converter
+	 * @param file
+	 * @return
+	 */
+	public static <E> Cursor<? extends E> resetableFileInputCursor(Converter<? extends E> converter, final  File file, final int bufferSize){
+		return new FileInputCursor<E>(converter, file, bufferSize){
+			@Override
+			public boolean supportsReset() {
+				return true;
+			}
+			@Override
+			public void reset() throws UnsupportedOperationException {
+				super.reset();
+				try {
+					try {
+						input.close(); // close previous 
+					}catch (IOException e) {}
+						input = new DataInputStream(
+							new BufferedInputStream(
+								new FileInputStream(file),
+								bufferSize
+							)
+					);
+				}
+				catch (IOException ie) {
+					throw new WrappingRuntimeException(ie);
+				}
+				
+			}
+		};
+	}
+	
+	
 }
