@@ -1125,5 +1125,14 @@ public abstract class Cursors {
 		};
 	}
 	
-	
+	/**
+	 * Extends {@link FileInputCursor} with simple reset method; 
+	 * the reset method closes internal data stream from the file, and reopens it.    
+	 * @param converter
+	 * @param file
+	 * @return
+	 */
+	public static <E> Cursor<? extends E> resetableFileInputCursor(Converter<? extends E> converter, final  File file){
+		return  resetableFileInputCursor(converter, file, 4096);
+	}
 }
