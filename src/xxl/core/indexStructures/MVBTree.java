@@ -1129,6 +1129,22 @@ public class MVBTree extends BPlusTree {
 		if(c1.compareTo(c2)>=0) return c1;
 		return c2;
 	}
+	
+	/*
+	 * 
+	 * FIXME remove in productive version: only for test purpose 
+	 */
+	public void updateRootDescriptor(Descriptor newRootDescriptor){
+		this.rootDescriptor = newRootDescriptor;
+	}
+
+	/*
+	 * FIXME remove in productive version: only for test purpose 
+	 */
+	public void updateRootEntry(Tree.IndexEntry entry){
+		this.rootEntry = entry;
+	}
+	
 	/**
 	 * 
 	 * @param c1
