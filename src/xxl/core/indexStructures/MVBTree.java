@@ -833,7 +833,9 @@ public class MVBTree extends BPlusTree {
 			grow(data);
 		}
 		else {
-			super.insert(data, mvSep, targetLevel);
+//			super.insert(data, mvSep, targetLevel);
+			Stack path = new Stack();
+			chooseLeaf(mvSep, targetLevel, path).growAndPost(data, path);
 			((IndexEntry)rootEntry).separator().union(mvSep);
 		}
 	}
