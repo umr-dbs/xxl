@@ -159,13 +159,31 @@ public class DoublePoint extends AbstractPoint implements Convertable, Cloneable
 		return point[dim];	
 	}
 
-	/* (non-Javadoc)
+	/** Checks whether the point is equal to another object given.
+	 * 
+	 * @param object object to be tested.
+	 * @return <tt>true</tt> if the point is equal to given object.
+	 * 
 	 * @see java.lang.Object#equals()
 	 */
 	@Override
 	public boolean equals(Object o) {
 		DoublePoint p = (DoublePoint)o;
 		return Arrays.equals(point, p.point);
+	}
+	
+	/** Checks whether the point is equal to another object given within a given epsilon.
+	 * 
+	 * @param object object to be tested.
+	 * @param epsilon the tolerance of the comparison
+	 * @return <tt>true</tt> if the point is equal to given object within a given epsilon.
+	 */
+	public boolean equalsEpsilon(DoublePoint p, double epsilon) {
+		for (int i=0;i<this.dimensions();i++) {
+			if (Math.abs(this.point[i] - p.point[i])>epsilon)
+				return false;
+		}
+		return true;
 	}
 	
 	/* (non-Javadoc)
