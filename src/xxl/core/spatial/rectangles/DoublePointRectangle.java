@@ -180,6 +180,19 @@ public class DoublePointRectangle implements Rectangle {
 		
 		return result;
 	}
+	
+	/** Computes the center of this rectangle
+	 * 
+	 * @return center of rectangle
+	 */
+	public DoublePoint getCenter() {
+		double[] center = new double[this.dimensions()];
+		for (int i=0;i<leftCorner.length;i++) {
+			center[i] = Math.min(leftCorner[i], rightCorner[i]) + (Math.abs(leftCorner[i] - rightCorner[i])/2);
+		}
+		
+		return new DoublePoint(center);
+	}
 
 	/** Returns the delta (vector containing size on each dimention) of this 
 	 *  rectangle as an array of double-point values
