@@ -481,4 +481,9 @@ public class SynchronizedContainer implements Container {
 	public synchronized void updateAll (Iterator ids, Iterator objects) {
 		container.updateAll(ids, objects);
 	}
+	
+	@Override
+	public Object[] batchInsert(Object[] blocks) {
+		throw new UnsupportedOperationException();
+	}
 }

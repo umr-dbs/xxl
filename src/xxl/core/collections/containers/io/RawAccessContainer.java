@@ -550,16 +550,27 @@ public class RawAccessContainer extends AbstractContainer{
 	}
 	
 
-	public Long[] flushArrayOfBlocks(Object[] blocks) {
+	public Object[] batchInsert(Object[] blocks) {
 		Long[] ids = new Long[blocks.length];
 		long headBlockNumber = (long) this.reserve(null); // start block nummer
+		long blockNumber = 0L;
 		for(int i = 0; i < ids.length; i++){
 			ids[i] = headBlockNumber+i;
+			blockNumber = ids[i];  
+			reservedBitSet.set((int) blockNumber);
+			if (blockNumber==lastBlockNumber+1) {
+				updatedBitSet.clear((int) blockNumber);
+				lastBlockNumber = blockNumber;
+			}
+			if (!updatedBitSet.get((int) blockNumber)) {
+				updatedBitSet.set((int) blockNumber);
+			}
+			size++;
 		}
 		// flatten array
 		byte array[] = new byte[blocks.length * blockSize];
 		for(int i = 0; i < blocks.length; i++){
-			System.arraycopy(((Block)blocks[i]).array, 0, array, i*(blockSize), i*(blockSize) + blockSize);
+			System.arraycopy(((Block)blocks[i]).array, 0, array, i*(blockSize), ((Block)blocks[i]).size);
 		}
 		// write 
 		ra.write(array, headBlockNumber+maxFreeListBlocks+1);

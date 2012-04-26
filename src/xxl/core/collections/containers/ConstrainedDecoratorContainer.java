@@ -319,4 +319,9 @@ public abstract class ConstrainedDecoratorContainer extends AbstractContainer {
 	public void update (Object id, Object object, boolean unfix) throws NoSuchElementException {
 		container.update(id, object, unfix);
 	}
+	
+	@Override
+	public Object[] batchInsert(Object[] blocks) {
+		return container.batchInsert(blocks);
+	}
 }

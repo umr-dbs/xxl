@@ -576,4 +576,9 @@ public abstract class AbstractContainer implements Container {
 	public void updateAll (Iterator ids, Iterator objects) {
 		updateAll(ids, objects, true);
 	}
+	
+	@Override
+	public Object[] batchInsert(Object[] blocks) {
+		throw new UnsupportedOperationException();
+	}
 }

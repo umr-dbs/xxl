@@ -438,4 +438,7 @@ public interface Container {
 	 *         of <tt>ids</tt> does not exist in the container.
 	 */
 	void updateAll(Iterator ids, Iterator objects) throws NoSuchElementException;
+	
+	// Test:
+	public Object[] batchInsert(Object[] blocks);
 }

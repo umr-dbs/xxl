@@ -263,12 +263,12 @@ public class ConverterContainerRawAccess extends ConstrainedDecoratorContainer {
 	}
 
 
-	public Long[] flushArrayOfBlocks(Object[] blocks) {
+	public Object[] flushArrayOfBlocks(Object[] blocks) {
 		Block[] blocksToWrite = new Block[blocks.length]; 
 		for(int i = 0; i < blocks.length; i++){
 			byte [] array = Converters.toByteArray(converter,blocks[i]);
 			blocksToWrite[i]= new Block(array, 0, array.length);
 		}
-		return ((RawAccessContainer)this.container).flushArrayOfBlocks(blocksToWrite);
+		return this.container.batchInsert(blocksToWrite);
 	}
 }
