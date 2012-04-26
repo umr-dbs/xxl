@@ -60,7 +60,7 @@ import xxl.core.util.WrappingRuntimeException;
  * @see NoSuchElementException
  * @see WrappingRuntimeException
  */
-public class RawAccessContainer extends AbstractContainer {
+public class RawAccessContainer extends AbstractContainer{
 
 	/**
 	 * The container file of this container. The container file is used
@@ -547,5 +547,22 @@ public class RawAccessContainer extends AbstractContainer {
 		else
 			array = block.array;
 		ra.write(array, blockNumber+maxFreeListBlocks+1);
+	}
+	
+
+	public Long[] flushArrayOfBlocks(Object[] blocks) {
+		Long[] ids = new Long[blocks.length];
+		long headBlockNumber = (long) this.reserve(null); // start block nummer
+		for(int i = 0; i < ids.length; i++){
+			ids[i] = headBlockNumber+i;
+		}
+		// flatten array
+		byte array[] = new byte[blocks.length * blockSize];
+		for(int i = 0; i < blocks.length; i++){
+			System.arraycopy(((Block)blocks[i]).array, 0, array, i*(blockSize), i*(blockSize) + blockSize);
+		}
+		// write 
+		ra.write(array, headBlockNumber+maxFreeListBlocks+1);
+		return ids;
 	}
 }
