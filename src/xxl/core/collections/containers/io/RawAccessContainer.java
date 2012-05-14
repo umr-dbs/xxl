@@ -552,7 +552,7 @@ public class RawAccessContainer extends AbstractContainer{
 
 	public Object[] batchInsert(Object[] blocks) {
 		Long[] ids = new Long[blocks.length];
-		long headBlockNumber = (long) this.reserve(null); // start block nummer
+		long headBlockNumber = (Long) this.reserve(null); // start block nummer
 		long blockNumber = 0L;
 		for(int i = 0; i < ids.length; i++){
 			ids[i] = headBlockNumber+i;
