@@ -29,6 +29,8 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
+import xxl.core.functions.AbstractFunction;
+import xxl.core.functions.Function;
 import xxl.core.io.Convertable;
 import xxl.core.io.converters.Converter;
 import xxl.core.io.converters.DoubleConverter;
@@ -65,12 +67,7 @@ public class Sphere implements Descriptor, Convertable {
 	
 	/** The metric distance function for spheres.
 	 */
-	protected Distance sphereDistance = new Distance () {
-		public double distance (Object o1, Object o2) {
-			Sphere s1 = (Sphere)o1, s2 = (Sphere)o2;
-			return Math.abs(s1.centerDistance(s2) - s1.radius() - s2.radius());
-		}
-	};
+	protected Distance sphereDistance = new SphereMinimumDistance();
 	
 	/** Creates a new sphere.
 	 * 
@@ -303,8 +300,37 @@ public class Sphere implements Descriptor, Convertable {
 		return distanceToParent;
 	}
 	
+	/** Sets the distance from the center of this node to the center of the parent node.
+	 * 
+	 * @param distanceToParent distance from the center of this node to the center of the parent node
+	 */
 	public void setDistanceToParent(double distanceToParent) {
 	    this.distanceToParent = distanceToParent;
+	}
+	
+	/** Returns a function, which constructs Spheres by the given argument. It only needs to know,
+	 * which Converter should be used for the storage of the data points.
+	 * 
+	 * @param dataPointConverter converter for data points in the constructed Spheres.
+	 * @return Function for creating Spheres
+	 */
+	public static <T> Function<T, Sphere> getFactoryFunction(final Converter<T> dataPointConverter) {
+		return new AbstractFunction<T, Sphere>() {
+			public Sphere invoke(T pointToStore) {
+				return new Sphere(pointToStore, 0.0, dataPointConverter);
+			}
+		};
+	}
+	
+	/**
+	 * A class for computing the minimum distance between Spheres. See {@link Distance} for general information
+	 * about Distances.
+	 */
+	public static class SphereMinimumDistance implements Distance<Sphere> {
+		@Override
+		public double distance (Sphere s1, Sphere s2) {
+			return Math.abs(s1.centerDistance(s2) - s1.radius() - s2.radius());
+		}
 	}
 
 } // end of class Sphere
