@@ -43,6 +43,10 @@ import xxl.core.util.Distance;
  *
  */
 public class Sphere implements Descriptor, Convertable {
+	
+	protected static final double DEFAULT_DISTANCE_TO_PARENT = -1;
+	protected static final Distance DEFAULT_POINT_DISTANCE = LpMetric.EUCLIDEAN;
+	protected static final Distance DEFAULT_SPHERE_DISTANCE = SphereMinimumDistance.DEFAULT_INSTANCE;
 
 	/** The center of the sphere.
 	 */
@@ -63,11 +67,11 @@ public class Sphere implements Descriptor, Convertable {
 
 	/** The metric distance function for points. 
 	 */
-	protected Distance pointDistance = LpMetric.EUCLIDEAN;
+	protected Distance pointDistance;
 	
 	/** The metric distance function for spheres.
 	 */
-	protected Distance sphereDistance = new SphereMinimumDistance();
+	protected Distance sphereDistance;
 	
 	/** Creates a new sphere.
 	 * 
@@ -95,10 +99,7 @@ public class Sphere implements Descriptor, Convertable {
 	 * @param distanceToParent the new {@link Sphere#distanceToParent}
 	 */
 	public Sphere (Object center, double radius, Converter centerConverter, double distanceToParent) {
-		this.center = center;
-		this.radius = radius;
-		this.centerConverter = centerConverter;
-		this.distanceToParent = distanceToParent;
+		this(center, radius, centerConverter, distanceToParent, DEFAULT_POINT_DISTANCE, DEFAULT_SPHERE_DISTANCE);
 	}
 	
 	/** Creates a new sphere.
@@ -110,8 +111,7 @@ public class Sphere implements Descriptor, Convertable {
 	 * @param pointDistance the new {@link #pointDistance}
 	 */
 	public Sphere (Object center, double radius, Converter centerConverter, double distanceToParent, Distance pointDistance) {
-		this(center, radius, centerConverter, distanceToParent);
-		this.pointDistance = pointDistance;
+		this(center, radius, centerConverter, distanceToParent, pointDistance, DEFAULT_SPHERE_DISTANCE);
 	}
 
 	/** Creates a new sphere by calling
@@ -126,7 +126,7 @@ public class Sphere implements Descriptor, Convertable {
 	 * @param sphereDistance the new {@link #sphereDistance}
 	 */
 	public Sphere (Object center, double radius, Converter centerConverter, Distance pointDistance, Distance sphereDistance) {
-		this(center, radius, centerConverter, -1, pointDistance, sphereDistance);
+		this(center, radius, centerConverter, DEFAULT_DISTANCE_TO_PARENT, pointDistance, sphereDistance);
 	}
 	
 	/** Creates a new sphere.
@@ -136,7 +136,7 @@ public class Sphere implements Descriptor, Convertable {
 	 * @param centerConverter the new {@link Sphere#centerConverter}
 	 */
 	public Sphere (Object center, double radius, Converter centerConverter) {
-		this(center, radius, centerConverter, -1);
+		this(center, radius, centerConverter, DEFAULT_DISTANCE_TO_PARENT);
 	}
 
 	/* (non-Javadoc)
@@ -289,6 +289,30 @@ public class Sphere implements Descriptor, Convertable {
 	public double radius () {
 		return radius;
 	}
+	
+	/** Returns the center converter
+	 * 
+	 * @return center converter
+	 */
+	public Converter getCenterConverter() {
+		return this.centerConverter;
+	}
+	
+	/** Returns the point distance
+	 * 
+	 * @return point distance
+	 */
+	public Distance getPointDistance() {
+		return this.pointDistance;
+	}
+	
+	/** Returns the sphere distance
+	 * 
+	 * @return sphere distance
+	 */
+	public Distance getSphereDistance() {
+		return this.sphereDistance;
+	}
 
 
 	/** Returns the distance from the center of this node to the center of 
@@ -327,6 +351,8 @@ public class Sphere implements Descriptor, Convertable {
 	 * about Distances.
 	 */
 	public static class SphereMinimumDistance implements Distance<Sphere> {
+		public static SphereMinimumDistance DEFAULT_INSTANCE = new SphereMinimumDistance();
+		
 		@Override
 		public double distance (Sphere s1, Sphere s2) {
 			return Math.abs(s1.centerDistance(s2) - s1.radius() - s2.radius());

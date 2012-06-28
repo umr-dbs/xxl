@@ -58,6 +58,15 @@ public class IteratorCursor<E> extends AbstractCursor<E> {
 	public IteratorCursor(Iterator<? extends E> iterator) {
 		this.iterator = iterator;
 	}
+	
+	/**
+	 * Creates a new iterator-cursor.
+	 *
+	 * @param iterable the object providing iterators
+	 */
+	public IteratorCursor(Iterable<? extends E> iterable) {
+		this.iterator = iterable.iterator();
+	}
 
 	/**
 	 * Returns <code>true</code> if the iteration has more elements. (In other
