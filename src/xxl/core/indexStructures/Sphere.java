@@ -338,10 +338,25 @@ public class Sphere implements Descriptor, Convertable {
 	 * @param dataPointConverter converter for data points in the constructed Spheres.
 	 * @return Function for creating Spheres
 	 */
-	public static <T> Function<T, Sphere> getFactoryFunction(final Converter<T> dataPointConverter) {
+	public static <T> Function<T, Sphere> getFactoryFunction(final Converter<? super T> dataPointConverter) {
 		return new AbstractFunction<T, Sphere>() {
 			public Sphere invoke(T pointToStore) {
 				return new Sphere(pointToStore, 0.0, dataPointConverter);
+			}
+		};
+	}
+	
+	/** Returns a function, which constructs Spheres by the given argument. It only needs to know,
+	 * which Converter should be used for the storage of the data points.
+	 * 
+	 * @param dataPointConverter converter for data points in the constructed Spheres.
+	 * @param dataPointDistance distance between data points
+	 * @return Function for creating Spheres
+	 */
+	public static <T> Function<T, Sphere> getFactoryFunction(final Converter<? super T> dataPointConverter, final Distance<? super T> dataPointDistance) {
+		return new AbstractFunction<T, Sphere>() {
+			public Sphere invoke(T pointToStore) {
+				return new Sphere(pointToStore, 0.0, dataPointConverter, dataPointDistance, SphereMinimumDistance.DEFAULT_INSTANCE);
 			}
 		};
 	}
