@@ -51,6 +51,7 @@ import xxl.core.cursors.unions.Sequentializer;
 import xxl.core.cursors.wrappers.IteratorCursor;
 import xxl.core.functions.AbstractFunction;
 import xxl.core.functions.Function;
+import xxl.core.indexStructures.ORTree.IndexEntry;
 import xxl.core.io.converters.Converter;
 import xxl.core.io.converters.DoubleConverter;
 import xxl.core.io.converters.IntegerConverter;
@@ -344,7 +345,7 @@ public class MTree extends ORTree {
 			data = descriptor = null;
 		}
 
-		/** Creates a new leafentry containing <tt>data</tt>. 
+		/** Creates a new leafentry containing <tt>data</tt>.
 		 * 
 		 * @param data the object to store in this leafentry.
 		 */
@@ -359,6 +360,14 @@ public class MTree extends ORTree {
 		 */
 		public Descriptor descriptor () {
 			return descriptor;
+		}
+		
+		/** Returns the data object stored in this leafentry
+		 * 
+		 * @return data object of this leafentry
+		 */
+		public Object getData() {
+			return this.data;
 		}
 
 		/** Compairs this leafentry to other objects. Returns <tt>true</tt> 
@@ -842,6 +851,21 @@ public class MTree extends ORTree {
 	public void checkDistanceToParent () {
 		if (height() > 0)
 			checkDistanceToParent((IndexEntry)rootEntry(), new LinkedList());
+	}
+	
+	/** Returns the Sphere from the given IndexEntry or LeafEntry
+	 * 
+	 * @param o IndexEntry or LeafEntry
+	 * @return Sphere
+	 */
+	public static Sphere sphereFrom(Object o) {
+		if(o instanceof MTree.IndexEntry) {
+			return (Sphere)((IndexEntry)o).descriptor();
+		} else if(o instanceof MTree.LeafEntry) {
+			return (Sphere)((LeafEntry)o).descriptor();
+		}
+		
+		throw new RuntimeException("Invalid argument");
 	}
 
 }

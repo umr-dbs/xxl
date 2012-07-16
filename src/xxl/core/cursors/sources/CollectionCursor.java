@@ -75,7 +75,7 @@ public class CollectionCursor<E> extends AbstractCursor<E> {
 	 */
 	public CollectionCursor(Collection<E> collection) {
 		this.collection = collection;
-		this.iteratorCursor = new IteratorCursor<>(this.collection);
+		this.iteratorCursor = new IteratorCursor<E>(this.collection);
 	}
 
 	/**
@@ -107,7 +107,7 @@ public class CollectionCursor<E> extends AbstractCursor<E> {
 	 */
 	public void reset() {
 		super.reset();
-		this.iteratorCursor = new IteratorCursor<>(this.collection);
+		this.iteratorCursor = new IteratorCursor<E>(this.collection);
 	}
 
 	/**

@@ -25,22 +25,28 @@ License along with this library;  If not, see <http://www.gnu.org/licenses/>.
 
 package xxl.core.util;
 
+import java.io.Serializable;
+
+import xxl.core.functions.Functional.UnaryFunction;
+
 /**
  * A common task is to return two values from a function or keep two values
  * stored together, because they are closely related. This class serves just
  * this purpose. Both values may be of different types.
  * 
- * @param <T>
+ * @param <E1>
  *            First value's type
- * @param <U>
+ * @param <E2>
  *            Second value's type
  */
-public class Pair<T, U> {
+public class Pair<E1, E2> implements Serializable {
+
+	private static final long serialVersionUID = -8611145329658977040L;
 
 	/** First object */
-	private T first;
+	protected E1 first;
 	/** Second object */
-	private U second;
+	protected E2 second;
 
 	/**
 	 * Creates an empty pair
@@ -56,7 +62,7 @@ public class Pair<T, U> {
 	 * @param second
 	 *            second value
 	 */
-	public Pair(T first, U second) {
+	public Pair(E1 first, E2 second) {
 		this.first = first;
 		this.second = second;
 	}
@@ -66,7 +72,16 @@ public class Pair<T, U> {
 	 * 
 	 * @return first value
 	 */
-	public T getFirst() {
+	public E1 getFirst() {
+		return first;
+	}
+
+	/**
+	 * Returns the first value
+	 * 
+	 * @return first value
+	 */
+	public E1 getElement1() {
 		return first;
 	}
 
@@ -76,8 +91,18 @@ public class Pair<T, U> {
 	 * @param first
 	 *            first value
 	 */
-	public void setFirst(T first) {
+	public void setFirst(E1 first) {
 		this.first = first;
+	}
+
+	/**
+	 * Sets the first value
+	 * 
+	 * @param element
+	 *            first value
+	 */
+	public void setElement1(E1 element) {
+		this.first = element;
 	}
 
 	/**
@@ -85,7 +110,16 @@ public class Pair<T, U> {
 	 * 
 	 * @return second value
 	 */
-	public U getSecond() {
+	public E2 getSecond() {
+		return second;
+	}
+
+	/**
+	 * Returns the second value
+	 * 
+	 * @return second value
+	 */
+	public E2 getElement2() {
 		return second;
 	}
 
@@ -95,13 +129,86 @@ public class Pair<T, U> {
 	 * @param second
 	 *            second value
 	 */
-	public void setSecond(U second) {
+	public void setSecond(E2 second) {
 		this.second = second;
+	}
+
+	/**
+	 * Sets the second value
+	 * 
+	 * @param element
+	 *            second value
+	 */
+	public void setElement2(E2 element) {
+		this.second = element;
 	}
 
 	@Override
 	public String toString() {
-		return "[" + first + ", " + second + "]";
+		return "<" + first + ", " + second + ">";
 	}
 
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((first == null) ? 0 : first.hashCode());
+		result = prime * result + ((second == null) ? 0 : second.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (!(obj instanceof Pair))
+			return false;
+		Pair other = (Pair) obj;
+		if (first == null) {
+			if (other.first != null)
+				return false;
+		} else if (!first.equals(other.first))
+			return false;
+		if (second == null) {
+			if (other.second != null)
+				return false;
+		} else if (!second.equals(other.second))
+			return false;
+		return true;
+	}
+
+	/**
+	 * Creates a new instance of Pair with the given values
+	 * 
+	 * @param element1
+	 *            first value
+	 * @param element2
+	 *            second value
+	 * @return instance of Pair with the given values
+	 */
+	public static <E1, E2> Pair<E1, E2> newInstance(E1 element1, E2 element2) {
+		return new Pair<E1, E2>(element1, element2);
+	}
+
+	@SuppressWarnings("serial")
+	public static <E1> UnaryFunction<? super Pair<E1, ?>, E1> getFirstElementProjection() {
+		return new UnaryFunction<Pair<E1, ?>, E1>() {
+			@Override
+			public E1 invoke(Pair<E1, ?> pair) {
+				return pair.getElement1();
+			}
+		};
+	}
+
+	@SuppressWarnings("serial")
+	public static <E2> UnaryFunction<? super Pair<?, E2>, E2> getSecondElementProjection() {
+		return new UnaryFunction<Pair<?, E2>, E2>() {
+			@Override
+			public E2 invoke(Pair<?, E2> pair) {
+				return pair.getElement2();
+			}
+		};
+	}
 }
