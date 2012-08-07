@@ -373,5 +373,18 @@ public class Sphere implements Descriptor, Convertable {
 			return Math.abs(s1.centerDistance(s2) - s1.radius() - s2.radius());
 		}
 	}
+	
+	/**
+	 * A class for computing the distance between the centers of Spheres. See {@link Distance} for general information
+	 * about Distances.
+	 */
+	public static class SphereCenterDistance implements Distance<Sphere> {
+		public static SphereCenterDistance DEFAULT_INSTANCE = new SphereCenterDistance();
+		
+		@Override
+		public double distance (Sphere s1, Sphere s2) {
+			return s1.centerDistance(s2);
+		}
+	}
 
 } // end of class Sphere

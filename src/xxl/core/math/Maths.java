@@ -36,6 +36,7 @@ import xxl.core.math.functions.AggregationFunction;
 import xxl.core.math.functions.FunctionRealFunction;
 import xxl.core.math.functions.RealFunction;
 import xxl.core.util.DoubleArrays;
+import xxl.core.util.Triple;
 
 /**
  * The class <code>Maths</code> contains methods that extend the basic numeric
@@ -704,6 +705,78 @@ public class Maths {
 			}
 		}
 		return d[n][m];
+	}
+	
+	/**
+	 * Computes one of the possible Levenshtein triples for two given strings.
+	 * It returns a triple of the form
+	 * (# insertions, # deletions, # substitutions).
+	 * 
+	 * <p>
+	 * For details see:
+	 * <ul>
+	 * <li>[Lev66] Levenshtein, V.I. (1966) "Binary codes capable of correcting
+	 * insertions and reversals" Sov. Phys. Dokl. 10:707-10 Algorithm for
+	 * distance computation:</li>
+	 * <li>[NeWu70] Needleman, S.B., Wunsch, C.D. (1970) "A general method
+	 * applicable to the search for similarities in the amino acid sequence of
+	 * two proteins" J. Mol. Biol. 48:443-453</li>
+	 * </ul>
+	 * </p>
+	 * 
+	 * @param s
+	 *            first string
+	 * @param t
+	 *            second string
+	 * @return Levenshtein triple
+	 */
+	public static Triple<Integer, Integer, Integer> levenshteinTriple(String s, String t) {
+		int n = s.length(), m = t.length();
+		if (n == 0)
+			return new Triple<Integer, Integer, Integer>(m, 0, 0);
+		if (m == 0)
+			return new Triple<Integer, Integer, Integer>(0, n, 0);
+		int[][] d = new int[n + 1][m + 1];
+		char s_i, t_j; // i'th character of s; j'th character of t
+		char[] s_char = s.toCharArray(), t_char = t.toCharArray();
+		for (int i = 0; i <= n; i++)
+			d[i][0] = i;
+		for (int j = 0; j <= m; j++)
+			d[0][j] = j;
+		for (int i = 1; i <= n; i++) {
+			s_i = s_char[i - 1];
+			for (int j = 1, cost = 0; j <= m; j++) {
+				t_j = t_char[j - 1];
+				cost = s_i == t_j ? 0 : 1;
+				d[i][j] = Math.min(Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1), d[i - 1][j - 1] + cost);
+			}
+		}
+ 
+		int insertions = 0;
+		int deletions = 0;
+		int substitutions = 0;
+		int i = n, j = m;
+		
+		while (true) {
+			if (i > 0 && d[i - 1][j] + 1 == d[i][j]) {
+				deletions++;
+				i--;
+			} else if (j > 0 && d[i][j - 1] + 1 == d[i][j]) {
+				insertions++;
+				j--;
+			} else if (i > 0 && j > 0 && d[i - 1][j - 1] + 1 == d[i][j]) {
+				substitutions++;
+				i--;
+				j--;
+			} else if (i > 0 && j > 0 && d[i - 1][j - 1] == d[i][j]) {
+				i--;
+				j--;
+			} else {
+				break;
+			}
+		}
+
+		return new Triple<Integer, Integer, Integer>(insertions, deletions, substitutions);
 	}
 
 	/**

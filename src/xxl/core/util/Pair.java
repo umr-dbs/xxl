@@ -26,6 +26,7 @@ License along with this library;  If not, see <http://www.gnu.org/licenses/>.
 package xxl.core.util;
 
 import java.io.Serializable;
+import java.util.Map;
 
 import xxl.core.functions.Functional.UnaryFunction;
 
@@ -65,6 +66,16 @@ public class Pair<E1, E2> implements Serializable {
 	public Pair(E1 first, E2 second) {
 		this.first = first;
 		this.second = second;
+	}
+
+	/**
+	 * Creates a pair from a given Map.Entry
+	 * 
+	 * @param mapEntry
+	 *            Entry of a Java Map
+	 */
+	public Pair(Map.Entry<E1, E2> mapEntry) {
+		this(mapEntry.getKey(), mapEntry.getValue());
 	}
 
 	/**
