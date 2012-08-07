@@ -44,7 +44,7 @@ public class Quadruple<E1, E2, E3, E4> extends Triple<E1, E2, E3> {
 	private static final long serialVersionUID = 6500696004688037927L;
 
 	/** Fourth object */
-	private E4 fourth;
+	protected E4 fourth;
 
 	/**
 	 * Creates an empty quadruple
@@ -110,6 +110,49 @@ public class Quadruple<E1, E2, E3, E4> extends Triple<E1, E2, E3> {
 	@Override
 	public String toString() {
 		return "<" + getFirst() + ", " + getSecond() + ", " + getThird() + ", " + getFourth() + ">";
+	}
+	
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((first == null) ? 0 : first.hashCode());
+		result = prime * result + ((second == null) ? 0 : second.hashCode());
+		result = prime * result + ((third == null) ? 0 : third.hashCode());
+		result = prime * result + ((fourth == null) ? 0 : fourth.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (!(obj instanceof Pair))
+			return false;
+		Quadruple other = (Quadruple) obj;
+		if (first == null) {
+			if (other.first != null)
+				return false;
+		} else if (!first.equals(other.first))
+			return false;
+		if (second == null) {
+			if (other.second != null)
+				return false;
+		} else if (!second.equals(other.second))
+			return false;
+		if (third == null) {
+			if (other.third != null)
+				return false;
+		} else if (!third.equals(other.third))
+			return false;
+		if (fourth == null) {
+			if (other.fourth != null)
+				return false;
+		} else if (!fourth.equals(other.fourth))
+			return false;
+		return true;
 	}
 
 	/**
