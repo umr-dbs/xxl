@@ -87,13 +87,7 @@ public class MTree extends ORTree {
 	
 	/** The metric distance function for spheres.
 	 */
-	protected Distance sphereDistance =
-		new Distance () {
-			public double distance (Object o1, Object o2) {
-				Sphere s1 = (Sphere)o1, s2 = (Sphere)o2;
-				return Math.abs(s1.centerDistance(s2) - s1.radius() - s2.radius());
-			}
-		};
+	protected Distance sphereDistance = Sphere.DEFAULT_SPHERE_DISTANCE;
 
 	/** A flag indicating if a split is in progress.
 	 */

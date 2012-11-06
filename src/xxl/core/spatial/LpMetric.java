@@ -46,6 +46,15 @@ public class LpMetric implements Distance<Point> {
 	 * The L_2 metric ("euclidean" metric).
 	 */
 	public static final LpMetric EUCLIDEAN = new LpMetric(2);
+	
+	/**
+	 * The L_infinity metric ("maximum" metric).
+	 */
+	public static final LpMetric MAXIMUM = new LpMetric(0) {
+		public double distance(Point object1, Point object2) {
+			return Points.maxDistance(object1, object2);
+		}
+	};
 
 	/**
 	 * The value p of the L_p metric.
@@ -77,5 +86,27 @@ public class LpMetric implements Distance<Point> {
 	 */
 	public double distance(Point o1, Point o2){
 		return Points.lpDistance(o1, o2, p);
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + p;
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (!(obj instanceof LpMetric))
+			return false;
+		LpMetric other = (LpMetric) obj;
+		if (p != other.p)
+			return false;
+		return true;
 	}
 }

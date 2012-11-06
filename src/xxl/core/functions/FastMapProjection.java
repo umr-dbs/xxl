@@ -158,8 +158,15 @@ public class FastMapProjection<T> extends AbstractFunction<T, double[]> {
 	@Override
 	public double[] invoke(T x) {
 		double[] re = new double[dim];
-		for (int i = 0; i < dim ; i++)
+		
+		for (int i = 0; i < dim ; i++) {
 			re[i] = p(i, x);
+			
+			if (Double.isInfinite(re[i]) || Double.isNaN(re[i])) {
+				re[i] = 0;
+			}
+		}
+		
 		return re;
 	}
 
