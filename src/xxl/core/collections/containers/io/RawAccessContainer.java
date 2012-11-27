@@ -549,7 +549,30 @@ public class RawAccessContainer extends AbstractContainer{
 		ra.write(array, blockNumber+maxFreeListBlocks+1);
 	}
 	
-
+	/**
+	 * 
+	 * 
+	 */
+	public Object batchReserve(int addresses){
+		long headBlockNumber = (Long) this.reserve(null); // start block nummer
+		long blockNumber = 0L;
+		for(int i = 0; i < addresses; i++){
+			blockNumber = headBlockNumber+i;  
+			reservedBitSet.set((int) blockNumber);
+			if (blockNumber==lastBlockNumber+1) {
+				updatedBitSet.clear((int) blockNumber);
+				lastBlockNumber = blockNumber;
+			}
+			if (!updatedBitSet.get((int) blockNumber)) {
+				updatedBitSet.set((int) blockNumber);
+			}
+			size++;
+		}
+		return new Long(headBlockNumber);
+	}
+	/**
+	 * 
+	 */
 	public Object[] batchInsert(Object[] blocks) {
 		Long[] ids = new Long[blocks.length];
 		long headBlockNumber = (Long) this.reserve(null); // start block nummer
@@ -574,6 +597,24 @@ public class RawAccessContainer extends AbstractContainer{
 		}
 		// write 
 		ra.write(array, headBlockNumber+maxFreeListBlocks+1);
+		return ids;
+	}
+	
+	public Object[] batchInsert(Object headBlockNumber,  Object[] blocks) {
+		Long[] ids = new Long[blocks.length]; // start block nummer
+		long blockNumber = 0L;
+		long head = (Long)headBlockNumber;
+		for(int i = 0; i < ids.length; i++){
+			ids[i] = (Long)head+i;
+			blockNumber = ids[i];  
+		}
+		// flatten array
+		byte array[] = new byte[blocks.length * blockSize];
+		for(int i = 0; i < blocks.length; i++){
+			System.arraycopy(((Block)blocks[i]).array, 0, array, i*(blockSize), ((Block)blocks[i]).size);
+		}
+		// write 
+		ra.write(array, head+maxFreeListBlocks+1);
 		return ids;
 	}
 }

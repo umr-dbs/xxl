@@ -441,4 +441,8 @@ public interface Container {
 	
 	// Test:
 	public Object[] batchInsert(Object[] blocks);
+	
+	public Object batchReserve(int numberOfBlocks);
+	
+	public Object[] batchInsert(Object headBlockNumber,  Object[] blocks);
 }

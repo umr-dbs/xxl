@@ -581,4 +581,12 @@ public abstract class AbstractContainer implements Container {
 	public Object[] batchInsert(Object[] blocks) {
 		throw new UnsupportedOperationException();
 	}
+	
+	public Object batchReserve(int numberOfBlocks){
+		throw new UnsupportedOperationException();
+	}
+	
+	public Object[] batchInsert(Object headBlockNumber,  Object[] blocks) {
+		throw new UnsupportedOperationException();
+	}
 }

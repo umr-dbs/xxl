@@ -262,6 +262,10 @@ public class ConverterContainerRawAccess extends ConstrainedDecoratorContainer {
 		super.update(id, new Block(array, 0, array.length), unfix);
 	}
 
+	
+	public Object batchReserve(int addresses){
+		return this.container.batchReserve(addresses);
+	}
 
 	public Object[] flushArrayOfBlocks(Object[] blocks) {
 		Block[] blocksToWrite = new Block[blocks.length]; 
@@ -270,5 +274,14 @@ public class ConverterContainerRawAccess extends ConstrainedDecoratorContainer {
 			blocksToWrite[i]= new Block(array, 0, array.length);
 		}
 		return this.container.batchInsert(blocksToWrite);
+	}
+	
+	public Object[] flushArrayOfBlocks(Object headBlockId, Object[] blocks) {
+		Block[] blocksToWrite = new Block[blocks.length]; 
+		for(int i = 0; i < blocks.length; i++){
+			byte [] array = Converters.toByteArray(converter,blocks[i]);
+			blocksToWrite[i]= new Block(array, 0, array.length);
+		}
+		return this.container.batchInsert(headBlockId, blocksToWrite);
 	}
 }

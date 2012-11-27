@@ -486,4 +486,14 @@ public class SynchronizedContainer implements Container {
 	public Object[] batchInsert(Object[] blocks) {
 		throw new UnsupportedOperationException();
 	}
+
+	@Override
+	public Object batchReserve(int numberOfBlocks) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public Object[] batchInsert(Object headBlockNumber, Object[] blocks) {
+		throw new UnsupportedOperationException();
+	}
 }
