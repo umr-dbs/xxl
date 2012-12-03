@@ -261,6 +261,10 @@ public class SortBasedGrouper<E> extends AbstractCursor<Cursor<E>> {
 				return input.supportsUpdate();
 			}
 			
+			@Override
+			public void close() {
+				// Does nothing
+			}
 		};
 	}
 
