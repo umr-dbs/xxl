@@ -402,6 +402,50 @@ public class Converters {
 	}
 	
 	/**
+	 * This method transforms Converter to MeasuredConverter 
+	 * 
+	 * MaxObjectSize Parameter will be returned by method getMaxObjectSize() in  @see {@link MeasuredConverter}.
+	 * 
+	 * @param maxObjectSize getMaxObjectSize()
+	 * @param objectConverter actual converter for object serialization
+	 * @return MeasuredConverter
+	 */
+	public static <T> MeasuredConverter<T> createMeasuredConverter(final int maxObjectSize, final Converter<T> objectConverter){
+		
+		return new MeasuredConverter<T>(){
+
+			@Override
+			public int getMaxObjectSize() {
+				return maxObjectSize;
+			}
+
+			@Override
+			public T read(DataInput dataInput, T object) throws IOException {
+				return objectConverter.read(dataInput, object);
+			}
+
+			@Override
+			public void write(DataOutput dataOutput, T object)
+					throws IOException {
+				objectConverter.write(dataOutput, object);
+			}
+			
+		};
+	
+	}
+	
+	/**
+	 * This method transforms FixedSizeConverter @see {@link FixedSizeConverter} to MeasuredConverter @see {@link MeasuredConverter}.
+	 * The method uses @see {@link MeasuredFixedSizeConverter} for wrapping the FixedSizeConverter
+	 * 
+	 * 
+	 * @param objectConverter
+	 * @return
+	 */
+	public static <T> MeasuredConverter<T> createMeasuredConverter(final FixedSizeConverter<T> objectConverter){
+		return new MeasuredFixedSizeConverter<>(objectConverter);
+	}
+	/**
 	 * The default constructor has private access in order to ensure
 	 * non-instantiability.
 	 */
