@@ -274,9 +274,6 @@ public class MVBTree extends BPlusTree {
 			if (!checkFactors(B_LeafNode, D_LeafNode, EPSILON, B_LeafNode / D_LeafNode)) throw new IllegalArgumentException();
 			if (!checkFactors(B_IndexNode, D_IndexNode, EPSILON, B_IndexNode / D_IndexNode)) throw new IllegalArgumentException();
 			return this;						
-		     
-		
-		
 	}
 	/** Initializes the <tt>MVBTree</tt> with the given parameters.
 	 * @param getKey a <tt>Function</tt> to extract the key of a data object.
@@ -482,7 +479,6 @@ public class MVBTree extends BPlusTree {
 	 * @param maxBound the maximal bound of the <tt>MVRegion</tt>.
 	 * @return the new created <tt>MVRegion</tt>.
 	 */
-	//FIXME bulk load specific changes 
 	public MVRegion createMVRegion(Version beginVersion, Version endVersion, 
 											Comparable minBound, Comparable maxBound) {
 		// CHANGE: convert array to list
@@ -586,7 +582,6 @@ public class MVBTree extends BPlusTree {
 	 * @param mvSeparator the <tt>MVSeparator</tt> which is to convert.
 	 * @return the new <tt>MVRegion</tt>.
 	 */
-	// FIXME bulk load specific chenges 
 	public MVRegion toMVRegion(MVSeparator mvSeparator) {
 		MVRegion mvReg=createMVRegion(mvSeparator.insertVersion(), mvSeparator.deleteVersion(), 
 										mvSeparator.sepValue(), mvSeparator.sepValue());
@@ -603,7 +598,6 @@ public class MVBTree extends BPlusTree {
 	 * @param region the <tt>MVRegion</tt> which is to convert.
 	 * @return the new <tt>MVSeparator</tt>.
 	 */
-	// FIXME bulk load specific changes
 	public MVSeparator toMVSeparator(MVRegion region) {
 		return createMVSeparator(region.beginVersion(), region.endVersion(), region.minBound());
 	}
@@ -982,6 +976,7 @@ public class MVBTree extends BPlusTree {
 	/**
 	 * Test Method
 	 * @param min
+	 * 
 	 * @param max
 	 * @param beginVersion
 	 * @param endVersion
@@ -1734,8 +1729,12 @@ public class MVBTree extends BPlusTree {
 						// if multiple operations are allowed in one version, a root with an
 						// empty lifespan may be generated. It has to be discarded.
 						if (!oldRootReg.lifespan().isPoint()) {
-						roots.insert(oldRoot);
-						((Lifespan)roots.rootDescriptor).updateMaxBound(currentVersion);
+							roots.insert(oldRoot);
+							//Daniar: new code 
+							KeyRange newRange = roots.createKeyRange(oldRootReg.beginVersion(), currentVersion); 
+							roots.rootDescriptor.union(newRange);
+//							((Lifespan)roots.rootDescriptor).updateMaxBound(currentVersion);
+//							.updateMaxBound(currentVersion);
 						}
 					}
 				}	
@@ -1779,7 +1778,10 @@ public class MVBTree extends BPlusTree {
 						// empty lifespan may be generated. It has to be discarded.
 						if (!oldRootReg.lifespan().isPoint()) {
 							roots.insert(oldRoot);
-							((Lifespan)roots.rootDescriptor).updateMaxBound(currentVersion);
+							//Daniar: new code bug fix 
+							KeyRange newRange = roots.createKeyRange(oldRootReg.beginVersion(), currentVersion); 
+							roots.rootDescriptor.union(newRange);
+//							((Lifespan)roots.rootDescriptor).updateMaxBound(currentVersion);
 						}
 					}
 					else {
