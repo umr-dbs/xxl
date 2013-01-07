@@ -624,15 +624,14 @@ public class Statistics {
 	 * <TT>o[4]</TT>: standard deviation of processed data <BR>
 	 */
 	public static Object[] getStatistics(Iterator data) {
-		return (Object[]) 
-			(new Aggregator(data,
+		return ((List)(new Aggregator(data,
 			Maths.multiDimAggregateFunction(new AggregationFunction[] {
 				new Count(),
 				new Minimum(),
 				new Maximum(),
 				new StatefulAverage(),
 				new StatefulStandardDeviation()})))
-			.last();
+			.last()).toArray();
 	}
 	
 	/** This method computes the n maximum differences in the given data. To do so, a
