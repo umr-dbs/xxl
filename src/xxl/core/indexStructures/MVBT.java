@@ -44,6 +44,8 @@ import xxl.core.cursors.filters.Filter;
 import xxl.core.cursors.unions.Sequentializer;
 import xxl.core.functions.AbstractFunction;
 import xxl.core.functions.Function;
+import xxl.core.indexStructures.MVBTree.MVSeparator;
+import xxl.core.indexStructures.MVBTree.Version;
 import xxl.core.io.converters.BooleanConverter;
 import xxl.core.io.converters.IntegerConverter;
 import xxl.core.io.converters.MeasuredConverter;
@@ -174,7 +176,9 @@ public class MVBT extends MVBTree {
 			return super.number() + liveEntries.size();
 		}
 		
-		// compares values according to their keys
+		/**
+		 * 
+		 */
 		protected Comparator<IndexEntry> liveIndexEntryComparator = new Comparator<BPlusTree.IndexEntry>() {
 			
 			@Override
@@ -185,7 +189,10 @@ public class MVBT extends MVBTree {
 			}
 		};
 		
-		
+		/**
+		 * 
+		 * @param entry
+		 */
 		public void insertIntoLiveList(IndexEntry entry){
 			int index = searchInLiveList(entry); 
 			if(index >= 0 ){
@@ -195,18 +202,29 @@ public class MVBT extends MVBTree {
 			liveEntries.add(index, entry);
 		}
 		
-		
+		/**
+		 * 
+		 * @param separator
+		 * @return
+		 */
 		public int searchInLiveList(MVSeparator separator){
 			IndexEntry idx = new IndexEntry(level); 
 			idx.initialize(separator); 
 			return searchInLiveList(idx);
 		}
-		
+		/**
+		 * 
+		 * @param idx
+		 * @return
+		 */
 		public int searchInLiveList(IndexEntry idx){
 			int index = Collections.binarySearch(liveEntries, idx, liveIndexEntryComparator); 
 			return index;
 		}
-		
+		/**
+		 * 
+		 * @param entry
+		 */
 		public void removeFromLiveList(IndexEntry entry){
 			int index = searchInLiveList(entry); 
 			if(index<0){
@@ -214,7 +232,11 @@ public class MVBT extends MVBTree {
 			}
 			liveEntries.remove(index);
 		}
-		
+		/**
+		 * 
+		 * @param entry
+		 */
+		@SuppressWarnings("rawtypes")
 		public void removeFromLiveListAddToOldList(IndexEntry entry){
 			int index = searchInLiveList(entry); 
 			if(index<0){
@@ -223,7 +245,11 @@ public class MVBT extends MVBTree {
 			liveEntries.remove(index);
 			this.grow(entry, new Stack());
 		}
-		
+		/**
+		 * 
+		 * @param separator
+		 * @return
+		 */
 		public IndexEntry chooseSubTreeFromLiveList(MVSeparator separator){
 			int index = searchInLiveList(separator); 
 			if(index >= 0){
@@ -262,88 +288,29 @@ public class MVBT extends MVBTree {
 		
 		
 		
-		/** Chooses the subtree which is followed during an insertion.
-		 * @param descriptor the <tt>MVSeparator</tt> of data object
-		 * @param path the path from the root to the current node 
-		 * @return the index entry refering to the root of the chosen subtree
+		/*
+		 * (non-Javadoc)
+		 * @see xxl.core.indexStructures.MVBTree.Node#chooseSubtree(xxl.core.indexStructures.Descriptor, java.util.Stack)
 		 */
+		@SuppressWarnings("rawtypes")
 		protected Tree.IndexEntry chooseSubtree (Descriptor descriptor, Stack path) {
 			final MVSeparator mvSeparator= (MVSeparator) descriptor;
-			Iterator iterator = getCurrentEntries();
 			return chooseSubTreeFromLiveList(mvSeparator);
 		}
-		
+		/*
+		 * (non-Javadoc)
+		 * @see xxl.core.indexStructures.MVBTree.Node#chooseSubtree(xxl.core.indexStructures.MVBTree.MVSeparator)
+		 */
 		public Tree.IndexEntry chooseSubtree(MVSeparator mvSeparator){
-			Iterator iterator = getCurrentEntries();
 			return chooseSubTreeFromLiveList(mvSeparator);
 		}
 		
-		
-	
-		
-		/**Searches the minimal key in the <tt>Node</tt>.
-		 * @return the position of the entry with the smallest key.
+		/*
+		 * (non-Javadoc)
+		 * @see xxl.core.indexStructures.MVBTree.Node#referenceLeafQuery(xxl.core.indexStructures.MVBTree.MVRegion, xxl.core.indexStructures.MVBTree.MVRegion)
 		 */
-		protected int searchMinimumKey() {
-			return MVBT.this.searchMinimumKey(this.entries);
-		}
-		
-		/**Sorts the entries of the <tt>Node</tt> in respect of their <tt>Versions</tt>.
-		 */
-		protected void sortEntries() {
-			sortEntries(false);
-		}
-
-		/**Sorts the entries of the <tt>Node</tt> in respect of their <tt>Versions</tt> or keys.
-		 * @param keySort indicates whether the entries have to sorted in respect of their keys.
-		 */		
-		protected void sortEntries(boolean keySort) {
-			Comparator comp;
-			if(keySort) comp= new Comparator() {
-								public int compare(Object o1, Object o2) {
-									MVSeparator mvSep1=(MVSeparator)separator(o1);
-									MVSeparator mvSep2=(MVSeparator)separator(o2);
-									int x= mvSep1.compareTo(mvSep2);
-									if(x==0) x=mvSep1.lifespan().compareTo(mvSep2.lifespan());
-									return x;
-								}
-							};
-			else comp=  new Comparator() {
-							public int compare(Object o1, Object o2) {
-								MVSeparator mvSep1=(MVSeparator)separator(o1);
-								MVSeparator mvSep2=(MVSeparator)separator(o2);
-								int x=mvSep1.lifespan().compareTo(mvSep2.lifespan());
-								if(x==0) x= mvSep1.compareTo(mvSep2);
-								return x;
-							}
-						};
-						
-			Collections.sort(entries,comp);
-		}
-		
-		/**Searches the begining of a given <tt>Version</tt>. 
-		 * @param version
-		 * @return If the version is found its position is returned, else 
-		 * (the negation of its insertion position)-1.
-		 */
-		protected int binarySearch(Version version) {
-			List insertVersionList= 
-					new MappedList(entries,
-									new AbstractFunction() {
-										public Object invoke(Object entry) {
-											return ((MVSeparator)separator(entry)).insertVersion();
-										}
-									});
-			return Collections.binarySearch(insertVersionList,version);
-		}
-		
-		/**
-		 * 
-		 * @param queryRegion
-		 * @param nodeRegion
-		 * @return
-		 */
-		private Cursor referenceLeafQuery(final MVRegion queryRegion, final MVRegion nodeRegion) {
+		@SuppressWarnings("rawtypes")
+		protected Cursor referenceLeafQuery(final MVRegion queryRegion, final MVRegion nodeRegion) {
 			if(level()>0) throw new UnsupportedOperationException("The node is not a leaf.");
 			Predicate test=new AbstractPredicate() {
 				public boolean invoke(Object entry) {//Umgestellt auf halboffene Intervale
@@ -370,13 +337,28 @@ public class MVBT extends MVBTree {
 			return new Filter(new Sequentializer<>(this.iterator(), liveEntries.iterator()), test);
 		}
 
-	
-		
-		/** Searches all entries of this <tt>Node</tt> whose <tt>Lifespans</tt> overlap the given <tt>Lifespan</tt>.
-		 * @param lifespan the <tt>Lifespan</tt> of the query.
-		 * @return a <tt>Iterator</tt> pointing to all responses (i.e. all entries of this <tt>Node</tt> whose 
-		 * <tt>Lifespans</tt> overlap the given <tt>Lifespan</tt>).
+		/*
+		 * (non-Javadoc)
+		 * @see xxl.core.indexStructures.MVBTree.Node#coordinatesOf(xxl.core.indexStructures.MVBTree.Version)
 		 */
+		protected int[] coordinatesOf(Version version) {
+			int from=search(version);
+			int to=from;
+			if(from>=0) {
+				to=from+1;
+				while(to<entries.size()){
+					if(((MVSeparator)separator(getEntry(to))).insertVersion().compareTo(version)>0) break;
+					to++;
+				}
+			}
+			return new int[]{from,to};
+		}
+		
+		/*
+		 * (non-Javadoc)
+		 * @see xxl.core.indexStructures.MVBTree.Node#query(xxl.core.indexStructures.MVBTree.Lifespan)
+		 */
+		@SuppressWarnings({ "rawtypes", "unchecked" })
 		public Iterator query(final Lifespan lifespan) {
 			return new Filter(	new Sequentializer<>(iterator(), liveEntries.iterator()),
 								new AbstractPredicate() {
@@ -386,9 +368,11 @@ public class MVBT extends MVBTree {
 								});
 		}
 		
-		/** Gives an <tt>Iterator</tt> pointing to all entries of this <tt>Node</tt>.
-		 * @return an <tt>Iterator</tt> pointing to all entries of this <tt>Node</tt>.
+		/*
+		 * (non-Javadoc)
+		 * @see xxl.core.indexStructures.MVBTree.Node#iterator()
 		 */
+		@SuppressWarnings({ "rawtypes", "unchecked" })
 		public Iterator iterator() {
 			if(level > 0 )
 				return new Sequentializer<>(entries.iterator(), liveEntries.iterator());
@@ -416,9 +400,11 @@ public class MVBT extends MVBTree {
 			};
 		}
 		
-		/** Gives an <tt>Iterator</tt> pointing to all entries of this <tt>Node</tt> which have not been deleted yet.
-		 * @return an <tt>Iterator</tt> pointing to all entries of this <tt>Node</tt> which have not been deleted yet.
+		/*
+		 * (non-Javadoc)
+		 * @see xxl.core.indexStructures.MVBTree.Node#getCurrentEntries()
 		 */
+		@SuppressWarnings({ "unchecked", "rawtypes", "serial" })
 		public Iterator getCurrentEntries() {
 			return new Filter( new Sequentializer<>(iterator(), liveEntries.iterator()),
 								new AbstractPredicate() {
@@ -434,11 +420,11 @@ public class MVBT extends MVBTree {
 
 	
 		
-		/** Inserts an entry into this <tt>Node</tt>. If level>0 <tt>data</tt> must be an 
-		 * <tt>IndexEntry</tt>.
-		 * @param data the entry which has to be inserted into the node
-		 * @param path the path from the root to the current node
+		/*
+		 * (non-Javadoc)
+		 * @see xxl.core.indexStructures.MVBTree.Node#grow(java.lang.Object, java.util.Stack)
 		 */
+		@SuppressWarnings({ "rawtypes", "unchecked" })
 		protected void grow(Object entry, Stack path) {
 			// experimental code
 			if(level  > 0 && ((MVSeparator)((IndexEntry)entry).separator()).isAlive()){
@@ -481,15 +467,10 @@ public class MVBT extends MVBTree {
 				}
 			}
 		}
-
-		
-		
-		
-		
-		
-		
-		
-		
+		/*
+		 * (non-Javadoc)
+		 * @see xxl.core.indexStructures.MVBTree.Node#remove(int)
+		 */
 		protected Object remove(int index) {
 			if((index<0)||(index>= entries.size())) return null;
 			Object entry=getEntry(index); 
@@ -505,23 +486,21 @@ public class MVBT extends MVBTree {
 			if(life.endVersion().compareTo(life.beginVersion())<=0) super.remove(index);
 			return entry;
 		}
-		
-				
 	
-		
+		/**
+		 * 
+		 * @return
+		 */
+		@SuppressWarnings("rawtypes")
 		public List getLiveEntries(){
 			return liveEntries;
 		}
 		
-		
-		
-		/**
-		 * 
-		 * @param splitVersion
-		 * @param path
-		 * @param splitInfo
-		 * @return
+		/*
+		 * (non-Javadoc)
+		 * @see xxl.core.indexStructures.MVBTree.Node#versionSplit(xxl.core.indexStructures.MVBTree.Version, java.util.Stack, xxl.core.indexStructures.MVBTree.Node.SplitInfo)
 		 */
+		@SuppressWarnings({ "rawtypes", "unchecked" })
 		protected SplitInfo versionSplit(Version splitVersion, Stack path, SplitInfo splitInfo) {
 			Node node = (Node)node(path);
 			IndexEntry indexEntry = (IndexEntry)indexEntry(path);
@@ -562,11 +541,11 @@ public class MVBT extends MVBTree {
 			purgeQueue.enqueue(new BlockDelInfo(indexEntry.id(), splitVersion));
 			return splitInfo;
 		}
-		
-		
-	
-	
-
+		/*
+		 * (non-Javadoc)
+		 * @see xxl.core.indexStructures.MVBTree.Node#keySplit(java.util.Stack, xxl.core.indexStructures.MVBTree.Node.SplitInfo)
+		 */
+		@SuppressWarnings({ "rawtypes", "unchecked" })
 		protected SplitInfo keySplit(Stack path, SplitInfo splitInfo) {
 			this.sortEntries(true);
 			List cpyEntries = null;
@@ -640,6 +619,7 @@ public class MVBT extends MVBTree {
 	/** This Converter is concerned with serializing of nodes to write or read them into 
 	 * or from the external storage.
 	 */
+	@SuppressWarnings("serial")
 	public class NodeConverter extends BPlusTree.NodeConverter {
 		
 		public Object read (DataInput dataInput, Object object) throws IOException {
