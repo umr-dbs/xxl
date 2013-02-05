@@ -1120,7 +1120,7 @@ public class MVBTree extends BPlusTree {
 	 * @param c2
 	 * @return
 	 */
-	private Comparable max(Comparable c1, Comparable c2) {
+	protected Comparable max(Comparable c1, Comparable c2) {
 		if(c1==null) return c2;
 		if(c2==null) return c1;
 		if(c1.compareTo(c2)>=0) return c1;
@@ -1148,7 +1148,7 @@ public class MVBTree extends BPlusTree {
 	 * @param c2
 	 * @return
 	 */
-	private Comparable min(Comparable c1, Comparable c2) {
+	protected Comparable min(Comparable c1, Comparable c2) {
 		if(c1==null) return c2;
 		if(c2==null) return c1;
 		if(c1.compareTo(c2)<=0) return c1;
@@ -1883,7 +1883,7 @@ public class MVBTree extends BPlusTree {
 			return splitInfo;
 		}
 				
-		private SplitInfo versionSplit(Version splitVersion, Stack path) {
+		protected SplitInfo versionSplit(Version splitVersion, Stack path) {
 			SplitInfo splitInfo = new SplitInfo(path);
 			return versionSplit(splitVersion, path, splitInfo);
 		}
