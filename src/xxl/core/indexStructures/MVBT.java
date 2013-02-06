@@ -29,22 +29,32 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Stack;
+import java.util.Map.Entry;
 
 import xxl.core.collections.MapEntry;
 import xxl.core.collections.MappedList;
 import xxl.core.collections.containers.Container;
 import xxl.core.cursors.Cursor;
 import xxl.core.cursors.filters.Filter;
+import xxl.core.cursors.unions.Merger;
 import xxl.core.cursors.unions.Sequentializer;
 import xxl.core.functions.AbstractFunction;
 import xxl.core.functions.Function;
+import xxl.core.indexStructures.BPlusTree.IndexEntry;
+import xxl.core.indexStructures.BPlusTree.KeyRange;
+import xxl.core.indexStructures.BPlusTree.Node.SplitInfo;
+import xxl.core.indexStructures.MVBTree.LeafEntry;
+import xxl.core.indexStructures.MVBTree.MVRegion;
 import xxl.core.indexStructures.MVBTree.MVSeparator;
+import xxl.core.indexStructures.MVBTree.Node;
+import xxl.core.indexStructures.MVBTree.Root;
 import xxl.core.indexStructures.MVBTree.Version;
 import xxl.core.io.converters.BooleanConverter;
 import xxl.core.io.converters.IntegerConverter;
@@ -58,6 +68,19 @@ import xxl.core.predicates.Predicate;
  */
 public class MVBT extends MVBTree {
 	
+	/**
+	 * Comparator for live entries
+	 */
+	protected Comparator<Object> liveIndexEntryComparator = new Comparator<Object>() {
+		
+		@SuppressWarnings("unchecked")
+		@Override
+		public int compare(Object arg0, Object arg1) {
+			MVSeparator mv1 =(MVSeparator)((IndexEntry)arg0).separator; 
+			MVSeparator mv2 = (MVSeparator)((IndexEntry)arg1).separator; 
+			return mv1.sepValue().compareTo(mv2.sepValue());
+		}
+	};
 	
 	/**Creates a new <tt>MVBTree</tt>.
 	 * KeyDomainMinValue set to default value @see {@link MVBT#DEAFUALT_KEYDOMAIN_MINVALUE}
@@ -85,7 +108,7 @@ public class MVBT extends MVBTree {
 	}
 	
 	public MVBT(int blockSize, float minCapRatio, float e, Comparable keyDomainMinValue ) {
-		super(blockSize, minCapRatio,keyDomainMinValue);
+		super(blockSize, minCapRatio, e, keyDomainMinValue);
 	}
 
 	/**
@@ -151,19 +174,76 @@ public class MVBT extends MVBTree {
 	}
 	
 
-	
 
- 
+	/**
+	 * Builds a path from the appropriate root node to the node which
+	 * contains the given key in the given version.
+	 * 
+	 * @param key key to query for.
+	 * @param version version to query for.
+	 * @param level tree level at which the search should stop.
+	 * @return path from a root node to the correct node at the given level.
+	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	protected Stack pathToNodeLiveRemove(Object key, Version version, int level) {
+		IndexEntry indexEntry = determineRootEntry(version);
+		if (indexEntry == null) throw new IllegalStateException();
+
+		Stack path = new Stack();
+		down(path, indexEntry);
+		Node node = (Node)node(path);
+		MVSeparator sep = createMVSeparator(	version,version, (Comparable)key);
+		while (node.level() > level) {
+			indexEntry = null;
+			indexEntry = (IndexEntry) node.chooseSubtree(sep); 
+			if (indexEntry == null)
+				throw new IllegalStateException();
+
+			down(path, indexEntry);
+			node = (Node)node(path);
+		}
+
+		return path;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see xxl.core.indexStructures.MVBTree#remove(xxl.core.indexStructures.MVBTree.Version, java.lang.Object)
+	 */
+	@SuppressWarnings({ "unchecked", "rawtypes", "deprecation" })
+	public Object remove(Version removeVersion, Object data) {
+		setCurrentVersion(removeVersion);
+		Object key = getKey.invoke(data);
+		Stack path = pathToNodeLiveRemove(key, currentVersion(), 0);
+		Iterator it = ((MVBTree.Node)node(path)).iterator();
+		LeafEntry removed = null;
+		while (it.hasNext()) {
+			LeafEntry obj = (LeafEntry)it.next();
+			if (obj.data().equals(data) && obj.getLifespan().isAlive()) {
+				it.remove();
+				removed = obj;
+				break;
+			}
+		}
+		treatUnderflow(path);
+		return removed;
+	}
  
 	
-	/**This class represents the <tt>Nodes</tt> of the <tt>MVBTree</tt>.
-	 * @author Husain Aljazzar
+	/**
+	 * The experimantal layout: for index nodes we manage two lists 
+	 * first list stores live entries 
+	 * second list stores deleted entries
+	 * 
+	 * this allows to run chooseSubTree method in O(log B) instead of O(B)
+	 * and we have only 4 bytes space overhead
+	 * @author Daniar
 	 */
 	public class Node extends MVBTree.Node {
 		/**
 		 * experimetal part 
 		 */
-		public List<IndexEntry> liveEntries; 
+		public List liveEntries; 
 		
 		/***********************************************************
 		 * 
@@ -176,18 +256,7 @@ public class MVBT extends MVBTree {
 			return super.number() + liveEntries.size();
 		}
 		
-		/**
-		 * 
-		 */
-		protected Comparator<IndexEntry> liveIndexEntryComparator = new Comparator<BPlusTree.IndexEntry>() {
-			
-			@Override
-			public int compare(IndexEntry arg0, IndexEntry arg1) {
-				MVSeparator mv1 =(MVSeparator)arg0.separator; 
-				MVSeparator mv2 = (MVSeparator)arg1.separator; 
-				return mv1.sepValue().compareTo(mv2.sepValue());
-			}
-		};
+
 		
 		/**
 		 * 
@@ -253,14 +322,14 @@ public class MVBT extends MVBTree {
 		public IndexEntry chooseSubTreeFromLiveList(MVSeparator separator){
 			int index = searchInLiveList(separator); 
 			if(index >= 0){
-				return liveEntries.get(index);
+				return (IndexEntry) liveEntries.get(index);
 			}
 			index = -index-1; 
 			if(index == 0){
-				return liveEntries.get(index); 
+				return (IndexEntry) liveEntries.get(index); 
 			}
 			index -=1;
-			return liveEntries.get(index); 
+			return (IndexEntry) liveEntries.get(index); 
 		}
 		/***********************************************************
 		 * 
@@ -286,8 +355,134 @@ public class MVBT extends MVBTree {
 			liveEntries = new ArrayList<>(); 
 		}
 		
+		/*
+		 * (non-Javadoc)
+		 * @see xxl.core.indexStructures.BPlusTree.Node#initialize(java.lang.Object)
+		 */
+        protected Tree.Node.SplitInfo initialize(Object entry) {
+            Stack path = new Stack();
+            grow(entry, path);
+            if(level > 0){
+            	return new SplitInfo(path).initialize((Separator)separator(this.liveEntries.get(this.liveEntries.size()-1)).clone()); 
+            }
+            return  new SplitInfo(path).initialize((Separator)separator(this.getLast()).clone());
+        }
 		
-		
+        
+        /*
+         * (non-Javadoc)
+         * @see xxl.core.indexStructures.MVBTree.Node#redressOverflow(java.util.Stack, java.util.List, boolean)
+         */
+		@SuppressWarnings("rawtypes")
+		protected Collection redressOverflow (Stack path, List newIndexEntries, boolean up) {
+			if (overflows() || underflows()) {
+				if((path.size()==1)&& underflows() && !overflows()) {
+					// root 
+					Node rootNode=(Node)node(path);
+					if((rootNode.level()!=0)&&(rootNode.countCurrentEntries()==1)) {
+						reorg=true;
+						Object oldRootId= rootEntry.id();
+						int rootParentLevel=rootEntry.parentLevel();
+						MVRegion oldRootReg= toMVRegion((MVSeparator)((IndexEntry)rootEntry).separator());
+						Version delVersion=oldRootReg.beginVersion();
+						Iterator iter= rootNode.entries();
+						while(iter.hasNext()) {
+							MVSeparator mvSep=(MVSeparator)((IndexEntry)iter.next()).separator;
+							if(mvSep.isDead() && mvSep.deleteVersion().compareTo(delVersion)>0) 
+								delVersion=mvSep.deleteVersion();
+						}
+						Iterator current=rootNode.getCurrentEntries();
+						if(current.hasNext()) rootEntry=(IndexEntry)current.next();
+						else throw new IllegalStateException();
+						//oldRootReg.updateMaxBound(((MVRegion)rootDescriptor).maxBound());
+						oldRootReg.updateEndVersion(delVersion); 
+						Root oldRoot= new Root(oldRootReg, oldRootId, rootParentLevel);
+						//	new code 
+						// if multiple operations are allowed in one version, a root with an
+						// empty lifespan may be generated. It has to be discarded.
+						if (!oldRootReg.lifespan().isPoint()) {
+							roots.insert(oldRoot);
+							//Daniar: new code 
+							KeyRange newRange = roots.createKeyRange(oldRootReg.beginVersion(), currentVersion); 
+							roots.rootDescriptor.union(newRange);
+//							((Lifespan)roots.rootDescriptor).updateMaxBound(currentVersion);
+//							.updateMaxBound(currentVersion);
+						}
+					}
+				}	
+				else {
+					reorg=true;
+					Node versionSplitNode=(Node)MVBT.this.createNode(level());
+					SplitInfo splitInfo= (SplitInfo)versionSplitNode.split(path);
+					IndexEntry indexEntryOfVersionSplitNode=(IndexEntry) createIndexEntry(level()+1);
+					Object idOfVersionSplitNode= 
+								indexEntryOfVersionSplitNode.container().insert(splitInfo.versionSplitNode());
+					splitInfo.versionSplitNode().onInsert(idOfVersionSplitNode);
+					indexEntryOfVersionSplitNode.initialize(idOfVersionSplitNode, 
+															splitInfo.getMVSeparatorOfVersionSplitNode());
+					IndexEntry indexEntryOfKeySplitNode=null;
+					// Test
+					if(splitInfo.isKeySplit()) {
+						indexEntryOfKeySplitNode=(IndexEntry)createIndexEntry(indexEntryOfVersionSplitNode.parentLevel());
+						Object idOfKeySplitNode= indexEntryOfKeySplitNode.container().insert(splitInfo.keySplitNode);
+						splitInfo.keySplitNode.onInsert(idOfKeySplitNode);
+						indexEntryOfKeySplitNode.initialize(idOfKeySplitNode, 
+															splitInfo.getMVSeparatorOfKeySplitNode());
+					}
+					//A root overflow...
+					if (splitInfo.isRootSplit()) {
+						int oldRootParentLevel= rootEntry.parentLevel();
+						Object oldRootId= rootEntry.id();
+						MVRegion oldRootReg= toMVRegion((MVSeparator)((IndexEntry)rootEntry).separator());
+						if(splitInfo.isKeySplit()) {
+							Entry newRootTuple = MVBT.this.grow(indexEntryOfVersionSplitNode);
+							Node newRootNode= (Node)newRootTuple.getValue();
+							newRootNode.grow(indexEntryOfKeySplitNode, new Stack()); 
+							MVSeparator rootSeparator= (MVSeparator)indexEntryOfVersionSplitNode.separator;
+							Object newRootNodeId= MVBT.this.container().insert(newRootNode);
+							newRootNode.onInsert(newRootNodeId);
+							((IndexEntry)rootEntry).initialize(newRootNodeId,rootSeparator);
+						}
+						else rootEntry = indexEntryOfVersionSplitNode;
+						oldRootReg.updateMaxBound(((MVRegion)rootDescriptor).maxBound());
+						Root oldRoot= new Root(oldRootReg, oldRootId, oldRootParentLevel);
+						// if multiple operations are allowed in one version, a root with an
+						// empty lifespan may be generated. It has to be discarded.
+						if (!oldRootReg.lifespan().isPoint()) {
+							roots.insert(oldRoot);
+							//Daniar: new code bug fix 
+							KeyRange newRange = roots.createKeyRange(oldRootReg.beginVersion(), currentVersion); 
+							roots.rootDescriptor.union(newRange);
+//							((Lifespan)roots.rootDescriptor).updateMaxBound(currentVersion);
+						}
+					}
+					else {
+						MapEntry pathEntry = (MapEntry)path.pop();
+						Node parentNode = (Node)node(path);
+						// new code first grow
+						parentNode.grow(indexEntryOfVersionSplitNode, path);
+						
+						newIndexEntries.add(newIndexEntries.size(), indexEntryOfVersionSplitNode);
+						if(splitInfo.isKeySplit()) {
+							parentNode.grow(indexEntryOfKeySplitNode, path);
+							newIndexEntries.add(newIndexEntries.size(), indexEntryOfKeySplitNode);
+						} 
+						parentNode.sortEntries();
+						// new code first grow
+						path.push(pathEntry);
+					}
+				}
+			}
+			if (up) {
+				update(path);
+				up(path);
+			}	
+			if (level==0){
+				counter+=newIndexEntries.size();
+				leafentries.addAll(newIndexEntries);
+			}
+			return newIndexEntries;
+		}
 		/*
 		 * (non-Javadoc)
 		 * @see xxl.core.indexStructures.MVBTree.Node#chooseSubtree(xxl.core.indexStructures.Descriptor, java.util.Stack)
@@ -353,6 +548,24 @@ public class MVBT extends MVBTree {
 			}
 			return new int[]{from,to};
 		}
+		
+		
+		  /**
+         * Gives the entry stored on the given position in the <tt>Node</tt>.
+         * 
+         * @param index
+         *            the position of the required entry
+         * @return the entry stored on the given position in the <tt>Node</tt>
+         *         or <tt>null</tt> if the <tt>Node</tt> is empty
+         */
+        public Object getEntry(int index) {
+            if (entries.isEmpty() && liveEntries.isEmpty()) return null;
+            if (index < entries.size())
+            	return entries.get(index);
+            int nIndex = index -  entries.size();
+            return liveEntries.get(nIndex); 
+        }
+		
 		
 		/*
 		 * (non-Javadoc)
@@ -512,14 +725,16 @@ public class MVBT extends MVBTree {
 			// new code
 			MapEntry pathEntry = (MapEntry)path.pop();
 			Node parentNode = (Node)node(path);
-			parentNode.removeFromLiveList(indexEntry); 
-			parentNode.grow(indexEntry, new Stack()); 
+			if(parentNode != null){
+				parentNode.removeFromLiveList(indexEntry); 
+				parentNode.grow(indexEntry, new Stack()); 
+			}
 			path.push(pathEntry);
 			// new code
 			Iterator currentEntries = node.query(splitVersion);
 			
 			if(level > 0 ){
-				for(IndexEntry entry : node.liveEntries){
+				for(Object entry : node.liveEntries){
 					liveEntries.add((IndexEntry)copyEntry(entry));
 				}
 			}else{
@@ -528,6 +743,7 @@ public class MVBT extends MVBTree {
 					Object cpy = copyEntry(entry);
 					entries.add(cpy);
 				}
+				node.removeEntriesFromVersion(splitVersion);
 			}
 			if (level()==0) {
 				this.predecessors.clear();
@@ -537,7 +753,7 @@ public class MVBT extends MVBTree {
 				predEntry.initialize(indexEntry.id(), predSep); 
 				this.predecessors.add(predEntry);
 			}
-			node.removeEntriesFromVersion(splitVersion);
+			
 			purgeQueue.enqueue(new BlockDelInfo(indexEntry.id(), splitVersion));
 			return splitInfo;
 		}
@@ -562,11 +778,19 @@ public class MVBT extends MVBTree {
 				cpyEntries.clear();
 				this.sortEntries();
 			}
-			MVSeparator newSeparator = (MVSeparator)separator(newNode.getFirst()).clone();
-			newSeparator.union(separator(newNode.getLast()));
-			newSeparator.setInsertVersion(splitInfo.splitVersion());
-			newNode.sortEntries();
-			splitInfo.initKeySplit(newSeparator, newNode);
+			MVSeparator newSeparator = null; 
+			if (level > 0){
+				newSeparator = (MVSeparator)separator(newNode.liveEntries.get(0)).clone();
+				newSeparator.union(separator((newNode.liveEntries.get(newNode.liveEntries.size()-1))));
+				newSeparator.setInsertVersion(splitInfo.splitVersion());
+				splitInfo.initKeySplit(newSeparator, newNode);
+			}else{
+				newSeparator = (MVSeparator)separator(newNode.getFirst()).clone();
+				newSeparator.union(separator(newNode.getLast()));
+				newSeparator.setInsertVersion(splitInfo.splitVersion());
+				newNode.sortEntries();
+				splitInfo.initKeySplit(newSeparator, newNode);
+			}
 			if (level()==0)
 				newNode.predecessors.add(this.predecessors.get(0));
 			return splitInfo;
@@ -584,7 +808,14 @@ public class MVBT extends MVBTree {
 			Node tempNode = (Node)MVBT.this.createNode(level());
 			tempNode.versionSplit(splitInfo.splitVersion(), path);
 			if(level  > 0 ){
-				node.liveEntries.addAll(tempNode.liveEntries);
+				//  merge in linear time
+				List<IndexEntry>  newLiveEntries = new ArrayList<>(); 
+				Iterator<IndexEntry> mergedEntries = new Merger<>(liveIndexEntryComparator, node.liveEntries.iterator(), tempNode.liveEntries.iterator()); 
+				while(mergedEntries.hasNext()){
+					IndexEntry idxEntry = mergedEntries.next();
+					newLiveEntries.add(idxEntry);
+				}
+				node.liveEntries = newLiveEntries; 
 			}else{
 				node.entries.addAll(tempNode.entries);
 				node.sortEntries();
