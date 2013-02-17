@@ -109,6 +109,8 @@ public class Permutator extends AbstractCursor<Integer> {
 	 * to the wrapped PRNG.
 	 */
 	protected Random random;
+	
+	private boolean newArray = false;
 
 	/**
 	 * Creates a new permutator backed on the given array using the given
@@ -120,6 +122,7 @@ public class Permutator extends AbstractCursor<Integer> {
 	public Permutator(int[] array, Random random) {
 		this.array = array;
 		this.random = random;
+		this.newArray = false; 
 	}
 
 	/**
@@ -144,6 +147,7 @@ public class Permutator extends AbstractCursor<Integer> {
 	 */
 	public Permutator(int n, Random random) {
 		this(new int[n], random);
+		this.newArray = true; 
 	}
 
 	/**
@@ -156,7 +160,7 @@ public class Permutator extends AbstractCursor<Integer> {
 	 *        the permutation should be fulfilled with.
 	 */
 	public Permutator(int n) {
-		this(new int[n], new Random());
+		this(n, new Random());
 	}
 	
 	/**
@@ -175,7 +179,7 @@ public class Permutator extends AbstractCursor<Integer> {
 	 * files are closed.</p>
 	 */
 	public void open() {
-		if (!isOpened)
+		if (!isOpened && newArray)
 			for (int i = 0; i < array.length; i++)
 				array[i] = i;
 		super.open();
