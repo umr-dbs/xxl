@@ -51,6 +51,7 @@ import xxl.core.indexStructures.BPlusTree.IndexEntry;
 import xxl.core.indexStructures.BPlusTree.KeyRange;
 import xxl.core.indexStructures.BPlusTree.Node.SplitInfo;
 import xxl.core.indexStructures.MVBTree.LeafEntry;
+import xxl.core.indexStructures.MVBTree.Lifespan;
 import xxl.core.indexStructures.MVBTree.MVRegion;
 import xxl.core.indexStructures.MVBTree.MVSeparator;
 import xxl.core.indexStructures.MVBTree.Node;
@@ -229,6 +230,29 @@ public class MVBT extends MVBTree {
 		return removed;
 	}
  
+	/*
+	 * (non-Javadoc)
+	 * @see xxl.core.indexStructures.MVBTree#update(xxl.core.indexStructures.MVBTree.Version, java.lang.Object, java.lang.Object)
+	 */
+	public void update (Version updateVersion, Object oldData, Object newData) {
+		setCurrentVersion(updateVersion);
+		Object key = getKey.invoke(newData);
+		Stack path = pathToNodeLiveRemove(key, currentVersion(), 0);
+		Iterator it = ((MVBTree.Node)node(path)).iterator();
+		LeafEntry removed = null;
+		while (it.hasNext()) {
+			LeafEntry obj = (LeafEntry)it.next();
+			if (obj.data().equals(oldData) && obj.getLifespan().isAlive()) {
+				it.remove();
+				removed = obj;
+				Lifespan lifespan=new Lifespan(currentVersion());
+				LeafEntry newEntry= new LeafEntry(lifespan, newData);
+				node(path).grow(newEntry, path); 
+				break;
+			}
+		}
+		treatUnderflow(path);
+	}
 	
 	/**
 	 * The experimantal layout: for index nodes we manage two lists 
