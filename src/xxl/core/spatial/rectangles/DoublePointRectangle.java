@@ -43,6 +43,8 @@ import xxl.core.spatial.points.Point;
 	@see xxl.core.spatial.rectangles.FloatPointRectangle
 */
 public class DoublePointRectangle implements Rectangle {
+	
+	
 
 	/**
 	 * lower-left corner of the rectangle
@@ -99,10 +101,9 @@ public class DoublePointRectangle implements Rectangle {
 	 */
 	public DoublePointRectangle(int dim) {
 		double[] d = new double[dim];
-		for (int i = 0; i < dim; i++)
-			d[i] = 1.0;
-		this.rightCorner = d;
 		this.leftCorner = new double[dim];
+		Arrays.fill(d, 1.0);
+		this.rightCorner = d;
 	}
 	
 	/**
@@ -188,7 +189,7 @@ public class DoublePointRectangle implements Rectangle {
 	public DoublePoint getCenter() {
 		double[] center = new double[this.dimensions()];
 		for (int i=0;i<leftCorner.length;i++) {
-			center[i] = Math.min(leftCorner[i], rightCorner[i]) + (Math.abs(leftCorner[i] - rightCorner[i])/2);
+			center[i] = Math.min(leftCorner[i], rightCorner[i]) + (Math.abs(leftCorner[i] - rightCorner[i])/2.0);
 		}
 		
 		return new DoublePoint(center);

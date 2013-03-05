@@ -132,10 +132,19 @@ public abstract class Rectangles {
 	 */
 	public static final Function<Object, DoublePointRectangle> factoryFunctionDoublePointRectangle(final int dimension){ 
 		return new AbstractFunction<Object, DoublePointRectangle>() {
-		public DoublePointRectangle invoke() {
-			return new DoublePointRectangle(dimension);
-		}
-	};
+			public DoublePointRectangle invoke() {
+				return new DoublePointRectangle(dimension);
+			}
+		};
 	}
 
+	/**
+	 * Generates double point reactangle with universe values
+	 * @param dimension
+	 * @return
+	 */
+	public static DoublePointRectangle getUnitUniverseDoublePointRectangle(int dimension){
+		return new DoublePointRectangle(dimension);
+	}
+	
 }
