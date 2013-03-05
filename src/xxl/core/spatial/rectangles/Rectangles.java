@@ -30,7 +30,10 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.util.Iterator;
 
+import xxl.core.functions.AbstractFunction;
+import xxl.core.functions.Function;
 import xxl.core.spatial.points.DoublePoint;
 import xxl.core.util.WrappingRuntimeException;
 
@@ -83,17 +86,56 @@ public abstract class Rectangles {
 			throw new WrappingRuntimeException(e);
 		}
 	}
-	
+	/**
+	 * 
+	 * @param p
+	 * @return
+	 */
 	public static DoublePoint upperLeftCorner(DoublePointRectangle p) {
 		if (p.dimensions() != 2)
 			throw new IllegalArgumentException();
 		return new DoublePoint(new double[]{ p.leftCorner[0], p.rightCorner[1] });
 	}
-
+	/**
+	 * 
+	 * @param p
+	 * @return
+	 */
 	public static DoublePoint lowerRightCorner(DoublePointRectangle p) {
 		if (p.dimensions() != 2)
 			throw new IllegalArgumentException();
 		return new DoublePoint(new double[]{ p.rightCorner[0], p.leftCorner[1] });
+	}
+	/**
+	 * Computes Universe for a set of doublepoint rectangles
+	 * @param rectangles
+	 * @return
+	 */
+	public static DoublePointRectangle computeDoublePointRectangleUniverse(Iterator<DoublePointRectangle> rectangles){
+		DoublePointRectangle universe = null;
+		while(rectangles.hasNext()){
+			DoublePointRectangle item = rectangles.next(); 
+			if (universe == null)
+				universe = new DoublePointRectangle(item);
+			else 
+				universe.union(item);
+		}
+		return universe;
+	}
+	
+	/**
+	 * Factory Function e.g. for convertable converter; 
+	 * 
+	 * Note resulting function creates always new object; 
+	 * @param dimension
+	 * @return returns function object 
+	 */
+	public static final Function<Object, DoublePointRectangle> factoryFunctionDoublePointRectangle(final int dimension){ 
+		return new AbstractFunction<Object, DoublePointRectangle>() {
+		public DoublePointRectangle invoke() {
+			return new DoublePointRectangle(dimension);
+		}
+	};
 	}
 
 }
