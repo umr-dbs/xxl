@@ -34,6 +34,8 @@ import java.util.Iterator;
 
 import xxl.core.functions.AbstractFunction;
 import xxl.core.functions.Function;
+import xxl.core.io.converters.ConvertableConverter;
+import xxl.core.io.converters.Converter;
 import xxl.core.spatial.points.DoublePoint;
 import xxl.core.util.WrappingRuntimeException;
 
@@ -137,7 +139,17 @@ public abstract class Rectangles {
 			}
 		};
 	}
-
+	/**
+	 * Factory method returns converter for doublepointrectangles
+	 * 
+	 * @param dimension
+	 * @return Converter for doublepointrectangles
+	 */
+	public static Converter<DoublePointRectangle> getDoublePointRectangleConverter(int dimension){
+		return new ConvertableConverter<>(factoryFunctionDoublePointRectangle(dimension)); 
+	}
+	
+	
 	/**
 	 * Generates double point reactangle with universe values
 	 * @param dimension
