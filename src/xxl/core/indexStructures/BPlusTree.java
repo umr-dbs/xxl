@@ -883,7 +883,7 @@ public class BPlusTree extends Tree {
         } else{
         	
             super.insert(data, descriptor, targetLevel);
-            // test code 
+//            // test code 
             Separator sep = ((IndexEntry)rootEntry()).separator();
             Separator entrySep =  (Separator)descriptor; 
             if(sep.sepValue().compareTo(entrySep.sepValue()) < 0){
@@ -1477,17 +1477,22 @@ public class BPlusTree extends Tree {
          * @return
          */
         protected int rightMostSearch(Comparable key){
-        	List sepValues = new MappedList(entries, new AbstractFunction() {
-                  public Object invoke(Object entry) {
-                      return separator(entry).sepValue();
-                  }
-             });
-        	int index = Collections.binarySearch(sepValues, key);
-        	if (index>=0){
-        		while(index != (sepValues.size()-1) && sepValues.get(index+1).equals(key))
-        			index++;
-        	}
-        	return index;
+			List sepValues = new MappedList(entries, new AbstractFunction() {
+				public Object invoke(Object entry) {
+					return separator(entry).sepValue();
+				}
+			});
+			int index = Collections.binarySearch(sepValues, key);
+			Comparable duplicateKey = key;
+			if (index <0 ) { // take a key of the sepvalue
+				index = (-index - 1 == this.number()) ? -index - 2 : -index - 1;
+				duplicateKey = (Comparable) sepValues.get(index);
+			} 
+			while (index != (sepValues.size() - 1)
+					&& sepValues.get(index + 1).equals(duplicateKey))
+				index++;
+			
+			return index;
         }
         /**
          * Searches the given key in this <tt>Node</tt>. The default
@@ -2440,6 +2445,9 @@ public class BPlusTree extends Tree {
             return sb.toString();
         }
     }
+    
+    
+    public int leafs = 0; 
     /**
      * This class uses an efficient algorithm to perform queries on the
      * <tt>BPlusTree</tt>. It does not traverse the <tt>BPlusTree</tt> in
@@ -2451,6 +2459,8 @@ public class BPlusTree extends Tree {
      * <tt>BPlusTree.Node</tt>.
      */
     protected class QueryCursor extends xxl.core.indexStructures.QueryCursor {
+    	
+    	
         /**
          * The position of the current entry in the current <tt>Node</tt>.
          */
@@ -2539,6 +2549,9 @@ public class BPlusTree extends Tree {
                 currentNode = node(path);
                 lastIndexEntry = (IndexEntry) indexEntry;
                 lastNode = (Node) currentNode;
+                if(currentNode.level() == 0){
+                	leafs++;
+                }
                for (int i = 0; i < currentNode.number(); i++) {
                     lastIndex = index;
                     index = i;
@@ -2747,6 +2760,9 @@ public class BPlusTree extends Tree {
             lastIndexEntry = (IndexEntry) indexEntry;
             lastNode = (Node) currentNode;
             nodeChangeover++;
+            if(currentNode.level() == 0){
+            	leafs++; 
+            }
         }
         /**
          * @see xxl.core.cursors.Cursor#supportsReset()
