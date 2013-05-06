@@ -458,6 +458,23 @@ public abstract class Tree {
 		return initialize(null, null, getDescriptor, container, minCapacity, maxCapacity);
 	}
 	
+	/**
+	 * sets container 
+	 * for determineContainer function
+	 * and for getConatainer 
+	 * 
+	 *  sets both variables as follows: 
+	 *  
+	 *  determineFunction = new Constant(container); 
+	 *  getContainer = new Constant(container); 
+	 *  
+	 *  
+	 *  @param container to store nodes
+	 */
+	public void setContainer(Container container){
+		this.determineContainer = new Constant(container);
+		this.getContainer = new Constant(container); 
+	} 
 	
 	/**
 	 * @return the {@link Tree#rootEntry}
@@ -1197,7 +1214,7 @@ public abstract class Tree {
 		/** The maximum distance to the leaves of the subtree (i.e.
 			for leaf level == 0).
 		*/
-		protected int level;
+		public int level;
 
 		/** Initializes the <tt>Node</tt> by setting it's level. 
 		 * 
