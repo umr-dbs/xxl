@@ -409,6 +409,11 @@ public class HistogramEval {
 				rtreeRatio, hRatio, avgRatio, HistType.SOPT,   verbose); 
 	}
 	
+	
+	public void buildRHistogramV(int numberOfBuckets, double rtreeRatio, boolean verbose) throws IOException{
+		 buildRHistogramV(numberOfBuckets, rtreeRatio, rtreeRatio, 0.8, HistType.SOPT,  verbose);
+	}
+	
 	public void buildRHistogramV(int numberOfBuckets, double rtreeRatio, double hRatio, double avgRatio, boolean verbose) throws IOException{
 		 buildRHistogramV(numberOfBuckets, rtreeRatio, hRatio, avgRatio, HistType.SOPT,  verbose);
 	}
