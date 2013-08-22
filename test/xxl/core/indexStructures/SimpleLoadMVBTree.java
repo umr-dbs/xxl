@@ -34,6 +34,7 @@ import xxl.core.indexStructures.BPlusTree.KeyRange;
 import xxl.core.indexStructures.testData.LongMVRegion;
 import xxl.core.indexStructures.testData.LongMVSeparator;
 import xxl.core.indexStructures.testData.LongVersion;
+import xxl.core.io.Buffer;
 import xxl.core.io.LRUBuffer;
 import xxl.core.io.converters.BooleanConverter;
 import xxl.core.io.converters.Converter;
@@ -50,7 +51,7 @@ import xxl.core.util.Triple;
  * 
  */
 public class SimpleLoadMVBTree {
-	public static final String file = "C:/mvbt_";// change for your needs
+	public static final String file = "F:/mvbt_";// change for your needs
 	public static final int LRU_SLOTS = 1_00; // LRU buffer slots
 	public static final int BLOCK_SIZE = 4096*2; // page size in bytes 
 	public static final float D = 0.25f; // minimum number of live elements per node
@@ -442,7 +443,7 @@ public class SimpleLoadMVBTree {
 	 * @param args
 	 */
 	public static void main(String[] args) throws IOException {
-		boolean reload = true;
+		boolean reload = false;
 		/*****************************************************************************************
 		 * Initialize and insert data
 		 ******************************************************************************************/
@@ -453,23 +454,28 @@ public class SimpleLoadMVBTree {
 			// first 10_000 inserts followed by intermixed sequnce of delets and inserts
 			createASCIIFile(file+"data.dat", generatedDeleteWorkload(operations, 0.5d, 42));  
 			// container for node serialization
+			// on disk
 			Container containerMVBT_LRU = new BlockFileContainer(file+ "tree", BLOCK_SIZE); 
 			// wrapper for i/o counting
 			CounterContainer cContainerMVBT_LRU = new CounterContainer(containerMVBT_LRU);
-			// LRU buffer
-			Container fMVBTContainer_LRU = new BufferedContainer(cContainerMVBT_LRU, new LRUBuffer(LRU_SLOTS));
-			CounterContainer cfMVBTContainer_LRU = new CounterContainer(fMVBTContainer_LRU);
 			// serializer container for main tree
-			Container mvbtStorageContainer_LRU = new ConverterContainer(cfMVBTContainer_LRU, tree.nodeConverter());
-			//serializer container for roots tree	
-			Container mvbtRootsContainer_LRU = new ConverterContainer(cfMVBTContainer_LRU, tree.rootsTree().nodeConverter());
+			// important tree.nodeConverter() convertre for MVBT nodes
+			Container mvbtStorageContainer_LRU = new ConverterContainer(cContainerMVBT_LRU, tree.nodeConverter());
+			//serializer container for roots tree
+			// important  tree.rootsTree().nodeConverter() converter for nodes of roots tree
+			Container mvbtRootsContainer_LRU = new ConverterContainer(cContainerMVBT_LRU, tree.rootsTree().nodeConverter());
+			// LRU buffer
+			Buffer LRUBuffer = new LRUBuffer(LRU_SLOTS); 
+			Container fMVBTContainer_LRU_main = new BufferedContainer(mvbtStorageContainer_LRU, LRUBuffer);
+			Container fMVBTContainer_LRU_roots = new BufferedContainer(mvbtRootsContainer_LRU, LRUBuffer);
+			//init MVBT
 			tree.initialize(null, // rootEntry
 					null, // Descriptor MVRegion
 					null, // roots tree root Entry
 					null, // descriptro KeyRange
 					getKey, // getKey Function
-					mvbtRootsContainer_LRU, // container roots tree
-					mvbtStorageContainer_LRU, // main container
+					fMVBTContainer_LRU_roots,  // container roots tree
+					fMVBTContainer_LRU_main,  // main container
 					LongVersion.VERSION_MEASURED_CONVERTER, // converter for version object 
 					keyConverter, // key converter 
 					dataConverter, // data converter mapEntry
@@ -506,7 +512,6 @@ public class SimpleLoadMVBTree {
 			System.out.println();
 			System.out.println(System.currentTimeMillis() - time);
 			System.out.println(cContainerMVBT_LRU);
-			System.out.println(cfMVBTContainer_LRU);
 			/*******************************************************************************
 			 * Key-Time range query 
 			 ******************************************************************************/
@@ -514,8 +519,8 @@ public class SimpleLoadMVBTree {
 									new Long(1042), new LongVersion(1000), new LongVersion(1042));
 			Cursors.println(result);
 			//save the state of the tree
-			cfMVBTContainer_LRU.flush();
-			cfMVBTContainer_LRU.close();
+			fMVBTContainer_LRU_main.flush();
+			fMVBTContainer_LRU_roots.close();
 			saveMetaInfo(file + "metainfo.dat", tree);
 		}else{
 			reloadMVBT(tree, file + "metainfo.dat"); 
