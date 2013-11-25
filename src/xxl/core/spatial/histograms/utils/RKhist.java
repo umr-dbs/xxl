@@ -22,7 +22,7 @@ License along with this library;  If not, see <http://www.gnu.org/licenses/>.
     http://code.google.com/p/xxl/
 
 */
-package xxl.core.spatial.histograms;
+package xxl.core.spatial.histograms.utils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -56,7 +56,7 @@ public class RKhist {
 	 * @param ratio
 	 * @return
 	 */
-	public static List<WeightedDoublePointRectangle> buildRKHist(RTree bulkLoadedRTree,  int numberOfNodes,   
+	public static List<SpatialHistogramBucket> buildRKHist(RTree bulkLoadedRTree,  int numberOfNodes,   
 			int numberOfHyperBlocks, double ratio, int dimension){
 		// partition the 
 
@@ -75,7 +75,7 @@ public class RKhist {
 		List<MapEntry< Double,List<MapEntry<DoublePointRectangle, RTree.Node>>>> nodeList = new ArrayList<MapEntry< Double,List<MapEntry<DoublePointRectangle, RTree.Node>>>>();
 		List<MapEntry< Double,List<MapEntry<DoublePointRectangle, RTree.Node>>>> penaltyList = new ArrayList<MapEntry< Double,List<MapEntry<DoublePointRectangle, RTree.Node>>>>();
 		// cursor of level 0 leaf nodes buckets
-		Cursor<MapEntry<DoublePointRectangle, RTree.Node>> nodes = RGOhist.getNodesAndMBRs(bulkLoadedRTree, 1);
+		Cursor<MapEntry<DoublePointRectangle, RTree.Node>> nodes = SpatialHistogramUtils.getNodesAndMBRs(bulkLoadedRTree, 1);
 		// create hyperblocks and create penalty list;
 		while(nodes.hasNext()){
 			List<MapEntry<DoublePointRectangle, RTree.Node>> hyperNode = new ArrayList<MapEntry<DoublePointRectangle, RTree.Node>>();
@@ -145,13 +145,13 @@ formark:	for(int i = 0; i < penaltyList.size(); i++){
 		}
 		// step 3. merge to histogram
 		nodeList.addAll(penaltyList);
-		List<WeightedDoublePointRectangle> histogram = new ArrayList<WeightedDoublePointRectangle>();
+		List<SpatialHistogramBucket> histogram = new ArrayList<SpatialHistogramBucket>();
 		for(MapEntry< Double,List<MapEntry<DoublePointRectangle, RTree.Node>>> entry : nodeList){
-			WeightedDoublePointRectangle mbr = null;
+			SpatialHistogramBucket mbr = null;
 			int weight = 0;
 			for (MapEntry<DoublePointRectangle, RTree.Node> value :  entry.getValue()){
 				if(mbr == null){
-					mbr = new WeightedDoublePointRectangle(value.getKey());
+					mbr = new SpatialHistogramBucket(value.getKey());
 				}else
 					mbr.union(value.getKey());
 				weight +=value.getValue().number();
@@ -177,7 +177,7 @@ formark:	for(int i = 0; i < penaltyList.size(); i++){
 	 * @param ratio
 	 * @return
 	 */
-	public static List<WeightedDoublePointRectangle> buildRKHist2(RTree bulkLoadedRTree,  int numberOfNodes,   
+	public static List<SpatialHistogramBucket> buildRKHist2(RTree bulkLoadedRTree,  int numberOfNodes,   
 			int numberOfHyperBlocks, double ratio, int dimension){
 		// partition the 
 
@@ -199,7 +199,7 @@ formark:	for(int i = 0; i < penaltyList.size(); i++){
 //		Cursor<MapEntry<DoublePointRectangle, RTree.Node>> nodes = RGOhist.getNodesAndMBRs(bulkLoadedRTree, 1);
 		
 		
-		Cursor<MapEntry<DoublePointRectangle, ORTree.IndexEntry>> nodes =  RGOhist.getIndexEntriesAndMBRs(bulkLoadedRTree, 1); 
+		Cursor<MapEntry<DoublePointRectangle, ORTree.IndexEntry>> nodes =  SpatialHistogramUtils.getIndexEntriesAndMBRs(bulkLoadedRTree, 1); 
 		
 		// create hyperblocks and create penalty list;
 		while(nodes.hasNext()){
@@ -270,15 +270,15 @@ formark:	for(int i = 0; i < penaltyList.size(); i++){
 		}
 		// step 3. merge to histogram
 		nodeList.addAll(penaltyList);
-		List<WeightedDoublePointRectangle> histogram = new ArrayList<WeightedDoublePointRectangle>();
+		List<SpatialHistogramBucket> histogram = new ArrayList<SpatialHistogramBucket>();
 		for(MapEntry< Double,List<MapEntry<DoublePointRectangle, ORTree.IndexEntry>>> entry : nodeList){
-			WeightedDoublePointRectangle mbr = null;
+			SpatialHistogramBucket mbr = null;
 			int weight = 0;
 			for (MapEntry<DoublePointRectangle,ORTree.IndexEntry> value :  entry.getValue()){
 				 Node node =  getNode(value.getValue());
 				
 				if(mbr == null){
-					mbr = new WeightedDoublePointRectangle(value.getKey());
+					mbr = new SpatialHistogramBucket(value.getKey());
 				}else
 					mbr.union(value.getKey());
 				weight +=node.number();

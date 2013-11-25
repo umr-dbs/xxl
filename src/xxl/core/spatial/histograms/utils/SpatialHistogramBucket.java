@@ -22,7 +22,7 @@ License along with this library;  If not, see <http://www.gnu.org/licenses/>.
     http://code.google.com/p/xxl/
 
 */
-package xxl.core.spatial.histograms;
+package xxl.core.spatial.histograms.utils;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -45,16 +45,16 @@ import xxl.core.spatial.rectangles.DoublePointRectangle;
  *
  */
 @SuppressWarnings("serial")
-public class WeightedDoublePointRectangle extends DoublePointRectangle{
+public class SpatialHistogramBucket extends DoublePointRectangle{
 	
 	public static final int DEFAULT_WEIGHT = 1;
 	
 	
 	
-	public static final Function<Object, WeightedDoublePointRectangle > getFactoryFunction(final int dimension){
-		return new AbstractFunction<Object, WeightedDoublePointRectangle>() {
-			public WeightedDoublePointRectangle invoke(){
-				return new  WeightedDoublePointRectangle(dimension); 
+	public static final Function<Object, SpatialHistogramBucket > getFactoryFunction(final int dimension){
+		return new AbstractFunction<Object, SpatialHistogramBucket>() {
+			public SpatialHistogramBucket invoke(){
+				return new  SpatialHistogramBucket(dimension); 
 			}
 		};
 	}
@@ -76,38 +76,38 @@ public class WeightedDoublePointRectangle extends DoublePointRectangle{
 	}
 	
 	
-	public WeightedDoublePointRectangle(double[] leftCorner,
+	public SpatialHistogramBucket(double[] leftCorner,
 			double[] rightCorner, int weight) {
 		super(leftCorner, rightCorner);
 		this.weight = weight;
 		avgExtent = new double[leftCorner.length];
 	}
 
-	public WeightedDoublePointRectangle(DoublePointRectangle rec,  int weight) {
+	public SpatialHistogramBucket(DoublePointRectangle rec,  int weight) {
 		super(rec);
 		this.weight = weight;
 		avgExtent = new double[leftCorner.length];
 	}
 	
-	public WeightedDoublePointRectangle(int dimension,  int weight) {
+	public SpatialHistogramBucket(int dimension,  int weight) {
 		super(dimension);
 		this.weight = weight;
 		avgExtent = new double[leftCorner.length];
 	}
 	
-	public WeightedDoublePointRectangle(double[] p1, double[] p2) {
+	public SpatialHistogramBucket(double[] p1, double[] p2) {
 		super(p1, p2);
 		this.weight = 1;
 		avgExtent = new double[leftCorner.length];
 	}
 	
-	public WeightedDoublePointRectangle(int dimension) {
+	public SpatialHistogramBucket(int dimension) {
 		super(dimension);
 		this.weight = DEFAULT_WEIGHT;
 		avgExtent = new double[leftCorner.length];
 	}
 	
-	public WeightedDoublePointRectangle(DoublePointRectangle rec) {
+	public SpatialHistogramBucket(DoublePointRectangle rec) {
 		super(rec);
 		this.weight = DEFAULT_WEIGHT;
 		avgExtent = new double[leftCorner.length];

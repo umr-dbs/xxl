@@ -22,7 +22,7 @@ License along with this library;  If not, see <http://www.gnu.org/licenses/>.
     http://code.google.com/p/xxl/
 
 */
-package xxl.core.spatial.histograms;
+package xxl.core.spatial.histograms.utils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -469,7 +469,7 @@ public class PartitionerUtils {
 	 * Default generic OPT list processor. Parameterized with a UnarayFunction DoublePointRectangle Double 
 	 *
 	 */
-	public static class DeafultWeightedArrayProcessor  implements CostFunctionArrayProcessor<WeightedDoublePointRectangle>{
+	public static class DeafultWeightedArrayProcessor  implements CostFunctionArrayProcessor<SpatialHistogramBucket>{
 
 		final UnaryFunction< DoublePointRectangle, Double> costFunction; 
 		
@@ -483,7 +483,7 @@ public class PartitionerUtils {
 
 		@Override
 		public double[] processList(
-				WeightedDoublePointRectangle[] rectangles,
+				SpatialHistogramBucket[] rectangles,
 				int minWeight,
 				int maxWeight,
 				int startIndex
@@ -511,7 +511,7 @@ public class PartitionerUtils {
 
 		@Override
 		public double[] processInitialList(
-				WeightedDoublePointRectangle[] rectangles, int b, int B) {
+				SpatialHistogramBucket[] rectangles, int b, int B) {
 			List<Double> list = new ArrayList<Double>(100);
 			DoublePointRectangle universe = null;
 			int weight = 0;
@@ -536,7 +536,7 @@ public class PartitionerUtils {
 		
 		@Override
 		public double[][] precomputeAllCosts(
-				WeightedDoublePointRectangle[] rectangles)
+				SpatialHistogramBucket[] rectangles)
 				throws UnsupportedOperationException {
 			// TODO Auto-generated method stub
 			return null;
@@ -561,7 +561,7 @@ public class PartitionerUtils {
 	 * and then process the list of scfs with SSE Metric
 	 *
 	 */
-	public static class SSEWeightedArrayProcessor  implements CostFunctionArrayProcessor<WeightedDoublePointRectangle> {
+	public static class SSEWeightedArrayProcessor  implements CostFunctionArrayProcessor<SpatialHistogramBucket> {
 
 		private final UnaryFunction<DoublePointRectangle, Long> sfcFunction;
 		
@@ -574,7 +574,7 @@ public class PartitionerUtils {
 
 		@Override
 		public double[] processList(
-				WeightedDoublePointRectangle[] rectangles,
+				SpatialHistogramBucket[] rectangles,
 				int minWeight,
 				int maxWeight,
 				int startIndex
@@ -606,14 +606,14 @@ public class PartitionerUtils {
 
 		@Override
 		public double[] processInitialList(
-				WeightedDoublePointRectangle[] rectangles, int b, int B) {
+				SpatialHistogramBucket[] rectangles, int b, int B) {
 			// TODO Auto-generated method stub
 			return null;
 		}
 
 		@Override
 		public double[][] precomputeAllCosts(
-				WeightedDoublePointRectangle[] rectangles)
+				SpatialHistogramBucket[] rectangles)
 				throws UnsupportedOperationException {
 			// TODO Auto-generated method stub
 			return null;

@@ -22,7 +22,7 @@ License along with this library;  If not, see <http://www.gnu.org/licenses/>.
     http://code.google.com/p/xxl/
 
 */
-package xxl.core.spatial.histograms;
+package xxl.core.spatial.histograms.utils;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -153,7 +153,7 @@ public class MinSkewHist {
 	 * @param refinements
 	 * @return
 	 */
-	public static List<WeightedDoublePointRectangle> buildProgressiveRefinement(Cursor<DoublePointRectangle> rectangles,
+	public static List<SpatialHistogramBucket> buildProgressiveRefinement(Cursor<DoublePointRectangle> rectangles,
 			DoublePointRectangle universe, int bitsdPerDim, int dimensions,
 			int maxBuckets, int refinements){
 		PriorityQueue<Bucket> buckets = new PriorityQueue<Bucket>(100,
@@ -173,7 +173,7 @@ public class MinSkewHist {
 
 				});
 		
-		List<WeightedDoublePointRectangle> histogram = new ArrayList<WeightedDoublePointRectangle>();
+		List<SpatialHistogramBucket> histogram = new ArrayList<SpatialHistogramBucket>();
 		List<Bucket> tempList = new ArrayList<>();
 		Map<Long, Integer> grid; // grid 
 		int refStep =  refinements; 
@@ -253,7 +253,7 @@ public class MinSkewHist {
 					bucket.updateAverage(dpr);
 				}
 			}
-			for (WeightedDoublePointRectangle bucket : histogram) {
+			for (SpatialHistogramBucket bucket : histogram) {
 				if (bucket.contains(mitte)) {
 					bucket.setWeight(bucket.getWeight() +1);
 					bucket.updateAverage(dpr);
@@ -278,7 +278,7 @@ public class MinSkewHist {
 	 * @param dimensions
 	 * @return
 	 */
-	public static List<WeightedDoublePointRectangle> buildHistogram(
+	public static List<SpatialHistogramBucket> buildHistogram(
 			Cursor<DoublePointRectangle> rectangles,
 			DoublePointRectangle universe, int bitsdPerDim, int dimensions,
 			int maxBuckets) {
@@ -299,7 +299,7 @@ public class MinSkewHist {
 
 				});
 		
-		List<WeightedDoublePointRectangle> histogram = new ArrayList<WeightedDoublePointRectangle>();
+		List<SpatialHistogramBucket> histogram = new ArrayList<SpatialHistogramBucket>();
 
 		// 1. zugrundeliegendes grid berechnen
 		Map<Long, Integer> grid = computeGrid1(rectangles, bitsdPerDim,
@@ -359,7 +359,7 @@ public class MinSkewHist {
 					bucket.updateAverage(dpr);
 				}
 			}
-			for (WeightedDoublePointRectangle bucket : histogram) {
+			for (SpatialHistogramBucket bucket : histogram) {
 				if (bucket.contains(mitte)) {
 //					System.out.println("V: " + bucket.getWeight());
 //					bucket.setWeight(1800);
@@ -382,7 +382,7 @@ public class MinSkewHist {
 	 * buckets 
 	 *
 	 */
-	public static class Bucket extends WeightedDoublePointRectangle {
+	public static class Bucket extends SpatialHistogramBucket {
 
 		private Double skew = Double.MAX_VALUE;;
 		private Double bestReduction = 0.0;

@@ -22,7 +22,7 @@ License along with this library;  If not, see <http://www.gnu.org/licenses/>.
     http://code.google.com/p/xxl/
 
 */
-package xxl.core.spatial.histograms;
+package xxl.core.spatial.histograms.utils;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -104,7 +104,7 @@ public class STHist {
 			data.add(rectangles.next());
 		}
 		buildGrid(Cursors.wrap(data.iterator()), bitsPerDim, dimension);
-		WeightedDoublePointRectangle recUniverse = new WeightedDoublePointRectangle(universe);
+		SpatialHistogramBucket recUniverse = new SpatialHistogramBucket(universe);
 		this.rootBucket = new STHistBucket();
 		recUniverse.setWeight(data.size());
 		this.rootBucket.setInfoRectangle(recUniverse);
@@ -119,7 +119,7 @@ public class STHist {
 	
 	
 	
-	protected double computeSkew(WeightedDoublePointRectangle rectangle ){
+	protected double computeSkew(SpatialHistogramBucket rectangle ){
 		//
 		double skew = 0;
 		double average = 0;
@@ -160,12 +160,12 @@ public class STHist {
 			System.out.println("Run build node with nbi : "  + bucketsNumber);
 		double universeSizeFraction = Math.max(bucketsNumber, 2); 
 		double fractionFrequency = Math.max(bucketsNumber, 2);
-		List<Pair<Double,WeightedDoublePointRectangle>> hotSpots = detectHotSpotsMainMemory(
+		List<Pair<Double,SpatialHistogramBucket>> hotSpots = detectHotSpotsMainMemory(
 				subroot.getInfoRectangle(), subroot.getInfoRectangle().getWeight(), Cursors.wrap(dataIt), 
 				toPoint, universeSizeFraction, fractionFrequency);
 		// 
 		double allSkew = 0;
-		for(Pair<Double,WeightedDoublePointRectangle> r : hotSpots){
+		for(Pair<Double,SpatialHistogramBucket> r : hotSpots){
 			subroot.getChildList().add(new STHistBucket(r.getElement2(), r.getElement1()));
 			allSkew += r.getElement1();
 		}
@@ -245,7 +245,7 @@ public class STHist {
 				double[] left = {x,y};
 				double[] right =  { (x+ xStep <  xmax) ? x + xStep : xmax ,
 						 (y+ yStep <  ymax) ? y + yStep : ymax};
-				WeightedDoublePointRectangle rectangle = new WeightedDoublePointRectangle(left, right);
+				SpatialHistogramBucket rectangle = new SpatialHistogramBucket(left, right);
 				// compute weight
 				int count = 0; 
 				for(DoublePointRectangle r: data){
@@ -266,7 +266,7 @@ public class STHist {
 		// sort data according predifined SFC
 		Comparator<STHist.STHistBucket> bucketComparator = new Comparator<STHist.STHistBucket>() {
 			
-			Comparator<DoublePointRectangle> recComparator = RGOhist.getHilbert2DComparator(universe, 1 << 30);
+			Comparator<DoublePointRectangle> recComparator = SpatialHistogramUtils.getHilbert2DComparator(universe, 1 << 30);
 			
 			@Override
 			public int compare(STHistBucket o1, STHistBucket o2) {
@@ -284,7 +284,7 @@ public class STHist {
 			while(itr.hasNext()){
 				STHistBucket b2 = itr.next();
 				// compute union 
-				WeightedDoublePointRectangle rectangle = new WeightedDoublePointRectangle(b1.getInfoRectangle());
+				SpatialHistogramBucket rectangle = new SpatialHistogramBucket(b1.getInfoRectangle());
 				rectangle.union(b2.getInfoRectangle());
 				rectangle.setWeight(b1.getInfoRectangle().getWeight() + b2.getInfoRectangle().getWeight());
 				double skewUnion = computeSkew(rectangle);
@@ -316,7 +316,7 @@ public class STHist {
 	
 	
 	
-	public  List<Pair<Double,WeightedDoublePointRectangle>> detectHotSpotsMainMemory(
+	public  List<Pair<Double,SpatialHistogramBucket>> detectHotSpotsMainMemory(
 			DoublePointRectangle universe,  double universeFrequency, Cursor<DoublePointRectangle> recs, 
 			UnaryFunction<DoublePointRectangle, DoublePoint> toPoint, 
 			double universeSizeFraction, double fractionFrequency) throws IOException{
@@ -324,7 +324,7 @@ public class STHist {
 		
 		
 		
-		List<Pair<Double,WeightedDoublePointRectangle>> hotspots = new ArrayList<Pair<Double,WeightedDoublePointRectangle>>();
+		List<Pair<Double,SpatialHistogramBucket>> hotspots = new ArrayList<Pair<Double,SpatialHistogramBucket>>();
 		// create to cursors one sorted on x and y 
 		List<DoublePointRectangle> dataX = new ArrayList<DoublePointRectangle>(10000);
 		List<DoublePointRectangle> dataY = new ArrayList<DoublePointRectangle>(10000);
@@ -375,23 +375,23 @@ public class STHist {
 						
 						boolean quickOverlap = false;
 						DoublePoint pp = new DoublePoint(minPoint);
-						for(Pair<Double,WeightedDoublePointRectangle> bst: hotspots){
+						for(Pair<Double,SpatialHistogramBucket> bst: hotspots){
 							if (bst.getElement2().contains(pp) ){
 								quickOverlap = true;
 								break;
 							}
 						}
 						if (!quickOverlap){
-							WeightedDoublePointRectangle hotspot   = adjustDoublePointRectangle(new DoublePointRectangle(minPoint, maxPoint),
+							SpatialHistogramBucket hotspot   = adjustDoublePointRectangle(new DoublePointRectangle(minPoint, maxPoint),
 									inRegionListY,  toPoint);
 							// 
 							boolean overlap = overlapCheck(hotspots, hotspot);
 							if (!overlap){
 								
 								double skew = computeSkew(hotspot); 
-								hotspots.add(new Pair<Double, WeightedDoublePointRectangle>(skew, hotspot));
+								hotspots.add(new Pair<Double, SpatialHistogramBucket>(skew, hotspot));
 								if (verbose)
-									System.out.println("Nr: " +hotspots.size() + " HotSpot Found: " + new Pair<Double, WeightedDoublePointRectangle>(skew, hotspot));
+									System.out.println("Nr: " +hotspots.size() + " HotSpot Found: " + new Pair<Double, SpatialHistogramBucket>(skew, hotspot));
 								dataX = removeObjects(hotspot, dataX , toPoint);//remove objects from dataX via copy
 								dataY = removeObjects(hotspot, dataY , toPoint);//remove objects from dataY via copy
 								inRegionListY = removeObjects(hotspot, inRegionListY , toPoint);//remove objects from inRegionListY via copy
@@ -429,8 +429,8 @@ public class STHist {
 	}
 	
 	
-	protected boolean overlapCheck(List<Pair<Double,WeightedDoublePointRectangle>> hotspots, DoublePointRectangle hotspot){
-		for(Pair<Double,WeightedDoublePointRectangle>  r: hotspots){
+	protected boolean overlapCheck(List<Pair<Double,SpatialHistogramBucket>> hotspots, DoublePointRectangle hotspot){
+		for(Pair<Double,SpatialHistogramBucket>  r: hotspots){
 				if(r.getElement2().overlaps(hotspot))	
 					return true;
 		}
@@ -438,13 +438,13 @@ public class STHist {
 	}
 	
 	
-	protected WeightedDoublePointRectangle adjustDoublePointRectangle(DoublePointRectangle rectangle, List<DoublePointRectangle> inputList , UnaryFunction<DoublePointRectangle, DoublePoint> toPoint){
-		 WeightedDoublePointRectangle rec = null;
+	protected SpatialHistogramBucket adjustDoublePointRectangle(DoublePointRectangle rectangle, List<DoublePointRectangle> inputList , UnaryFunction<DoublePointRectangle, DoublePoint> toPoint){
+		 SpatialHistogramBucket rec = null;
 		for(DoublePointRectangle r : inputList ) {
 			DoublePoint p = toPoint.invoke(r);
 			if (rectangle.contains(p)){
 				if(rec == null){
-					rec = new WeightedDoublePointRectangle(new DoublePointRectangle(p, p));
+					rec = new SpatialHistogramBucket(new DoublePointRectangle(p, p));
 					rec.setWeight(1);
 				}
 				else
@@ -536,13 +536,13 @@ public class STHist {
 	}
 	
 	
-	public static void  forest(List<STHistBucket> hist, List<WeightedDoublePointRectangle> forest){
+	public static void  forest(List<STHistBucket> hist, List<SpatialHistogramBucket> forest){
 		for(STHistBucket bucket : hist){
 			STHist.getRectangles(bucket, forest);
 		}
 	}
 	
-	public static void getRectangles(STHistBucket bucket, List<WeightedDoublePointRectangle> list){
+	public static void getRectangles(STHistBucket bucket, List<SpatialHistogramBucket> list){
 		list.add(bucket.infoRectangle);
 		for(STHistBucket b : bucket.childList){
 			getRectangles(b, list);
@@ -552,7 +552,7 @@ public class STHist {
 	public static class STHistBucket{
 		
 		
-		private WeightedDoublePointRectangle infoRectangle;
+		private SpatialHistogramBucket infoRectangle;
 		
 		private double skew;
 		
@@ -564,7 +564,7 @@ public class STHist {
 			childList = new ArrayList<STHist.STHistBucket>();
 		}
 		
-		public STHistBucket( WeightedDoublePointRectangle infoRectangle, double skew) {
+		public STHistBucket( SpatialHistogramBucket infoRectangle, double skew) {
 			this();
 			this.infoRectangle = infoRectangle;
 			this.skew = skew; 
@@ -581,12 +581,12 @@ public class STHist {
 		}
 
 
-		public WeightedDoublePointRectangle getInfoRectangle() {
+		public SpatialHistogramBucket getInfoRectangle() {
 			return infoRectangle;
 		}
 
 
-		public void setInfoRectangle(WeightedDoublePointRectangle infoRectangle) {
+		public void setInfoRectangle(SpatialHistogramBucket infoRectangle) {
 			this.infoRectangle = infoRectangle;
 		}
 

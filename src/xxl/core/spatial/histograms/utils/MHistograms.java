@@ -22,7 +22,7 @@ License along with this library;  If not, see <http://www.gnu.org/licenses/>.
     http://code.google.com/p/xxl/
 
 */
-package xxl.core.spatial.histograms;
+package xxl.core.spatial.histograms.utils;
 
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
@@ -61,9 +61,9 @@ import xxl.core.io.converters.ConvertableConverter;
 import xxl.core.io.converters.Converter;
 import xxl.core.predicates.AbstractPredicate;
 import xxl.core.predicates.Predicate;
-import xxl.core.spatial.histograms.PHist2L.HistType;
-import xxl.core.spatial.histograms.PartitionerUtils.ProcessorType;
-import xxl.core.spatial.histograms.STHist.STHistBucket;
+import xxl.core.spatial.histograms.utils.RVHistogram.HistType;
+import xxl.core.spatial.histograms.utils.PartitionerUtils.ProcessorType;
+import xxl.core.spatial.histograms.utils.STHist.STHistBucket;
 import xxl.core.spatial.rectangles.DoublePointRectangle;
 import xxl.core.spatial.rectangles.Rectangles;
 import xxl.core.util.WrappingRuntimeException;
@@ -72,7 +72,7 @@ import xxl.core.util.WrappingRuntimeException;
 
 
 /**
- * This class implements  spatial histograms for selectivity estimation 
+ * This class implements spatial histograms for selectivity estimation 
  * Assumption: input data is a collection of doublePointRectangles (  {@link DoublePointRectangle} ) in unit space!
  * 
  * @see D. Achakeev and B. Seeger A class of R-tree histograms for spatial databases GIS 2012
@@ -81,88 +81,146 @@ import xxl.core.util.WrappingRuntimeException;
 public class MHistograms {
 	
 	/**
-	 * 
+	 * Property names of R-tree based histograms
 	 */
-	public  static Function dataDescriptor = new AbstractFunction(){
+	public static final String RTREE_SORT_PATH = "rtree.sortpath";
+	public static final String RTREE_PATH = "rtree.path";
+	public static final String RTREE_BLOCK_SIZE = "rtree.blockSize"; 
+	public static final String RTREE_SORT_COMP = "rtree.sort"; // Hilbert 0; ZCurve 1; 
+	public static final String RTREE_BULKLOAD = "rtree.bulkload"; // simple 0, gopt 1,  sopt 2 
+	public static final String RTREE_DIMENSION = "rtree.dimension"; // simple 0, gopt 1,  sopt 2 
+	public static final String RTREE_RATIO = "rtree.ratio";
+	public static final String RTREE_UTIL = "rtree.storageUtil";
+	public static final String RTREE_PARTSIZE = "rtree.partSize";
+	public static final String RTREE_BITS = "rtree.bits";
+	public static final int NAIVE_BULKLOAD = 0;
+	public static final int GOPT_BULKLOAD = 1;
+	public static final int SOPT_BULKLOAD = 2;
+	public static final int BITS_PRO_DIM = 31;
+	public static final int FILLING_CURVE_PRECISION = 1 << (BITS_PRO_DIM-1);
+	public static final String RKHIST_U_RATIO = "rkhist.ratio";
+	/**
+	 * Property names of MinSkew based histograms		
+	 */
+	public static final String MINSKEW_DIM = "minskew.dim";
+	public static final String MINSKEW_PATH = "minskew.path";
+	public static final String MINSKEW_GRID_SIZE = "minskew.gridsize"; // in bits pro dim
+	public static final String MINSKEW_REF = "minskew.ref";
+	/**
+	 * simple descriptor function 
+	 */
+	@SuppressWarnings("deprecation")
+	public static Function dataDescriptor = new AbstractFunction(){
 		public Object invoke(Object o){
 			 return  (DoublePointRectangle)o;
 		}
 	};
-	
-	
-	
-	
-	
+	/**
+	 * Groundwork class for spatial histogram generation. 
+	 * 
+	 */
 	public static abstract class AbstractSelHistogram implements MHistogram{
 		
-	
-		public List<WeightedDoublePointRectangle> histogram; 
+		/**
+		 * intern representation of a histogram
+		 * a list that contains a buckets of type {@link SpatialHistogramBucket}
+		 */
+		protected List<SpatialHistogramBucket> histogram; 
 		/**
 		 * sets properties for histogram method
 		 * @param props
 		 */
 		protected abstract void setProperties(Properties props); 
-		
+		/*
+		 * (non-Javadoc)
+		 * @see xxl.core.spatial.histograms.utils.MHistogram#getSelectivity(xxl.core.spatial.rectangles.DoublePointRectangle)
+		 */
 		@Override
 		public double getSelectivity(DoublePointRectangle queryRec) {
-			return RGOhist.computeEstimation(histogram.iterator(), queryRec);
+			return SpatialHistogramUtils.computeEstimation(histogram.iterator(), queryRec);
 		}
-		/**
-		 * 
-		 * @return
+		/*
+		 * (non-Javadoc)
+		 * @see xxl.core.spatial.histograms.utils.MHistogram#getBuckets()
 		 */
-		public List<WeightedDoublePointRectangle> getBuckets(){
+		public List<SpatialHistogramBucket> getBuckets(){
 			return histogram;
 		}
-		
+		/*
+		 * (non-Javadoc)
+		 * @see xxl.core.spatial.histograms.utils.MHistogram#numberOfBuckets()
+		 */
 		@Override
 		public int numberOfBuckets() {
 			return histogram.size();
 		}
 	}
-	
-	
-	
 	/**
 	 * 
+	 * This is a groundwork class for R-tree based histograms. 
+	 * 
+	 * This class provides method for R-tree bulk loading. To bulk load an R-tree a sort based algorithm is used.  
+	 * In case of 2 dimensions a hilbert comparator is used, otherwise we use a Z-Curve.
 	 * 
 	 *
 	 */
-	public static class RTreeNaiveHistogram extends AbstractSelHistogram {
-		
-		public static final String RTREE_SORT_PATH = "rtree.sortpath";
-		public static final String RTREE_PATH = "rtree.path";
-		public static final String RTREE_BLOCK_SIZE = "rtree.blockSize"; 
-		public static final String RTREE_SORT_COMP = "rtree.sort"; // Hilbert 0; ZCurve 1; 
-		public static final String RTREE_BULKLOAD = "rtree.bulkload"; // simple 0, gopt 1,  sopt 2 
-		public static final String RTREE_DIMENSION = "rtree.dimension"; // simple 0, gopt 1,  sopt 2 
-		public static final String RTREE_RATIO = "rtree.ratio";
-		public static final String RTREE_UTIL = "rtree.storageUtil";
-		public static final String RTREE_PARTSIZE = "rtree.partSize";
-		public static final String RTREE_BITS = "rtree.bits";
-		
-		
-		
-		
-		public static final int NAIVE_BULKLOAD = 0;
-		public static final int GOPT_BULKLOAD = 1;
-		public static final int SOPT_BULKLOAD = 2;
-		public static final int BITS_PRO_DIM = 31;
-		public static final int FILLING_CURVE_PRECISION = 1 << (BITS_PRO_DIM-1);
-		
+	public static class RTreeBasicHistogram extends AbstractSelHistogram {
+		/**
+		 * default parameters
+		 */
+		/**
+		 * Blocks size of R-tree
+		 */
 		protected int blockSize = 4096; // default value
+		/**
+		 * number of dimensions, default 2
+		 * 
+		 */
 		protected int dimension = 2; // default value
-		protected Converter<DoublePointRectangle> converter = new ConvertableConverter<DoublePointRectangle>(RGOhist.factoryFunction(dimension));// default 2D Converter
-		protected Comparator<DoublePointRectangle> comparator = RGOhist.getHilbert2DComparator(RGOhist.universeUnit(dimension), FILLING_CURVE_PRECISION); // default 2D comparator
-		protected String sortpath = "./"; // default 
+		/**
+		 * input rectangle  (DoublePointRectangle) converter
+		 *   
+		 */
+		protected Converter<DoublePointRectangle> converter = new ConvertableConverter<DoublePointRectangle>(SpatialHistogramUtils.factoryFunction(dimension));// default 2D Converter
+		/**
+		 * comparator, based on SFC mapping; For two-dimensional space we use Hilbert, otherwise Z-Curve.
+		 */
+		protected Comparator<DoublePointRectangle> comparator = SpatialHistogramUtils.getHilbert2DComparator(SpatialHistogramUtils.universeUnit(dimension), FILLING_CURVE_PRECISION); // default 2D comparator
+		/**
+		 * Path were temporal sort files are stored
+		 */
+		protected String sortpath = "./"; // default
+		/**
+		 * Path were temporal R-tree is stored
+		 */
 		protected String rtreePath ="./"; //default
+		/**
+		 * bulk load type
+		 */
 		protected int bulkLoad = 0; // DEAFULT
+		/**
+		 * min R-tree page capacity, defined by the fraction of page capacity default value 0.33
+		 */
 		protected double rtreeRatio = 0.33; // default 
+		/**
+		 * average target R-tree page capacity, defined by the fraction of page capacity default value 0.8 
+		 */
 		protected double loadRatio = 0.8; // default
+		/**
+		 * maximal number of entries for optimal partitioning computation during the loading of R-tree, default value 50.000 rectangles 
+		 */
 		protected int partitionSize = 50000; // default 
+		/**
+		 * number of bits used in a SFC key computation. SFC key is a long value. 
+		 */
 		protected int bitProDim = 63/dimension;
+		/**
+		 * mask for SFC computation
+		 */
 		protected int precision = 1 << (bitProDim-1);
-		
+		/**
+		 * function for optimal partitioning e.g. volume based
+		 */
 		DefaultArrayProcessor arrayProcessor = null;
 		
 		/**
@@ -174,10 +232,10 @@ public class MHistograms {
 				precision = 1 << (bitProDim-1);
 				blockSize = new Integer(props.getProperty(RTREE_BLOCK_SIZE, "4096")); // default value
 				dimension = new Integer(props.getProperty(RTREE_DIMENSION, "2")); // default value
-				converter = new ConvertableConverter<DoublePointRectangle>(RGOhist.factoryFunction(dimension));// default 2D Converter
+				converter = new ConvertableConverter<DoublePointRectangle>(SpatialHistogramUtils.factoryFunction(dimension));// default 2D Converter
 				comparator = (dimension == 2 ) ? 
-						RGOhist.getHilbert2DComparator(RGOhist.universeUnit(dimension),precision) :
-							RGOhist.getZCurveComparator(RGOhist.universeUnit(dimension), bitProDim);
+						SpatialHistogramUtils.getHilbert2DComparator(SpatialHistogramUtils.universeUnit(dimension),precision) :
+							SpatialHistogramUtils.getZCurveComparator(SpatialHistogramUtils.universeUnit(dimension), bitProDim);
 //							: RGOhist.getHilbertComparator(RGOhist.universeUnit(dimension), bitProDim); // default 2D comparator
 //				comparator = 
 //								RGOhist.getZCurveComparator(RGOhist.universeUnit(dimension), 31); // default 2D comparator
@@ -195,7 +253,10 @@ public class MHistograms {
 			}
 		}
 		
-		
+		/*
+		 * (non-Javadoc)
+		 * @see xxl.core.spatial.histograms.utils.MHistogram#buildHistogram(xxl.core.cursors.Cursor, int, java.util.Properties)
+		 */
 		@Override
 		public void buildHistogram(Cursor<DoublePointRectangle> rectangles,
 				int numberOfBuckets, Properties props) throws IOException  {
@@ -209,14 +270,15 @@ public class MHistograms {
 				ProcessingType pType = (bulkLoad == GOPT_BULKLOAD) ? ProcessingType.GOPT : ProcessingType.SOPT_F;
 				tree = buildExtRtree(sortedRectangles, pType);
 			}
-			histogram = RGOhist.computeSimpleRTreeHistogram(tree, numberOfBuckets);
+			histogram = SpatialHistogramUtils.computeSimpleRTreeHistogram(tree, numberOfBuckets);
 		}
 		
 		/**
-		 * sorts data 
+		 * this method sorts data according hilbert or z-curve
 		 * @param rectangles
 		 * @return
 		 */
+		@SuppressWarnings({ "deprecation", "serial", "unchecked" })
 		protected Cursor<DoublePointRectangle> sortData(Cursor<DoublePointRectangle> rectangles){
 			final Container queueContainer = new BlockFileContainer(sortpath + "tmpsortqueue.tmp" , 4096);
 			final Function<Function<?, Integer>, Queue<?>> queueFunction =
@@ -231,6 +293,9 @@ public class MHistograms {
 		}
 		
 		/**
+		 * Builds R-tree using {@link SortBasedBulkLoading} method. 
+		 * 
+		 * 
 		 * 
 		 * @param rectCursor
 		 * @return
@@ -253,7 +318,12 @@ public class MHistograms {
 			return sortBasedRTree;
 		}
 		
-		
+		/**
+		 * 
+		 * @param rectCursor
+		 * @param container
+		 * @return
+		 */
 		public  RTree buildSimpleRtree(Cursor<DoublePointRectangle> rectCursor, Container container){
 			RTree sortBasedRTree = new RTree();
 			CounterContainer treeCounter = new CounterContainer(container);
@@ -274,19 +344,17 @@ public class MHistograms {
 		
 		/**
 		 * 
+		 * Builds an R-tree using {@link RtreeIterativeBulkloader}
+		 * 
 		 * @param rectCursor
 		 * @param pType
 		 * @return
 		 * @throws IOException
 		 */
 		protected RTree buildExtRtree(Cursor<DoublePointRectangle> rectCursor, xxl.core.indexStructures.rtrees.RtreeIterativeBulkloader.ProcessingType pType) throws IOException{
-			
 			RTree sortBasedRTree = new RTree();
 			Container treeContainer =  new ConverterContainer( new BlockFileContainer(rtreePath, blockSize), 
 					sortBasedRTree.nodeConverter(Rectangles.getDoublePointRectangleConverter(dimension), dimension));
-//			if (buffer != null){
-//				treeContainer = new BufferedContainer(treeContainer, buffer); 
-//			}
 			sortBasedRTree.determineContainer = new Constant<Object>(treeContainer);
 			sortBasedRTree.getContainer =new Constant<Object>(treeContainer);
 			boolean processList = (pType == ProcessingType.GOPT) ? true: false;
@@ -305,77 +373,35 @@ public class MHistograms {
 				}
 			}); 
 			bulkLoader.buildRTree(rectCursor); 
-//			treeContainer.flush();
-			
-			
-//			RtreeIterativeBulkloader<DoublePointRectangle> bulkLoader = new RtreeIterativeBulkloader(
-//					rtreePath, 
-//					dimension, 
-//					blockSize, 
-//					rtreeRatio,
-//					loadRatio, 
-//					partitionSize,
-//					RGOhist.universeUnit(dimension));
-//			
-//			arrayProcessor = new DefaultArrayProcessor(function);
-//			bulkLoader.initTreeBulkloader(arrayProcessor, pType, new BlockFileContainer(rtreePath, blockSize));
-//			bulkLoader.buildRTree(rectCursor);
 			return bulkLoader.rtree;
 		}
 		
 	}
 	
 	
+
+	
 	/**
-	 * two level histogram computes for predefined pages a with gopt algorithm and 
-	 * then computes under assumption that opt* algortihm with following settings
-	 * Algoirthm has follwing parameter:
-	 * Initial BlockSize, ratio, minBound, avgLoad
+	 * Two step R-tree based histogram. 
+	 * 
+	 * In the first step R-tree leaf nodes are build using gopt strategy. 
+	 * In the second step histogram is constructed using opt strategy.  
+	 * In the basic variant a sum of volumes of bucket MBR are used for optimization. 
+	 * 
+	 * We refer for details to  D. Achakeev and B. Seeger A class of R-tree histograms for spatial databases GIS 2012
+	 * 
 	 * p := number of buckets 
 	 * B = N/(p*avgLoad) 
 	 * b = B*minBound
 	 *
-	 */
-	public static class SOPTHistogram extends RTreeNaiveHistogram{
-		
-		@Override
-		public void buildHistogram(Cursor<DoublePointRectangle> rectangles,
-				int numberOfBuckets, Properties props) throws IOException {
-			// set properties 
-			setProperties(props);
-			// build rtree
-			Cursor<DoublePointRectangle> sortedRectangles = sortData(rectangles);
-			RTree tree = buildExtRtree(sortedRectangles, ProcessingType.GOPT);
-			// get entries from level 1
-			double[] sideLength = new double[dimension];
-			for(int i = 0; i < sideLength.length; i++){
-				sideLength[i] = 0d;
-			}
-			int count = Cursors.count(RGOhist.getRectanglesLevel1(tree));
-			loadRatio = 0.8;
-			rtreeRatio = 0.4;
-			int B = count/ (int)(loadRatio*numberOfBuckets); // 1-avgLoad 
-			int b = (int)(((double)B) * rtreeRatio);
-			System.out.println("B for tree "  + B +" min b " +b  + " entries to consider " + count);
-			UnaryFunction<DoublePointRectangle, Double> function = RtreeIterativeBulkloader.generateDefaultFunction(sideLength);
-			DefaultArrayProcessor arrayProcessor = new DefaultArrayProcessor(function);
-			this.histogram =  PHist2L.computeHistogramOPT(RGOhist.getRectanglesLevel1(tree),b , B, count, numberOfBuckets, arrayProcessor, false);
-		}
-		
-	
-	}
-	
-	/**
-	 * two level histogram computes for predefined pages a with gopt algorithm and 
-	 * then computes under assumption that opt* algortihm with following settings
-	 * Algoirthm has follwing parameter:
-	 * Initial BlockSize, ratio, minBound, avgLoad
-	 * p := number of buckets 
-	 * B = N/(p*avgLoad) 
-	 * b = B*minBound
+	 * As histogram is build using opt partitioning strategy, in the second step dynamic programming table occupies quadratic space in the number of input leafs. 
+	 * Therefore, we use a simple heuristic. We partition the input set of leaf nodes in chunks of 20 000 pages according to the sorting order 
+	 * and apply opt partitioning on each.
+	 *  
+	 *
 	 *
 	 */
-	public static class RHistogram extends SOPTHistogram{
+	public static class RHistogram extends RTreeBasicHistogram{
 		
 		public static final int BITS_PRO_DIM = 8;  
 		public static final int B_FACTOR = 2;
@@ -410,7 +436,7 @@ public class MHistograms {
 				Cursor<DoublePointRectangle> queryPoints, 
 				DoublePointRectangle universe) {
 			this(dimension, blockSize, rtreeRatio, hratio,avgratio, type, pType);
-			sideLength = RGOhist.computeQuerySides(queryPoints, dimension, universe); 
+			sideLength = SpatialHistogramUtils.computeQuerySides(queryPoints, dimension, universe); 
 		}
 		
 		
@@ -426,22 +452,19 @@ public class MHistograms {
 				sortedRectangles = sortData(rectangles);
 				tree = buildExtRtree(sortedRectangles, ProcessingType.GOPT);
 			}
-			int count = Cursors.count(RGOhist.getRectanglesLevel1(tree));
+			int count = Cursors.count(SpatialHistogramUtils.getRectanglesLevel1(tree));
 			if(count <= numberOfBuckets){
-				this.histogram = RGOhist.computeSimpleRTreeHistogram(tree, numberOfBuckets);
+				this.histogram = SpatialHistogramUtils.computeSimpleRTreeHistogram(tree, numberOfBuckets);
 				return;
 			}
-			
+			// after computing the leaf node level of R-tree
+			// we set the parameter for Hisotgram generation
+			// they set in dependency of desired number of buckets 
 			double f =  count/ (double)numberOfBuckets; // 1-avgLoad 
-//			System.out.println("avg load " + f);
 			int d = (int) Math.ceil((count/ ((double)numberOfBuckets)));
 			int b = (int)(Math.max(Math.floor(f * hratio), 1));
-			int bM =  (int)(Math.max(Math.ceil(f * hratio), 1));
-			System.out.println("bM "  + bM);
-			int window = Math.max(2, bM);
 			b = Math.max(b, 2);
-			int B = b+d;//(b*3-1 <= (d+2)) ? window + d : b*3-1;
-			System.out.println("B for tree "  + B +" min b " +b  + " entries to consider " + count);
+			int B = b+d;//
 			if(type==HistType.GOPT ){
 				b = count/numberOfBuckets;
 				B = B_FACTOR *b;
@@ -462,13 +485,12 @@ public class MHistograms {
 					arrayProcessor  = new DefaultArrayProcessor(function); 
 			}
 			double rat = ((double)f)/ (double)B;
-			System.out.println("ratio: " + rat);
 			if (count > 20000) // 128*128
-				this.histogram =  PHist2L.computeHistogramOPT(
-						RGOhist.getRectanglesLevel1(tree), b , B, count, numberOfBuckets, rat, arrayProcessor, type, 10000);
+				this.histogram =  RVHistogram.computeHistogramOPT(
+						SpatialHistogramUtils.getRectanglesLevel1(tree), b , B, count, numberOfBuckets, rat, arrayProcessor, type, 10000);
 			else
-				this.histogram =  PHist2L.computeHistogramOPT(
-						RGOhist.getRectanglesLevel1(tree), b , B, count, numberOfBuckets,  arrayProcessor, type);
+				this.histogram =  RVHistogram.computeHistogramOPT(
+						SpatialHistogramUtils.getRectanglesLevel1(tree), b , B, count, numberOfBuckets,  arrayProcessor, type);
 		}
 		
 		
@@ -483,9 +505,9 @@ public class MHistograms {
 		public void buildHistogram(	int numberOfBuckets, Properties props, int b, int B) throws IOException {
 			// set properties 
 			setProperties(props);
-			int count = Cursors.count(RGOhist.getRectanglesLevel1(tree));
+			int count = Cursors.count(SpatialHistogramUtils.getRectanglesLevel1(tree));
 			if(count <= numberOfBuckets){
-				this.histogram = RGOhist.computeSimpleRTreeHistogram(tree, numberOfBuckets);
+				this.histogram = SpatialHistogramUtils.computeSimpleRTreeHistogram(tree, numberOfBuckets);
 				return;
 			}
 			//.out.println("B for tree "  + B +" min b " +b  + " entries to consider " + count);
@@ -500,18 +522,19 @@ public class MHistograms {
 			if (count > 40000)
 //				this.histogram =  PHist2L.computeHistogramOPT(
 //						RGOhist.getRectanglesLevel1(tree), b , B, count, numberOfBuckets, avgratio, arrayProcessor, type, 128*128);
-				this.histogram =  PHist2L.computeHistogramOPT(
-						RGOhist.getRectanglesLevel1(tree), b , B, count, numberOfBuckets, rat, arrayProcessor, type, 128*128);
+				this.histogram =  RVHistogram.computeHistogramOPT(
+						SpatialHistogramUtils.getRectanglesLevel1(tree), b , B, count, numberOfBuckets, rat, arrayProcessor, type, 128*128);
 			else
-				this.histogram =  PHist2L.computeHistogramOPT(
-						RGOhist.getRectanglesLevel1(tree), b , B, count, numberOfBuckets,  arrayProcessor, type);
+				this.histogram =  RVHistogram.computeHistogramOPT(
+						SpatialHistogramUtils.getRectanglesLevel1(tree), b , B, count, numberOfBuckets,  arrayProcessor, type);
 		}
 		
-		
+		/**
+		 * 
+		 * @param numberOfBuckets
+		 */
 		public void buildSimpleHist(int numberOfBuckets){
-		
-			histogram = RGOhist.computeSimpleRTreeHistogram(tree, numberOfBuckets);
-			
+			histogram = SpatialHistogramUtils.computeSimpleRTreeHistogram(tree, numberOfBuckets);
 		}
 		
 		
@@ -526,9 +549,9 @@ public class MHistograms {
 	 * RK-Hist
 	 *
 	 */
-	public static class RKHistHistogram extends  RTreeNaiveHistogram{
+	public static class RKHistHistogram extends  RTreeBasicHistogram{
 		
-		public static final String RKHIST_U_RATIO = "rkhist.ratio";
+		
 		
 		protected double undersampligRatio = 0.1; // default value 
 		
@@ -550,7 +573,7 @@ public class MHistograms {
 					tree = buildExtRtree(sortedRectangles, pType);
 				}
 			}
-			int numberOfNodes = Cursors.count(RGOhist.getNodes(tree, 1));
+			int numberOfNodes = Cursors.count(SpatialHistogramUtils.getNodes(tree, 1));
 			histogram = RKhist.buildRKHist(tree, numberOfNodes, numberOfBuckets, undersampligRatio, dimension);
 		}
 		
@@ -582,9 +605,7 @@ public class MHistograms {
 	 */
 	public static class MinSkewHistogram extends AbstractSelHistogram{
 		
-		public static final String MINSKEW_DIM = "minskew.dim";
-		public static final String MINSKEW_PATH = "minskew.path";
-		public static final String MINSKEW_GRID_SIZE = "minskew.gridsize"; // in bits pro dim
+	
 		
 		protected String tempPath = "./cursor.tmp"; // default value for the path
 		protected int dimension = 2; // default
@@ -597,7 +618,7 @@ public class MHistograms {
 			setProperties(props);
 			createTmpFile(rectangles);
 			Cursor<DoublePointRectangle> recCursor = new FileInputCursor<DoublePointRectangle>(
-					new ConvertableConverter<DoublePointRectangle>(RGOhist.factoryFunction(dimension)), new File(tempPath)){	
+					new ConvertableConverter<DoublePointRectangle>(SpatialHistogramUtils.factoryFunction(dimension)), new File(tempPath)){	
 						@Override
 						public boolean supportsReset() {
 							return true;
@@ -617,7 +638,7 @@ public class MHistograms {
 							}
 						}
 			};
-			this.histogram = MinSkewHist.buildHistogram(recCursor, RGOhist.universeUnit(dimension), bitsPerDim, dimension, numberOfBuckets); 
+			this.histogram = MinSkewHist.buildHistogram(recCursor, SpatialHistogramUtils.universeUnit(dimension), bitsPerDim, dimension, numberOfBuckets); 
 		}
 
 		@Override
@@ -653,7 +674,7 @@ public class MHistograms {
 	 */
 	public static class MinSkewProgressiveRefinementHistogram extends MinSkewHistogram{
 		
-		public static final String MINSKEW_REF = "minskew.ref";
+		
 	
 		protected int refSteps = 2; // default; 1024 * dimesnions
 		
@@ -664,7 +685,7 @@ public class MHistograms {
 			setProperties(props);
 			createTmpFile(rectangles);
 			Cursor<DoublePointRectangle> recCursor = new FileInputCursor<DoublePointRectangle>(
-					new ConvertableConverter<DoublePointRectangle>(RGOhist.factoryFunction(dimension)), new File(tempPath)){	
+					new ConvertableConverter<DoublePointRectangle>(SpatialHistogramUtils.factoryFunction(dimension)), new File(tempPath)){	
 						@Override
 						public boolean supportsReset() {
 							return true;
@@ -684,7 +705,7 @@ public class MHistograms {
 							}
 						}
 			};
-			this.histogram = MinSkewHist.buildProgressiveRefinement(recCursor, RGOhist.universeUnit(dimension), bitsPerDim, dimension, numberOfBuckets, refSteps); 
+			this.histogram = MinSkewHist.buildProgressiveRefinement(recCursor, SpatialHistogramUtils.universeUnit(dimension), bitsPerDim, dimension, numberOfBuckets, refSteps); 
 		}
 
 		@Override
@@ -728,7 +749,7 @@ public class MHistograms {
 		
 		protected List<STHistBucket> forest;
 		
-		protected List<WeightedDoublePointRectangle> buckets; 
+		protected List<SpatialHistogramBucket> buckets; 
 		
 		protected double samplingRate = 1.0; 
 		
@@ -756,9 +777,9 @@ public class MHistograms {
 		public void buildHistogram(Cursor<DoublePointRectangle> rectangles,
 				int numberOfBuckets, Properties props) throws IOException {
 			STHist histogram = new STHist();
-			histogram.buildHotSpotForest(rectangles, RGOhist.universeUnit(2), numberOfBuckets);
+			histogram.buildHotSpotForest(rectangles, SpatialHistogramUtils.universeUnit(2), numberOfBuckets);
 			forest = histogram.forest;
-			buckets = new ArrayList<WeightedDoublePointRectangle>();
+			buckets = new ArrayList<SpatialHistogramBucket>();
 			STHist.forest(forest, buckets);
 		}
 		
@@ -771,7 +792,7 @@ public class MHistograms {
 		 * 
 		 * @return
 		 */
-		public List<WeightedDoublePointRectangle> getBuckets(){
+		public List<SpatialHistogramBucket> getBuckets(){
 			return buckets; 
 		}
 		

@@ -22,7 +22,7 @@ License along with this library;  If not, see <http://www.gnu.org/licenses/>.
     http://code.google.com/p/xxl/
 
 */
-package xxl.core.spatial.histograms;
+package xxl.core.spatial.histograms.utils;
 
 
 
@@ -51,6 +51,7 @@ import xxl.core.indexStructures.RTree;
 import xxl.core.indexStructures.RTree.Node;
 import xxl.core.io.converters.ConvertableConverter;
 import xxl.core.spatial.SpaceFillingCurves;
+import xxl.core.spatial.histograms.utils.STHist.STHistBucket;
 import xxl.core.spatial.points.DoublePoint;
 import xxl.core.spatial.rectangles.DoublePointRectangle;
 
@@ -61,7 +62,7 @@ import xxl.core.spatial.rectangles.DoublePointRectangle;
  * helper class for spatial histograms 
  *
  */
-public class RGOhist {
+public class SpatialHistogramUtils {
 	
 	
 	
@@ -78,36 +79,36 @@ public class RGOhist {
 	/**
 	 * 
 	 */
-	public static WeightedDoublePointRectangle universeUnit(final int dimension) { 
+	public static SpatialHistogramBucket universeUnit(final int dimension) { 
 		double[] lft = new double[dimension];
 		double[] rgt = new double[dimension];
 		for(int i = 0; i < dimension; i++){
 			lft[i] = 0;
 			rgt[i] = 1;
 		}
-		return new WeightedDoublePointRectangle(
+		return new SpatialHistogramBucket(
 			lft, rgt);
 	}
 	
 	
-	public static List<WeightedDoublePointRectangle> readHistogram(String path, final int dimension){
-		FileInputCursor<WeightedDoublePointRectangle> rectangles = new FileInputCursor<>(new ConvertableConverter<>(new AbstractFunction<Object, WeightedDoublePointRectangle>() {
+	public static List<SpatialHistogramBucket> readHistogram(String path, final int dimension){
+		FileInputCursor<SpatialHistogramBucket> rectangles = new FileInputCursor<>(new ConvertableConverter<>(new AbstractFunction<Object, SpatialHistogramBucket>() {
 		@Override
-		public WeightedDoublePointRectangle invoke() {
+		public SpatialHistogramBucket invoke() {
 
-			return new WeightedDoublePointRectangle(dimension);
+			return new SpatialHistogramBucket(dimension);
 		}
 		}), new File(path));
-		List<WeightedDoublePointRectangle> histogram = new LinkedList<>(); 
+		List<SpatialHistogramBucket> histogram = new LinkedList<>(); 
 		while(rectangles.hasNext()){
 			histogram.add(rectangles.next());
 		}
 		return histogram;
 	}
 	
-	public static void writeHistogram(List<WeightedDoublePointRectangle> histogram, String path) throws IOException{
+	public static void writeHistogram(List<SpatialHistogramBucket> histogram, String path) throws IOException{
 		DataOutputStream out = new DataOutputStream(new FileOutputStream(new File(path)));
-		for(WeightedDoublePointRectangle rec: histogram)
+		for(SpatialHistogramBucket rec: histogram)
 			rec.write(out);
 		out.close();
 	}
@@ -119,19 +120,19 @@ public class RGOhist {
 	 * @param numberOfBuckets
 	 * @return
 	 */
-	public static List<WeightedDoublePointRectangle> computeSimpleRTreeHistogram(RTree tree, int numberOfBuckets){
-		List<WeightedDoublePointRectangle> histogram = new ArrayList<WeightedDoublePointRectangle>(numberOfBuckets);
+	public static List<SpatialHistogramBucket> computeSimpleRTreeHistogram(RTree tree, int numberOfBuckets){
+		List<SpatialHistogramBucket> histogram = new ArrayList<SpatialHistogramBucket>(numberOfBuckets);
 		int numberOfNodes = Cursors.count(tree.query(1));
 		int hyperBucketSize = numberOfNodes/(numberOfBuckets)  + 1; // remain part will be assigned to the last bucket
 		Cursor<MapEntry<DoublePointRectangle, RTree.Node>> nodes = getNodesAndMBRs(tree, 1);
 		for(;nodes.hasNext();){
 			int sum = 0;
-			WeightedDoublePointRectangle uni = null;
+			SpatialHistogramBucket uni = null;
 			for(int i = 0; i < hyperBucketSize && nodes.hasNext(); i++){
 				MapEntry<DoublePointRectangle, RTree.Node> entry = nodes.next();
 				sum += entry.getValue().number();
 				if(uni == null){
-					uni = new WeightedDoublePointRectangle(entry.getKey());
+					uni = new SpatialHistogramBucket(entry.getKey());
 				}else{
 					uni.union(entry.getKey());
 				}
@@ -146,7 +147,7 @@ public class RGOhist {
 			histogram.add(uni);
 		}
 		if (histogram.size() > numberOfBuckets){ // one bucket more
-			WeightedDoublePointRectangle recF = histogram.get(histogram.size()-2);
+			SpatialHistogramBucket recF = histogram.get(histogram.size()-2);
 			recF.union(histogram.get(histogram.size()-1));
 			recF.setWeight(recF.getWeight()+histogram.get(histogram.size()-1).getWeight() );
 			histogram.remove(histogram.size()-1);
@@ -156,7 +157,7 @@ public class RGOhist {
 	
 	
 	/**
-	 * Note: RTree manages weighted rectangles @see {@link WeightedDoublePointRectangle}
+	 * Note: RTree manages weighted rectangles @see {@link SpatialHistogramBucket}
 	 * @param tree
 	 * @param queryWindow
 	 * @return
@@ -169,7 +170,7 @@ public class RGOhist {
 		Cursor cursor = tree.query(queryWindow, level);
 		while(cursor.hasNext()){
 			Object result = cursor.next();
-			WeightedDoublePointRectangle rectangle = (WeightedDoublePointRectangle)( (level > 0) ? 
+			SpatialHistogramBucket rectangle = (SpatialHistogramBucket)( (level > 0) ? 
 				 ((ORTree.IndexEntry) result).descriptor() : 
 					 result);
 			double overlap = rectangle.overlap(queryWindow)/ rectangle.area();
@@ -180,15 +181,15 @@ public class RGOhist {
 	}
 	
 	/**
-	 * Note: RTree manages weighted rectangles @see {@link WeightedDoublePointRectangle}
+	 * Note: RTree manages weighted rectangles @see {@link SpatialHistogramBucket}
 	 * @param tree
 	 * @param queryWindow
 	 * @return
 	 */
-	public static double computeEstimation(Iterator<WeightedDoublePointRectangle> histogram, DoublePointRectangle queryWindow){
+	public static double computeEstimation(Iterator<SpatialHistogramBucket> histogram, DoublePointRectangle queryWindow){
 		double costs = 0d;
 		while(histogram.hasNext()){
-			WeightedDoublePointRectangle rectangle = histogram.next();
+			SpatialHistogramBucket rectangle = histogram.next();
 			// extend rectnagles 
 		
 			if (rectangle.overlaps(queryWindow)){
@@ -290,15 +291,15 @@ public class RGOhist {
 	 * extractes nodes from rtree
 	 */
 	@SuppressWarnings({ "serial", "unchecked" })
-	public static Cursor<WeightedDoublePointRectangle> getRectangles(final RTree tree, final  int level){
+	public static Cursor<SpatialHistogramBucket> getRectangles(final RTree tree, final  int level){
 		if(level > tree.height())
 			throw new RuntimeException("check the level");
-		return new Mapper<Object, WeightedDoublePointRectangle>(new AbstractFunction<Object,  WeightedDoublePointRectangle>() {
+		return new Mapper<Object, SpatialHistogramBucket>(new AbstractFunction<Object,  SpatialHistogramBucket>() {
 			
-			public WeightedDoublePointRectangle invoke(Object argument){
+			public SpatialHistogramBucket invoke(Object argument){
 				//cast to ORTree.indexEntry
 				// get entry
-				return new WeightedDoublePointRectangle((DoublePointRectangle)tree.descriptor(argument));
+				return new SpatialHistogramBucket((DoublePointRectangle)tree.descriptor(argument));
 			}
 			
 		},  tree.query(level));
@@ -309,14 +310,14 @@ public class RGOhist {
 	 * extractes nodes from rtree
 	 */
 	@SuppressWarnings({ "serial", "unchecked" })
-	public static Cursor<WeightedDoublePointRectangle> getRectanglesLevel1(final RTree tree){
-		return new Mapper<Object, WeightedDoublePointRectangle>(new AbstractFunction<Object,  WeightedDoublePointRectangle>() {
+	public static Cursor<SpatialHistogramBucket> getRectanglesLevel1(final RTree tree){
+		return new Mapper<Object, SpatialHistogramBucket>(new AbstractFunction<Object,  SpatialHistogramBucket>() {
 			
-			public WeightedDoublePointRectangle invoke(Object argument){
+			public SpatialHistogramBucket invoke(Object argument){
 				//cast to ORTree.indexEntry
 				// get entry
 				RTree.Node node = (Node) ((IndexEntry)argument).get();
-				WeightedDoublePointRectangle rectangle = new WeightedDoublePointRectangle((DoublePointRectangle)tree.descriptor(argument), node.number());
+				SpatialHistogramBucket rectangle = new SpatialHistogramBucket((DoublePointRectangle)tree.descriptor(argument), node.number());
 				Iterator it = node.entries();
 				while(it.hasNext()){
 					DoublePointRectangle rec = (DoublePointRectangle) tree.descriptor(it.next());
@@ -662,7 +663,7 @@ public class RGOhist {
 	 * @param queryIn
 	 * @param histogram
 	 */
-	public static void estimationTest(RTree rtree, Iterator<DoublePointRectangle> queryIn,List<WeightedDoublePointRectangle> histogram){
+	public static void estimationTest(RTree rtree, Iterator<DoublePointRectangle> queryIn,List<SpatialHistogramBucket> histogram){
 		
 		double sumDiff =0;
 		int count = 0;
@@ -676,9 +677,9 @@ public class RGOhist {
 			double estimation = 0;
 			double diff = 0;
 			if(histogram != null){
-				estimation =  RGOhist.computeEstimation(histogram.iterator(), queryRec);
+				estimation =  SpatialHistogramUtils.computeEstimation(histogram.iterator(), queryRec);
 			}else{
-				estimation = RGOhist.computeEstimation(rtree, queryRec, 1);
+				estimation = SpatialHistogramUtils.computeEstimation(rtree, queryRec, 1);
 			}
 			diff = Math.abs(actualCount-estimation);
 			avgerror += diff/(Math.max(1, actualCount)); 
@@ -785,14 +786,5 @@ public class RGOhist {
 		System.out.println("Avg Results pro Query  " + (overallCandidates/counter));
 	}
 	
-	
-	
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-
-	}
 
 }
