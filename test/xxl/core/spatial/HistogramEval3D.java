@@ -49,16 +49,16 @@ import xxl.core.indexStructures.rtrees.GenericPartitioner.DefaultArrayProcessor;
 import xxl.core.indexStructures.rtrees.RtreeIterativeBulkloader;
 import xxl.core.io.converters.ConvertableConverter;
 import xxl.core.io.converters.Converter;
-import xxl.core.spatial.histograms.MHistogram;
-import xxl.core.spatial.histograms.MHistograms;
-import xxl.core.spatial.histograms.MHistograms.MinSkewHistogram;
-import xxl.core.spatial.histograms.MHistograms.MinSkewProgressiveRefinementHistogram;
-import xxl.core.spatial.histograms.MHistograms.RHistogram;
-import xxl.core.spatial.histograms.MHistograms.RKHistHistogram;
-import xxl.core.spatial.histograms.MHistograms.RTreeNaiveHistogram;
-import xxl.core.spatial.histograms.PHist2L.HistType;
-import xxl.core.spatial.histograms.PartitionerUtils.ProcessorType;
-import xxl.core.spatial.histograms.RGOhist;
+import xxl.core.spatial.histograms.utils.MHistogram;
+import xxl.core.spatial.histograms.utils.MHistograms;
+import xxl.core.spatial.histograms.utils.SpatialHistogramUtils;
+import xxl.core.spatial.histograms.utils.MHistograms.MinSkewHistogram;
+import xxl.core.spatial.histograms.utils.MHistograms.MinSkewProgressiveRefinementHistogram;
+import xxl.core.spatial.histograms.utils.MHistograms.RHistogram;
+import xxl.core.spatial.histograms.utils.MHistograms.RKHistHistogram;
+import xxl.core.spatial.histograms.utils.MHistograms.RTreeBasicHistogram;
+import xxl.core.spatial.histograms.utils.RVHistogram.HistType;
+import xxl.core.spatial.histograms.utils.PartitionerUtils.ProcessorType;
 import xxl.core.spatial.rectangles.DoublePointRectangle;
 import xxl.core.spatial.rectangles.Rectangles;
 
@@ -87,7 +87,7 @@ public class HistogramEval3D {
 	private RTree soptTree; 
 	// histograms
 	private RKHistHistogram rkHist;
-	private RTreeNaiveHistogram rTreeHist;
+	private RTreeBasicHistogram rTreeHist;
 	private MinSkewHistogram minSkewHist;
 	private MinSkewProgressiveRefinementHistogram minSkewProgressive; 
 	//rhistograms
@@ -106,9 +106,9 @@ public class HistogramEval3D {
 	 */
 	public HistogramEval3D(Cursor<DoublePointRectangle> inputData, String tempPath, int dimension) throws IOException{
 		// build RTree over the data set
-		comparator  = (dimension == 2 ) ?  RGOhist.getHilbert2DComparator(RGOhist.universeUnit(dimension), FILLING_CURVE_PRECISION)
-					: RGOhist.getZCurveComparator(RGOhist.universeUnit(dimension), BITS_PRO_DIM); // default 2D comparator
-		converter = new ConvertableConverter<DoublePointRectangle>(RGOhist.factoryFunction(dimension)); 
+		comparator  = (dimension == 2 ) ?  SpatialHistogramUtils.getHilbert2DComparator(SpatialHistogramUtils.universeUnit(dimension), FILLING_CURVE_PRECISION)
+					: SpatialHistogramUtils.getZCurveComparator(SpatialHistogramUtils.universeUnit(dimension), BITS_PRO_DIM); // default 2D comparator
+		converter = new ConvertableConverter<DoublePointRectangle>(SpatialHistogramUtils.factoryFunction(dimension)); 
 		this.tempPath = tempPath;
 		rtree =  buildExtRtree(sortData(inputData));
 	}
@@ -236,11 +236,11 @@ public class HistogramEval3D {
 		long time = System.currentTimeMillis();
 		Properties props = new Properties(); 
 //		props.setProperty(MHistograms.RTreeNaiveHistogram., new Integer(BITS_PRO_DIM).toString());
-		props.setProperty(MHistograms.RTreeNaiveHistogram.RTREE_BITS, new Integer(BITS_PRO_DIM).toString());
-		props.setProperty(MHistograms.RTreeNaiveHistogram.RTREE_DIMENSION, new Integer(DIMENSION).toString());
-		props.setProperty(MHistograms.RTreeNaiveHistogram.RTREE_BLOCK_SIZE, new Integer(BLOCKSIZE).toString());
-		props.setProperty(MHistograms.RTreeNaiveHistogram.RTREE_PATH, tempPath + "rkHist");
-		props.setProperty(MHistograms.RKHistHistogram.RKHIST_U_RATIO, new Double(alpha).toString());
+		props.setProperty(MHistograms.RTREE_BITS, new Integer(BITS_PRO_DIM).toString());
+		props.setProperty(MHistograms.RTREE_DIMENSION, new Integer(DIMENSION).toString());
+		props.setProperty(MHistograms.RTREE_BLOCK_SIZE, new Integer(BLOCKSIZE).toString());
+		props.setProperty(MHistograms.RTREE_PATH, tempPath + "rkHist");
+		props.setProperty(MHistograms.RKHIST_U_RATIO, new Double(alpha).toString());
 		rkHist = new MHistograms.RKHistHistogram();
 		rkHist.buildHistogram(getData(), numberOfBuckets , props);
 		if (verbose){
@@ -258,11 +258,11 @@ public class HistogramEval3D {
 			System.out.println("build RTreeHist");
 		long time = System.currentTimeMillis();
 		Properties props = new Properties(); 
-		props.setProperty(MHistograms.RTreeNaiveHistogram.RTREE_BITS, new Integer(BITS_PRO_DIM).toString());
-		props.setProperty(MHistograms.RTreeNaiveHistogram.RTREE_DIMENSION, new Integer(DIMENSION).toString());
-		props.setProperty(MHistograms.RTreeNaiveHistogram.RTREE_BLOCK_SIZE, new Integer(BLOCKSIZE).toString());
-		props.setProperty(MHistograms.RTreeNaiveHistogram.RTREE_PATH, tempPath + "RTreeSimple");
-		rTreeHist = new RTreeNaiveHistogram();
+		props.setProperty(MHistograms.RTREE_BITS, new Integer(BITS_PRO_DIM).toString());
+		props.setProperty(MHistograms.RTREE_DIMENSION, new Integer(DIMENSION).toString());
+		props.setProperty(MHistograms.RTREE_BLOCK_SIZE, new Integer(BLOCKSIZE).toString());
+		props.setProperty(MHistograms.RTREE_PATH, tempPath + "RTreeSimple");
+		rTreeHist = new RTreeBasicHistogram();
 		rTreeHist.buildHistogram(getData(), numberOfBuckets, props);
 		if (verbose){
 			System.out.println("Build Time: " + (System.currentTimeMillis() - time));
@@ -279,9 +279,9 @@ public class HistogramEval3D {
 			System.out.println("build MinSkew");
 		long time = System.currentTimeMillis();
 		Properties props = new Properties(); 
-		props.setProperty(MinSkewHistogram.MINSKEW_DIM, new Integer(DIMENSION).toString());
-		props.setProperty(MinSkewHistogram.MINSKEW_PATH, tempPath + ".minskewTemp");
-		props.setProperty(MinSkewHistogram.MINSKEW_GRID_SIZE, new Integer(gridSize).toString());
+		props.setProperty(MHistograms.MINSKEW_DIM, new Integer(DIMENSION).toString());
+		props.setProperty(MHistograms.MINSKEW_PATH, tempPath + ".minskewTemp");
+		props.setProperty(MHistograms.MINSKEW_GRID_SIZE, new Integer(gridSize).toString());
 		minSkewHist = new MinSkewHistogram();
 		minSkewHist.buildHistogram(getData(), numberOfBuckets, props);
 		if (verbose){
@@ -303,10 +303,10 @@ public class HistogramEval3D {
 			System.out.println("build MinSkew");
 		long time = System.currentTimeMillis();
 		Properties props = new Properties(); 
-		props.setProperty(MinSkewHistogram.MINSKEW_DIM, new Integer(DIMENSION).toString());
-		props.setProperty(MinSkewHistogram.MINSKEW_PATH, tempPath + ".minskewTempRef");
-		props.setProperty(MinSkewHistogram.MINSKEW_GRID_SIZE, new Integer(gridSize).toString());
-		props.setProperty(MinSkewProgressiveRefinementHistogram.MINSKEW_REF, new Integer(refinementSteps).toString());
+		props.setProperty(MHistograms.MINSKEW_DIM, new Integer(DIMENSION).toString());
+		props.setProperty(MHistograms.MINSKEW_PATH, tempPath + ".minskewTempRef");
+		props.setProperty(MHistograms.MINSKEW_GRID_SIZE, new Integer(gridSize).toString());
+		props.setProperty(MHistograms.MINSKEW_REF, new Integer(refinementSteps).toString());
 		minSkewProgressive = new MinSkewProgressiveRefinementHistogram();
 		minSkewProgressive.buildHistogram(getData(), numberOfBuckets, props);
 		if (verbose){
@@ -350,11 +350,11 @@ public class HistogramEval3D {
 			System.out.println("build soptHist");
 		long time = System.currentTimeMillis();
 		Properties props = new Properties(); 
-		props.setProperty(MHistograms.RTreeNaiveHistogram.RTREE_BITS, new Integer(BITS_PRO_DIM).toString());
-		props.setProperty(MHistograms.RTreeNaiveHistogram.RTREE_DIMENSION, new Integer(DIMENSION).toString());
-		props.setProperty(MHistograms.RTreeNaiveHistogram.RTREE_BLOCK_SIZE, new Integer(BLOCKSIZE).toString());
-		props.setProperty(MHistograms.RTreeNaiveHistogram.RTREE_RATIO, new Double(0.5).toString());
-		props.setProperty(MHistograms.RTreeNaiveHistogram.RTREE_PATH, tempPath + "soptTree");
+		props.setProperty(MHistograms.RTREE_BITS, new Integer(BITS_PRO_DIM).toString());
+		props.setProperty(MHistograms.RTREE_DIMENSION, new Integer(DIMENSION).toString());
+		props.setProperty(MHistograms.RTREE_BLOCK_SIZE, new Integer(BLOCKSIZE).toString());
+		props.setProperty(MHistograms.RTREE_RATIO, new Double(0.5).toString());
+		props.setProperty(MHistograms.RTREE_PATH, tempPath + "soptTree");
 		rhistogram_RK = new RHistogram(DIMENSION, BLOCKSIZE, rtreeRatio, hRatio, avgRatio,histType, ProcessorType.RK_HIST);
 		rhistogram_RK.buildHistogram(getData(), numberOfBuckets, props);
 		if (verbose){
@@ -373,11 +373,11 @@ public class HistogramEval3D {
 			System.out.println("build soptHist");
 		long time = System.currentTimeMillis();
 		Properties props = new Properties(); 
-		props.setProperty(MHistograms.RTreeNaiveHistogram.RTREE_BITS, new Integer(BITS_PRO_DIM).toString());
-		props.setProperty(MHistograms.RTreeNaiveHistogram.RTREE_DIMENSION, new Integer(DIMENSION).toString());
-		props.setProperty(MHistograms.RTreeNaiveHistogram.RTREE_BLOCK_SIZE, new Integer(BLOCKSIZE).toString());
-		props.setProperty(MHistograms.RTreeNaiveHistogram.RTREE_RATIO, new Double(0.5).toString());
-		props.setProperty(MHistograms.RTreeNaiveHistogram.RTREE_PATH, tempPath + "soptTree");
+		props.setProperty(MHistograms.RTREE_BITS, new Integer(BITS_PRO_DIM).toString());
+		props.setProperty(MHistograms.RTREE_DIMENSION, new Integer(DIMENSION).toString());
+		props.setProperty(MHistograms.RTREE_BLOCK_SIZE, new Integer(BLOCKSIZE).toString());
+		props.setProperty(MHistograms.RTREE_RATIO, new Double(0.5).toString());
+		props.setProperty(MHistograms.RTREE_PATH, tempPath + "soptTree");
 		rhistogram_SKEW = new RHistogram(DIMENSION, BLOCKSIZE, rtreeRatio, hRatio, avgRatio, histType, ProcessorType.GRID_SSE);
 		if(soptTree != null)
 			rhistogram_SKEW.tree = soptTree;
@@ -400,13 +400,13 @@ public class HistogramEval3D {
 			System.out.println("build soptHist");
 		long time = System.currentTimeMillis();
 		Properties props = new Properties(); 
-		props.setProperty(MHistograms.RTreeNaiveHistogram.RTREE_BITS, new Integer(BITS_PRO_DIM).toString());
-		props.setProperty(MHistograms.RTreeNaiveHistogram.RTREE_DIMENSION, new Integer(DIMENSION).toString());
-		props.setProperty(MHistograms.RTreeNaiveHistogram.RTREE_BLOCK_SIZE, new Integer(BLOCKSIZE).toString());
-		props.setProperty(MHistograms.RTreeNaiveHistogram.RTREE_RATIO, new Double(0.4).toString());
-		props.setProperty(MHistograms.RTreeNaiveHistogram.RTREE_PATH, tempPath + "soptTree");
+		props.setProperty(MHistograms.RTREE_BITS, new Integer(BITS_PRO_DIM).toString());
+		props.setProperty(MHistograms.RTREE_DIMENSION, new Integer(DIMENSION).toString());
+		props.setProperty(MHistograms.RTREE_BLOCK_SIZE, new Integer(BLOCKSIZE).toString());
+		props.setProperty(MHistograms.RTREE_RATIO, new Double(0.4).toString());
+		props.setProperty(MHistograms.RTREE_PATH, tempPath + "soptTree");
 		rhistogram_QA = new RHistogram(DIMENSION, BLOCKSIZE, rtreeRatio, hRatio, avgRatio,  histType, ProcessorType.VOLUME, queries, 
-				RGOhist.universeUnit(DIMENSION));
+				SpatialHistogramUtils.universeUnit(DIMENSION));
 //		if(soptTree != null)
 //			rhistogram_QA.tree = soptTree;
 		rhistogram_QA.buildHistogram(getData(), numberOfBuckets, props);
@@ -428,11 +428,11 @@ public class HistogramEval3D {
 			System.out.println("build soptHist");
 		long time = System.currentTimeMillis();
 		Properties props = new Properties(); 
-		props.setProperty(MHistograms.RTreeNaiveHistogram.RTREE_BITS, new Integer(BITS_PRO_DIM).toString());
-		props.setProperty(MHistograms.RTreeNaiveHistogram.RTREE_DIMENSION, new Integer(DIMENSION).toString());
-		props.setProperty(MHistograms.RTreeNaiveHistogram.RTREE_BLOCK_SIZE, new Integer(BLOCKSIZE).toString());
-		props.setProperty(MHistograms.RTreeNaiveHistogram.RTREE_RATIO, new Double(0.4).toString());
-		props.setProperty(MHistograms.RTreeNaiveHistogram.RTREE_PATH, tempPath + "soptTree");
+		props.setProperty(MHistograms.RTREE_BITS, new Integer(BITS_PRO_DIM).toString());
+		props.setProperty(MHistograms.RTREE_DIMENSION, new Integer(DIMENSION).toString());
+		props.setProperty(MHistograms.RTREE_BLOCK_SIZE, new Integer(BLOCKSIZE).toString());
+		props.setProperty(MHistograms.RTREE_RATIO, new Double(0.4).toString());
+		props.setProperty(MHistograms.RTREE_PATH, tempPath + "soptTree");
 		if(rhistogram_V == null)
 			rhistogram_V = new RHistogram(DIMENSION, BLOCKSIZE, rtreeRatio, hRatio, avgRatio,  histType, ProcessorType.VOLUME);
 		rhistogram_V.buildHistogram(getData(), numberOfBuckets, props);
@@ -461,7 +461,7 @@ public class HistogramEval3D {
 	 * 
 	 * @return
 	 */
-	public RTreeNaiveHistogram getRTreeHist() {
+	public RTreeBasicHistogram getRTreeHist() {
 		return rTreeHist;
 	}
 
@@ -497,7 +497,7 @@ public class HistogramEval3D {
 	 * 
 	 */
 	public TestPlot showHist(String name, MHistogram hist){
-		return new TestPlot( name , hist.getBuckets().iterator(), 500,  RGOhist.universeUnit(DIMENSION));
+		return new TestPlot( name , hist.getBuckets().iterator(), 500,  SpatialHistogramUtils.universeUnit(DIMENSION));
 	}
 	
 	

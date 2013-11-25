@@ -33,7 +33,7 @@ import xxl.core.cursors.Cursor;
 import xxl.core.cursors.Cursors;
 import xxl.core.cursors.sources.io.FileInputCursor;
 import xxl.core.io.converters.ConvertableConverter;
-import xxl.core.spatial.histograms.RGOhist;
+import xxl.core.spatial.histograms.utils.SpatialHistogramUtils;
 import xxl.core.spatial.rectangles.DoublePointRectangle;
 
 
@@ -61,51 +61,53 @@ public class TestM4 {
 	 * @throws IOException 
 	 */
 	public static void main(String[] args) throws IOException {
-		String dataPath = "/"; // data path change for your 
-		String queryPath ="/"; // change 
+		String dataPath = "f:/rtree/data/"; // data path change for your 
+		String queryPath ="f:/rtree/query_100/"; // change 
 		String path = "f:/hist/"; // change
 		String[] prefix  = {
 			"rea", // rea data set 
 		};
-		int[] buckets = {1000, 2000};
+		int[] buckets = {1000};
 		for(String p :prefix){
 			System.out.println("++++++++++++++++++++++++++++++++++++\n");
 			System.out.println("Data: " + p);
 			FileInputCursor<DoublePointRectangle> data = new FileInputCursor<DoublePointRectangle>(
-					new ConvertableConverter<DoublePointRectangle>(RGOhist.factoryFunction(2)), 
+					new ConvertableConverter<DoublePointRectangle>(SpatialHistogramUtils.factoryFunction(2)), 
 					new File(dataPath + "/" + p +"02.rec"));
 			HistogramEval eval = new HistogramEval(data, path); 
 			for(int numberOfBuckets : buckets){
 				System.out.println("Buckets " + numberOfBuckets);
 				eval.buildRTreeHist(numberOfBuckets, true); // rtree loaded bulk loaded using hilbert curve equi sized partitioning 
-				eval.buildRKHist(numberOfBuckets, 0.1, HistogramEval.BLOCKSIZE , true); // rkHist Method
+//				eval.buildRKHist(numberOfBuckets, 0.1, HistogramEval.BLOCKSIZE , true); // rkHist Method
 				eval.buildRHistogramV(numberOfBuckets, 0.4, true); // RV histogram
-				eval.buildMinSkewHist(numberOfBuckets*2, 8, true); // standard min skew 2^7 x 2^7 grid
-				eval.buildMinSkewProgressiveHist(numberOfBuckets*2, 8, 3, true); // standard min skew 2^7 x 2^7 grid and three refinerment steps 
+//				eval.buildMinSkewHist(numberOfBuckets*2, 8, true); // standard min skew 2^7 x 2^7 grid
+//				eval.buildMinSkewProgressiveHist(numberOfBuckets*2, 8, 3, true); // standard min skew 2^7 x 2^7 grid and three refinerment steps 
 				//
 				String query = queryPath + "/" + p  + "02.rec"; 
 				// 
 				Cursor<DoublePointRectangle> queryCursor = null;
 				System.out.println("RTree");
 				queryCursor = new FileInputCursor<DoublePointRectangle>(
-						new ConvertableConverter<DoublePointRectangle>(RGOhist.factoryFunction(2)), new File(query));
+						new ConvertableConverter<DoublePointRectangle>(SpatialHistogramUtils.factoryFunction(2)), new File(query));
 				eval.testHistogram(queryCursor, eval.getRTreeHist());
-				System.out.println("RK-Hist");
-				queryCursor = new FileInputCursor<DoublePointRectangle>(
-						new ConvertableConverter<DoublePointRectangle>(RGOhist.factoryFunction(2)), new File(query));
-				eval.testHistogram(queryCursor, eval.getRkHist());
+//				System.out.println("RK-Hist");
+//				queryCursor = new FileInputCursor<DoublePointRectangle>(
+//						new ConvertableConverter<DoublePointRectangle>(RGOhist.factoryFunction(2)), new File(query));
+//				eval.testHistogram(queryCursor, eval.getRkHist());
 				System.out.println("RTree Volume");
 				queryCursor = new FileInputCursor<DoublePointRectangle>(
-						new ConvertableConverter<DoublePointRectangle>(RGOhist.factoryFunction(2)), new File(query));
+						new ConvertableConverter<DoublePointRectangle>(SpatialHistogramUtils.factoryFunction(2)), new File(query));
 				eval.testHistogram(queryCursor, eval.getRhistogram_V());
-				System.out.println("MinSkew");
-				queryCursor = new FileInputCursor<DoublePointRectangle>(
-						new ConvertableConverter<DoublePointRectangle>(RGOhist.factoryFunction(2)), new File(query));
-				eval.testHistogram(queryCursor, eval.getMinSkewHist());
-				System.out.println("MinSkew Progressive");
-				queryCursor = new FileInputCursor<DoublePointRectangle>(
-						new ConvertableConverter<DoublePointRectangle>(RGOhist.factoryFunction(2)), new File(query));
-				eval.testHistogram(queryCursor, eval.getMinSkewProgressiveRefinementHistogram());
+				eval.showHist("Normal", eval.getRTreeHist()); 
+				eval.showHist("Volume", eval.getRhistogram_V()); 
+//				System.out.println("MinSkew");
+//				queryCursor = new FileInputCursor<DoublePointRectangle>(
+//						new ConvertableConverter<DoublePointRectangle>(RGOhist.factoryFunction(2)), new File(query));
+//				eval.testHistogram(queryCursor, eval.getMinSkewHist());
+//				System.out.println("MinSkew Progressive");
+//				queryCursor = new FileInputCursor<DoublePointRectangle>(
+//						new ConvertableConverter<DoublePointRectangle>(RGOhist.factoryFunction(2)), new File(query));
+//				eval.testHistogram(queryCursor, eval.getMinSkewProgressiveRefinementHistogram());
 				System.out.println("******" +
 						"****************\n*******************\n**************");
 			}
