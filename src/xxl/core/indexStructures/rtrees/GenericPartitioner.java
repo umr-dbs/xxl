@@ -28,7 +28,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import xxl.core.functions.Functional.UnaryFunction;
-import xxl.core.spatial.histograms.WeightedDoublePointRectangle;
 import xxl.core.spatial.rectangles.DoublePointRectangle;
 import xxl.core.spatial.rectangles.Rectangle;
 
@@ -50,8 +49,9 @@ public class GenericPartitioner {
 	 * 
 	 *
 	 */
-	public static interface CostFunctionArrayProcessor<T extends Rectangle>{
-		
+	public static interface CostFunctionArrayProcessor<T extends Rectangle>{     //TODO
+
+
 		/**
 		 * Computes costs of starting from position startIndex
 		 * @param rectangles
@@ -240,12 +240,9 @@ public class GenericPartitioner {
 	/***************************************************************************************************
 	 * Partitioner: 
 	 **************************************************************************************************/
-	
-	
-	//TODO Thorsten Suel algorithm
 	/**
 	 * unbounded variant 
-	 *
+	 * Thorsten Suel algorithm
 	 * Time Complexity k*N*N 
 	 * 
 	 * nopt(i,k) = max_0<=j<=i {nopt(i-j, k-1) + costF([i-j+1, i]) }
@@ -281,12 +278,6 @@ public class GenericPartitioner {
 		}
 		return costMatrix;
 	}
-	
-	
-	
-
-	
-	
 	/**
 	 * non weighted version
 	 * @param rectangles
@@ -316,7 +307,7 @@ public class GenericPartitioner {
 				costs = processor.processList(rectangles, b, B, j);
 				for(int l = b-1; j-l >= b && l < B; l++){	
 					// check if it possible assignment exists
-					if (costMatrix[i-1][j-l-1] != null  ){ //XXX beachte indexe!!!	
+					if (costMatrix[i-1][j-l-1] != null  ){ 
 						double newNewCost = costs[l];
 						double lastRowCost = costMatrix[i-1][j-l-1].cost;
 						
@@ -335,82 +326,6 @@ public class GenericPartitioner {
 		return costMatrix;
 	}
 	
-	/**
-	 * weighted version of OPT algorithmus
-	 * @param rectangles
-	 * @param b
-	 * @param B
-	 * @param n
-	 * @param processor
-	 * @return
-	 */
-	public static Bucket[][] computeOPTW(WeightedDoublePointRectangle[] rectangles, int minWeight, int maxWeight, int n, 
-			CostFunctionArrayProcessor<WeightedDoublePointRectangle> processor){
-		Bucket[][] costMatrix = new Bucket[rectangles.length][n];
-		// initialize for n=1
-		int startWeight = 0;
-		double[] d = processor.processInitialList(rectangles, minWeight, maxWeight); 
-		for(int i = 0; startWeight < maxWeight; i++){
-			startWeight += rectangles[i].getWeight();
-			costMatrix[i][0] = (startWeight < minWeight) ? 
-					new Bucket(Double.MAX_VALUE, 0, i, null, 1) : 
-						new Bucket(d[i], 0, i,null, 1); 
-		}
-		int[] positionsMinMax = new int[2];
-		// process low bound 
-		for(int k = positionsMinMax[0], currentWeight = 0 ; k  < rectangles.length && currentWeight < minWeight; k++){
-			currentWeight +=rectangles[k].getWeight();
-			positionsMinMax[0] = k;
-		}
-		for(int k = positionsMinMax[1],  currentWeight = 0; k  < rectangles.length && (currentWeight +=rectangles[k].getWeight()) <= maxWeight; k++){
-			positionsMinMax[1] = k;
-		}
-		for(int i = 1; i < n; i++){
-			int nMin = 0,  nMax  = 0; 
-			// process low bound 
-			for(int k = positionsMinMax[0]+1, currentWeight = 0 ; k  < rectangles.length && currentWeight < minWeight; k++
-					){
-				currentWeight +=rectangles[k].getWeight();
-				nMin = k;
-			}
-			for(int k = positionsMinMax[1]+1,  currentWeight = 0; k  < rectangles.length && currentWeight < maxWeight; 
-					k++){
-				currentWeight +=rectangles[k].getWeight();
-				nMax = k;
-			}
-			if (nMin > 0)
-				positionsMinMax[0] = nMin;
-			if (nMax > 0)
-				positionsMinMax[1] = nMax;
-			// compute best cost for given j and i 
-			for(int j = positionsMinMax[0]; j <= positionsMinMax[1] && j < costMatrix.length ; j++){
-				// search for minimal cost 
-				double minCost = Double.MAX_VALUE;
-				int weight = 0;
-				double[] costs = processor.processList(rectangles, minWeight, maxWeight, j); // TODO
-				for(int l = 0; j-l-1 >= 0 && weight < maxWeight ; l++){	// go back until max weight is reached
-					weight += rectangles[j-l].getWeight();
-					if(weight >= minWeight ){ // if weight condition is fulfilled
-						// check if it possible assignment exists
-						// for j and l //XXX beachte indexe!!!	
-						if (costMatrix[j-l-1][i-1] != null  ){ 
-							double newNewCost = costs[l];
-							double lastRowCost = costMatrix[j-l-1][i-1].cost;
-							double candidateCosts = lastRowCost + newNewCost; 
-							if (candidateCosts < minCost){
-								minCost = candidateCosts;
-								costMatrix[j][i] = new Bucket(minCost, j-l, j,
-										costMatrix[j-l-1][i-1] , 
-										costMatrix[j-l-1][i-1].number + 1);
-							}
-						}
-	//					otherwise there is no assignment possible for current j and n  
-					}
-				}
-			}
-		}
-		return costMatrix;
-	}
 	/**
 	 *
 	 *    
@@ -450,65 +365,6 @@ public class GenericPartitioner {
 						// overwrite 
 						Bucket newBck = new Bucket(mincost, st, et, argMin, argMin.number +1);
 						costArray[t]= newBck;
-					}
-				}
-			}
-		}
-		return costArray;
-	}
-	
-	// TODO Window algorithm
-	
-	/**
-	 *
-	 *    
-	 */
-	public static Bucket[] computeGOPTW(WeightedDoublePointRectangle[] rectangles, 
-		int minimalWeight, int maximalWeight, 
-		CostFunctionArrayProcessor<WeightedDoublePointRectangle> arrayProcessor){
-		Bucket[] costArray = new Bucket[rectangles.length]; 
-		Bucket dummy = new Bucket(Double.MAX_VALUE, 0, 0, null);
-		int weight = 0;
-		int index = 0; 
-		for(int t = index; weight < minimalWeight; t++ ){
-			WeightedDoublePointRectangle entry = rectangles[t];
-			weight += entry.getWeight();
-			costArray[t]= dummy;
-			index = t;
-		}
-		for(int t = index; t < rectangles.length; t ++ ){
-			double[] costs = arrayProcessor.processList(rectangles,  minimalWeight, 
-					maximalWeight,  t);
-			weight = 0;
-			double	mincost = (costArray[t] !=  null) ? costArray[t].cost : dummy.cost;
-			int st = 0;
-			int et = 0;
-			Bucket argMin = null; 	// look back for a better costs
-			for(int l = t, j= 0 ; l >=0 && weight <= maximalWeight; l--, j++){ 
-				weight+=rectangles[l].getWeight(); 
-				if (weight >=minimalWeight){
-					if(l == 0){
-						// write weight box
-						Bucket interval = new Bucket(costs[j], 0, t, null);
-						interval.rec = rectangles[l];
-						interval.number += 1;
-						costArray[t]= interval;
-					}else if (l > 0){
-						// get the interval on 
-						Bucket candidate = costArray[l-1];
-						double costOfBucket  = costs[j];
-						double costOfExtension = candidate.cost + costOfBucket;
-						if(costOfExtension < mincost){
-							// overwrite
-							argMin = candidate;
-							mincost = costOfExtension;
-							st = l;
-							et = t;
-							// overwrite 
-							Bucket newBck = new Bucket(mincost, st, et, argMin, argMin.number +1);
-							newBck.rec = rectangles[l];
-							costArray[t]= newBck;
-						}
 					}
 				}
 			}
@@ -736,7 +592,6 @@ public class GenericPartitioner {
 				costs.put(startIndex, array);
 				return array;
 			}
-//			System.out.println(" starat " + startIndex );
 			return costs.get(new Integer(startIndex)); 
 		}
 		
@@ -777,12 +632,4 @@ public class GenericPartitioner {
 			return costs;
 		}
 	}
-	
-	/**
-	 * 
-	 * 
-	 *
-	 */
-	
-	
 }
