@@ -5,9 +5,9 @@
 	<target name="init">
 		<!-- set values ! -->
 		<property name="temp" value="temp"/>
+		<property name="doc"  value="docs"/>
 		<property name="src" value="./src"/>
 		<property name="bin" value="${temp}/bin"/>
-		
 		<property name="jar" value="xxl-core-2.0.beta.jar"/>
 	</target>	
 	
@@ -19,8 +19,8 @@
 		<delete dir="${bin}"/>
 		<mkdir dir="${bin}"/>		
 		<javac 	srcdir="${src}"	destdir="${bin}"
-				source="1.6" 	target="1.6"					 
-				debug="on" debuglevel="lines,vars,source" 
+				source="1.7" 	target="1.7"					 
+				debug="on" debuglevel="lines,vars,source" includeantruntime="false"
 				nowarn="on"	verbose="off"/>
 	</target>	
 
@@ -28,4 +28,22 @@
 		<jar basedir="${bin}" destfile="${temp}/${jar}" update="false" compress="true"/>			
 	</target>
 		
+	<target name="javadoc" depends="jar">
+	<javadoc packagenames="xxl.core.*"
+	           sourcepath="src"
+	           excludepackagenames="xxl.core.xxlinq.*"
+	           defaultexcludes="yes"
+	           destdir="${temp}/${doc}"
+	           author="false"
+	           version="true"
+	           use="true"
+	           windowtitle="Test API">
+	    <doctitle><![CDATA[<h1>XXL-Java-Libaray</h1>]]></doctitle>
+	    <bottom><![CDATA[<i>Copyright &#169; 2000-2013 Prof. Dr. Bernhard Seeger
+            Head of the Database Research Group
+            Department of Mathematics and Computer Science
+            University of Marburg
+            Germany</i>]]></bottom>
+	  </javadoc>
+	</target>
 </project>
