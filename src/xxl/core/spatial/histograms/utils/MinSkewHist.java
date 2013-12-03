@@ -83,7 +83,7 @@ public class MinSkewHist {
 	 * @param dimensions
 	 * @return
 	 */
-	public static Map<Long, Integer> computeGrid1(
+	public static Map<Long, Integer> computeGrid(
 			Cursor<DoublePointRectangle> rectangles, int bitsPerDim,
 			int dimensions) {
 		Map<Long, Integer> grid = new HashMap<Long, Integer>();
@@ -111,7 +111,7 @@ public class MinSkewHist {
 					}
 				}
 			} catch (Exception ex) {
-				ex.printStackTrace();
+				throw new RuntimeException("Z-Curve box computation problem",ex); 
 			}
 		}
 		return grid;
@@ -126,7 +126,7 @@ public class MinSkewHist {
 	 * @param dimensions
 	 * @return
 	 */
-	public static Map<Long, Integer> computeGrid2(
+	public static Map<Long, Integer> computeGridForForest(
 				Cursor<DoublePointRectangle> rectangles, int bitsPerDim,
 				int dimensions) {
 			Map<Long, Integer> grid = new HashMap<Long, Integer>();
@@ -153,14 +153,11 @@ public class MinSkewHist {
 						}
 					}
 				} catch (Exception ex) {
-					ex.printStackTrace();
+					throw new RuntimeException("Z-Curve box computation problem",ex);
 				}
 			}
 			return grid;
-
 	}
-
-		
 		
 	/**
 	 * 
@@ -200,7 +197,7 @@ public class MinSkewHist {
 		int refStep =  refinements; 
 		int step = maxBuckets/(refinements + 1);
 		int bucketsProRefimenement = maxBuckets/(refinements + 1);
-		grid = computeGrid1(rectangles, bitsdPerDim - refStep,
+		grid = computeGrid(rectangles, bitsdPerDim - refStep,
 				dimensions);
 		// 2. initial bucket berechnen
 		Bucket initialBucket = new Bucket(
@@ -238,12 +235,12 @@ public class MinSkewHist {
 					break;
 				}
 				refStep--; // try to refine and compute grid
-				grid = computeGrid1(rectangles, bitsdPerDim - refStep,
+				grid = computeGrid(rectangles, bitsdPerDim - refStep,
 						dimensions); //
 				bucketsProRefimenement += step;					
 			}else if (tempList.size() + buckets.size() >=  bucketsProRefimenement){
 				refStep--; // try to refine and compute grid
-				grid = computeGrid1(rectangles, bitsdPerDim - refStep,
+				grid = computeGrid(rectangles, bitsdPerDim - refStep,
 						dimensions); //
 				// add temp buckets to list
 				buckets.addAll(tempList);
@@ -311,7 +308,7 @@ public class MinSkewHist {
 		
 		List<SpatialHistogramBucket> histogram = new ArrayList<SpatialHistogramBucket>();
 		// 1.initial grid
-		Map<Long, Integer> grid = computeGrid1(rectangles, bitsdPerDim,
+		Map<Long, Integer> grid = computeGrid(rectangles, bitsdPerDim,
 				dimensions);
 		// 2.first bucket
 		Bucket initialBucket = new Bucket(
@@ -373,35 +370,63 @@ public class MinSkewHist {
 	}
 	/**
 	 * 
-	 * buckets 
+	 * This static class is used minskew computation. It reperesents a grid cell.
 	 *
 	 */
+	@SuppressWarnings("serial")
 	public static class Bucket extends SpatialHistogramBucket {
-
-		private Double skew = Double.MAX_VALUE;;
+		/**
+		 * 
+		 */
+		private Double skew = Double.MAX_VALUE;
+		/**
+		 * 
+		 */
 		private Double bestReduction = 0.0;
-		
+		/**
+		 * 
+		 */
 		private Bucket bestOne = null;
+		/**
+		 * 
+		 */
 		private Bucket bestTwo = null;
-		private int anzahl;
-		
-		
-		
+		/**
+		 * 
+		 */
+		private int numberOfReferencedObjects;
+		/**
+		 * 	
+		 */
 		private int localBitsProDim = 0;
-
+		/**
+		 * 
+		 * @param dimension
+		 */
 		public Bucket(int dimension) {
 			super(dimension);
 		}
-		
+		/**
+		 * 
+		 * @param dimension
+		 * @param localBitsProDim
+		 */
 		public Bucket(int dimension,int localBitsProDim) {
 			super(dimension);
 			this.localBitsProDim = localBitsProDim; 
 		}
-
+		/**
+		 * 
+		 * @param rec
+		 */
 		public Bucket(DoublePointRectangle rec) {
 			super(rec);
 		}
-
+		/**
+		 * 
+		 * @param grid
+		 * @param bitsdPerDim
+		 */
 		public void computeSkew(Map<Long, Integer> grid, int bitsdPerDim) {
 			UnaryFunction<double[], int[]> convertToFillingCurveValues = getSFCFunction( (1 << (bitsdPerDim-1))) ;
 			int[] intLowLeft = convertToFillingCurveValues
@@ -432,16 +457,22 @@ public class MinSkewHist {
 			for (Integer i : allValues) {
 				skew += (i - schnitt) * (i - schnitt);
 			}
-			setAnzahl(allValues.size());
+			setNumberOfReferencedObjects(allValues.size());
 			setSkew(skew);
 		}
-
-		public void setAnzahl(int size) {
-			this.anzahl = size;
+		/**
+		 * 
+		 * @param size
+		 */
+		public void setNumberOfReferencedObjects(int size) {
+			this.numberOfReferencedObjects = size;
 		}
-
-		public int getAnzahl() {
-			return anzahl;
+		/**
+		 * 
+		 * @return
+		 */
+		public int getNumberOfReferencedObjects() {
+			return numberOfReferencedObjects;
 		}
 
 		public void computeBestSplit(Map<Long, Integer> grid, int bitsdPerDim) {
@@ -486,35 +517,59 @@ public class MinSkewHist {
 				System.out.println("Problem!");
 			}
 		}
-		
+		/**
+		 * 
+		 * @return
+		 */
 		public Double getSkew() {
 			return skew;
 		}
-
+		/**
+		 * 
+		 * @param skew
+		 */
 		public void setSkew(Double skew) {
 			this.skew = skew;
 		}
-
+		/**
+		 * 
+		 * @return
+		 */
 		public Bucket getBestOne() {
 			return bestOne;
 		}
-
+		/**
+		 * 
+		 * @param bestOne
+		 */
 		private void setBestOne(Bucket bestOne) {
 			this.bestOne = bestOne;
 		}
-
+		/**
+		 * 
+		 * @return
+		 */
 		public Bucket getBestTwo() {
 			return bestTwo;
 		}
-
+		/**
+		 * 
+		 * @param bestTwo
+		 */
 		private void setBestTwo(Bucket bestTwo) {
 			this.bestTwo = bestTwo;
 		}
-
+		/**
+		 * 
+		 * @return
+		 */
 		public Double getBestReduction() {
 			return bestReduction;
 		}
-		
+		/*
+		 * (non-Javadoc)
+		 * @see xxl.core.spatial.histograms.utils.SpatialHistogramBucket#toString()
+		 */
 		@Override
 		public String toString() {
 			return  this.bestReduction +  " ; skew "  +  this.skew  + "  " + super.toString();
