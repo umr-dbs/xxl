@@ -114,7 +114,7 @@ public class STHist {
 	
 	protected void buildGrid(Cursor<DoublePointRectangle> rectangles, int bitsPerDim,
 			int dimensions){
-		grid = MinSkewHist.computeGrid2( rectangles,  bitsPerDim, dimensions);
+		grid = MinSkewHist.computeGridForForest( rectangles,  bitsPerDim, dimensions);
 	}
 	
 	
