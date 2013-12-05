@@ -15,7 +15,7 @@
 		<delete dir="${temp}"/>
 	</target>
 		
-	<target name="compile" depends="init">
+	<target name="compile" depends="clean">
 		<delete dir="${bin}"/>
 		<mkdir dir="${bin}"/>		
 		<javac 	srcdir="${src}"	destdir="${bin}"
