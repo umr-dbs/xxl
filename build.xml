@@ -28,10 +28,10 @@
 		<jar basedir="${bin}" destfile="${temp}/${jar}" update="false" compress="true"/>			
 	</target>
 		
-	<target name="javadoc" depends="jar">
+	<target name="docs" depends="jar">
 	<javadoc packagenames="xxl.core.*"
-	           sourcepath="src"
-	           excludepackagenames="xxl.core.xxlinq.*"
+	           sourcepath="${src}"
+	           excludepackagenames="xxl.core.xxql.*"
 	           defaultexcludes="yes"
 	           destdir="${temp}/${doc}"
 	           author="false"
