@@ -28,7 +28,7 @@
 		<jar basedir="${bin}" destfile="${temp}/${jar}" update="false" compress="true"/>			
 	</target>
 		
-	<target name="docs" depends="jar">
+	<target name="documentation" depends="jar">
 	<javadoc packagenames="xxl.core.*"
 	           sourcepath="${src}"
 	           excludepackagenames="xxl.core.xxql.*"
@@ -37,7 +37,7 @@
 	           author="false"
 	           version="true"
 	           use="true"
-	           windowtitle="Test API">
+	           windowtitle="XXL API">
 	    <doctitle><![CDATA[<h1>XXL-Java-Libaray</h1>]]></doctitle>
 	    <bottom><![CDATA[<i>Copyright &#169; 2000-2013 Prof. Dr. Bernhard Seeger
             Head of the Database Research Group
