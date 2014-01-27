@@ -53,10 +53,10 @@ import xxl.core.functions.Functional.UnaryFunction;
 import xxl.core.indexStructures.ORTree;
 import xxl.core.indexStructures.RTree;
 import xxl.core.indexStructures.SortBasedBulkLoading;
+import xxl.core.indexStructures.rtrees.AbstractIterativeRtreeBulkloader.ProcessingType;
 import xxl.core.indexStructures.rtrees.GenericPartitioner.CostFunctionArrayProcessor;
 import xxl.core.indexStructures.rtrees.GenericPartitioner.DefaultArrayProcessor;
 import xxl.core.indexStructures.rtrees.RtreeIterativeBulkloader;
-import xxl.core.indexStructures.rtrees.RtreeIterativeBulkloader.ProcessingType;
 import xxl.core.io.converters.ConvertableConverter;
 import xxl.core.io.converters.Converter;
 import xxl.core.predicates.AbstractPredicate;
@@ -366,14 +366,14 @@ public class MHistograms {
 			DefaultArrayProcessor arrayProcessor = new DefaultArrayProcessor(costFunction, processList);
 			RtreeIterativeBulkloader<DoublePointRectangle> bulkLoader = new RtreeIterativeBulkloader<DoublePointRectangle>(sortBasedRTree, 
 					rtreePath,  dimension, blockSize, rtreeRatio, loadRatio, partitionSize);
-			bulkLoader.initTreeBulkloader(arrayProcessor, pType, dimension*8*2, Rectangles.getDoublePointRectangleConverter(dimension),  new UnaryFunction<DoublePointRectangle, DoublePointRectangle>() {
+			bulkLoader.init(arrayProcessor, pType, dimension*8*2, Rectangles.getDoublePointRectangleConverter(dimension),  new UnaryFunction<DoublePointRectangle, DoublePointRectangle>() {
 				@Override
 				public DoublePointRectangle invoke(DoublePointRectangle arg) {
 					return new DoublePointRectangle(arg);
 				}
 			}); 
 			bulkLoader.buildRTree(rectCursor); 
-			return bulkLoader.rtree;
+			return bulkLoader.getRTree();
 		}
 		
 	}

@@ -201,7 +201,7 @@ public class HistogramEval3D {
 		DefaultArrayProcessor arrayProcessor = new DefaultArrayProcessor(costFunction, processList);
 		RtreeIterativeBulkloader<DoublePointRectangle> bulkLoader = new RtreeIterativeBulkloader<DoublePointRectangle>(sortBasedRTree, 
 				tempPath,  dimension, BLOCKSIZE, 0.4, 0.9, 20_000);
-		bulkLoader.initTreeBulkloader(arrayProcessor, RtreeIterativeBulkloader.ProcessingType.GOPT, dimension*8*2, Rectangles.getDoublePointRectangleConverter(dimension),  new UnaryFunction<DoublePointRectangle, DoublePointRectangle>() {
+		bulkLoader.init(arrayProcessor, RtreeIterativeBulkloader.ProcessingType.GOPT, dimension*8*2, Rectangles.getDoublePointRectangleConverter(dimension),  new UnaryFunction<DoublePointRectangle, DoublePointRectangle>() {
 			@Override
 			public DoublePointRectangle invoke(DoublePointRectangle arg) {
 				return new DoublePointRectangle(arg);
@@ -211,7 +211,7 @@ public class HistogramEval3D {
 		
 		if(VERBOSE)
 			System.out.println("Evaluator is initialized!");
-		return bulkLoader.rtree;
+		return bulkLoader.getRTree();
 	}
 	
 	/* ************************************************************************** 
