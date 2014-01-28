@@ -333,7 +333,7 @@ public abstract class AbstractIterativeRtreeBulkloader<T> implements IterativeBu
 	 * @see xxl.core.indexStructures.rtrees.IterativeBulkLoaderInterface#buildRTree(java.util.Iterator)
 	 */
 	@Override
-	public void buildRTree(Iterator rectangles) throws IOException {
+	public void buildRTree(Iterator<T> rectangles) throws IOException {
 		Iterator tempIterator = rectangles;
 		while(tempIterator.hasNext()){
 			reinitTempLevelStorage();
@@ -464,29 +464,6 @@ public abstract class AbstractIterativeRtreeBulkloader<T> implements IterativeBu
 		}
 		return distribution.length;
 	}
-	
-//	/**
-//	 * Creates R-tree node  
-//	 * 
-//	 * @param entries
-//	 * @param level
-//	 * @return
-//	 */
-//	public MapEntry<Long,DoublePointRectangle> createNode(List entries, int level) {
-//		DoublePointRectangle descriptor = null;
-//		for (Object o : entries ){
-//			DoublePointRectangle rec = (level == 0) ? (DoublePointRectangle)(toRectangle.invoke((T)o)): (DoublePointRectangle)((IndexEntry)o).descriptor();
-//			if (descriptor == null)
-//				descriptor = new DoublePointRectangle(rec);
-//			else 
-//				descriptor.union(rec);
-//		}
-//		final Node node = (Node) rtree.createNode(level);
-//		Long nodeId = (Long) treeContainer.reserve(new Constant<Node>(node));
-//		node.initialize(level, entries);
-//		treeContainer.update(nodeId, node);// I/O 
-//		return new MapEntry<Long, DoublePointRectangle>(nodeId, descriptor);
-//	}
 	
 	/**
 	 * Writes node to a R-tree container
