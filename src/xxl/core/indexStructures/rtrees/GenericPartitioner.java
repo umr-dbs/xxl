@@ -171,7 +171,7 @@ public class GenericPartitioner {
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public static KBucket computeKLevelGOPT(DoublePointRectangle[] rectangles,  int B, int a, int k,  CostFunctionArrayProcessor processor){
 		double[][] costs = processor.precomputeAllCosts(rectangles);
-		KBucket[][][] bucketCosts = new KBucket[ rectangles.length][ rectangles.length][k];
+		KBucket[][] bucketCosts = new KBucket[ rectangles.length][ rectangles.length];
 		KBucket argOpt = null;
 		for(int l = 0; l < k; l++){
 			int maxC = (int) (Math.pow(a, l+1) * 4d/3d * B );
@@ -185,9 +185,9 @@ public class GenericPartitioner {
 				// initialize
 				for(int r = i; r < i+max; r++){
 					if (r >= minI && r < rectangles.length-1){
-						KBucket argMin = (l > 0) ? bucketCosts[i][r][l-1] : null;
+						KBucket argMin = (l > 0) ? bucketCosts[i][r] : null;
 						double cos = (argMin== null) ? 0d: argMin.cost;
-						bucketCosts[i][r][l] =  new KBucket(costs[i][r] + cos, i, r, null, argMin, r-i);
+						bucketCosts[i][r] =  new KBucket(costs[i][r] + cos, i, r, null, argMin, r-i);
 					}
 				}
 				double startCosts = 0;//
@@ -196,20 +196,20 @@ public class GenericPartitioner {
 				for(int j = minI+min; j < rectangles.length; j++){
 					KBucket argMin = null;
 					double minCosts = Double.MAX_VALUE;
-					if(bucketCosts[i][j][l] !=null)
-						minCosts = bucketCosts[i][j][l].cost;
+					if(bucketCosts[i][j] !=null)
+						minCosts = bucketCosts[i][j].cost;
 					int bound = Math.max(j-max, minI);
 					for(int r = j-min; r >= bound; r--){ // val[i][j-r][l] + rect[j-r+1][j] + val[j-r+1][j][l-1]  		// b^l < r < B^l
-						startCosts = bucketCosts[i][r][l].cost;
+						startCosts = bucketCosts[i][r].cost;
 						rCosts =costs[r+1][j];
-						levelDownCosts = (l > 0) ? bucketCosts[r+1][j][l-1].cost : 0d;
+						levelDownCosts = (l > 0) ? bucketCosts[r+1][j].cost : 0d;
 						if ( startCosts+ rCosts + levelDownCosts < minCosts){
 							int number = j-r; 
 							minCosts =  startCosts+ rCosts + levelDownCosts;
-							argMin = (l > 0) ? bucketCosts[r+1][j][l-1] : null;
-							bucketCosts[i][j][l] = new KBucket(minCosts, r+1, j, bucketCosts[i][r][l] , argMin, number);
+							argMin = (l > 0) ? bucketCosts[r+1][j] : null;
+							bucketCosts[i][j] = new KBucket(minCosts, r+1, j, bucketCosts[i][r], argMin, number);
 							if(l == k-1 && j ==  rectangles.length-1){
-								argOpt = bucketCosts[i][j][l];
+								argOpt = bucketCosts[i][j];
 							}
 						}
 					}
@@ -217,7 +217,7 @@ public class GenericPartitioner {
 				// set i to 
 			}
 		}
-		return  bucketCosts[0][rectangles.length-1][k-1];  
+		return  bucketCosts[0][rectangles.length-1];  
 	}
 	
 	
