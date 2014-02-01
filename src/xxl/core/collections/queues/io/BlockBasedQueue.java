@@ -33,7 +33,10 @@ import java.io.OutputStream;
 import java.util.List;
 
 import xxl.core.collections.containers.Container;
+import xxl.core.collections.containers.io.BlockFileContainer;
 import xxl.core.collections.queues.FIFOQueue;
+import xxl.core.collections.queues.Queue;
+import xxl.core.cursors.sorters.MergeSorter;
 import xxl.core.functions.AbstractFunction;
 import xxl.core.functions.Constant;
 import xxl.core.functions.Function;
@@ -146,6 +149,32 @@ public class BlockBasedQueue extends StreamQueue implements Convertable, FIFOQue
 		}
 	};
 
+	
+	
+	/**
+	 * This function can be used for initialization of external sorting. 
+	 * 
+	 * This constructor has a parameter function, which is a factory function for storing intermediate runs.  
+	 * {@link MergeSorter#MergeSorter(java.util.Iterator, java.util.Comparator, int, int, int, Function, boolean)}
+	 * 
+	 * 
+	 * {@link MergeSorter}
+	 * @param queueContainer container e.g. {@link  BlockFileContainer}
+	 * @param blockSize in bytes e.g. 4096 
+	 * @param converter  for data serializing
+	 * @return
+	 */
+	public static <T> Function<Function<?, Integer>, Queue<?>> createBlockBasedQueueFunctionForMergeSorter(final Container queueContainer, final int blockSize, final Converter<T> converter){
+		return new AbstractFunction<Function<?, Integer>, Queue<?>>() {
+		public Queue<?> invoke(Function<?, Integer> function1, Function<?, Integer> function2) {
+			return new BlockBasedQueue(queueContainer, blockSize, converter,
+					function1, function2);
+		}
+	};
+	}
+	
+	
+	
 	/**
 	 * The container is internally used for storing the blocks that
 	 * contains the serialized elements of the queue.
