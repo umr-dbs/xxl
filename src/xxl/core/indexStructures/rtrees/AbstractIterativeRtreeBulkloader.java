@@ -28,7 +28,6 @@ package xxl.core.indexStructures.rtrees;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.DataOutputStream;
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -40,15 +39,14 @@ import xxl.core.collections.MapEntry;
 import xxl.core.collections.containers.Container;
 import xxl.core.cursors.Cursor;
 import xxl.core.cursors.mappers.Mapper;
-import xxl.core.cursors.sources.io.FileInputCursor;
 import xxl.core.functions.AbstractFunction;
 import xxl.core.functions.Constant;
 import xxl.core.functions.Function;
 import xxl.core.functions.Functional.UnaryFunction;
 import xxl.core.indexStructures.ORTree;
-import xxl.core.indexStructures.RTree;
 import xxl.core.indexStructures.ORTree.IndexEntry;
 import xxl.core.indexStructures.ORTree.Node;
+import xxl.core.indexStructures.RTree;
 import xxl.core.indexStructures.rtrees.GenericPartitioner.Bucket;
 import xxl.core.indexStructures.rtrees.GenericPartitioner.CostFunctionArrayProcessor;
 import xxl.core.io.converters.ConvertableConverter;
@@ -172,6 +170,25 @@ public abstract class AbstractIterativeRtreeBulkloader<T> implements IterativeBu
 					cost *= (deltas[i] + normalizedQuerySideLength[i]);
 				}
 				return  cost;
+			}
+			
+		};
+		
+	}; 
+	
+	
+	/**
+	 * Returns cost function as extended volume (area in 2d). 
+	 *  
+	 * @param normalizedQuerySideLength  is an array of avg query side length; note that we assume unit cube.
+	 * @return cost function as volume of rectangle extended with a average query side length
+	 */
+	public static UnaryFunction<DoublePointRectangle, Double>  generateDefaultFunctionVolume(){
+		return new UnaryFunction<DoublePointRectangle, Double>() {
+
+			@Override
+			public Double invoke(DoublePointRectangle arg) {
+				return  arg.area();
 			}
 			
 		};

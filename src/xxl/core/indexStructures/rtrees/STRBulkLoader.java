@@ -104,7 +104,12 @@ public class STRBulkLoader<T> extends AbstractIterativeRtreeBulkloader<T>{
 	public int SORT_BUFFER_SIZE = 10*1024*1024;
 	
 	/**
-	 * 
+	 * For initializing the STR loader we need 
+	 * an Rtree, number of dimensions, blocksize, storage utilization per node in percent and so called sortign function
+	 * this provides the ordering of dimensions, since str sorts and partitions data according to one dimension at one step
+	 * sorting function provides which dimension should be taken as next
+ 	 * e.g. in two dimensional space we have 4 different sorting functions x,x or x,y or y,y, or x,x
+	 * in this example we use a default one x,y
 	 * @param rtree
 	 * @param path
 	 * @param dimension
