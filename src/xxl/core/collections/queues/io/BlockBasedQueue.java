@@ -164,9 +164,9 @@ public class BlockBasedQueue extends StreamQueue implements Convertable, FIFOQue
 	 * @param converter  for data serializing
 	 * @return
 	 */
-	public static <T> Function<Function<?, Integer>, Queue<?>> createBlockBasedQueueFunctionForMergeSorter(final Container queueContainer, final int blockSize, final Converter<T> converter){
-		return new AbstractFunction<Function<?, Integer>, Queue<?>>() {
-		public Queue<?> invoke(Function<?, Integer> function1, Function<?, Integer> function2) {
+	public static <T> Function<Function<?, Integer>, Queue<T>> createBlockBasedQueueFunctionForMergeSorter(final Container queueContainer, final int blockSize, final Converter<T> converter){
+		return new AbstractFunction<Function<?, Integer>, Queue<T>>() {
+		public Queue<T> invoke(Function<?, Integer> function1, Function<?, Integer> function2) {
 			return new BlockBasedQueue(queueContainer, blockSize, converter,
 					function1, function2);
 		}
