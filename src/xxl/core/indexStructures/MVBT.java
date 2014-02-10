@@ -834,7 +834,7 @@ public class MVBT extends MVBTree {
 			if(level  > 0 ){
 				//  merge in linear time
 				List<IndexEntry>  newLiveEntries = new ArrayList<>(); 
-				Iterator<IndexEntry> mergedEntries = new Merger<>(liveIndexEntryComparator, node.liveEntries.iterator(), tempNode.liveEntries.iterator()); 
+				Iterator<IndexEntry> mergedEntries = new Merger<IndexEntry>(liveIndexEntryComparator, node.liveEntries.iterator(), tempNode.liveEntries.iterator()); 
 				while(mergedEntries.hasNext()){
 					IndexEntry idxEntry = mergedEntries.next();
 					newLiveEntries.add(idxEntry);
