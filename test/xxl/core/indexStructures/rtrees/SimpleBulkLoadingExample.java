@@ -37,8 +37,10 @@ import xxl.core.collections.containers.io.ConverterContainer;
 import xxl.core.collections.queues.Queue;
 import xxl.core.collections.queues.io.BlockBasedQueue;
 import xxl.core.cursors.Cursors;
+import xxl.core.cursors.mappers.Mapper;
 import xxl.core.cursors.sorters.MergeSorter;
 import xxl.core.cursors.sources.io.FileInputCursor;
+import xxl.core.functions.AbstractFunction;
 import xxl.core.functions.Function;
 import xxl.core.functions.Functional.UnaryFunction;
 import xxl.core.functions.Identity;
@@ -54,6 +56,8 @@ import xxl.core.io.converters.ConvertableConverter;
 import xxl.core.io.converters.Converter;
 import xxl.core.predicates.AbstractPredicate;
 import xxl.core.spatial.SpaceFillingCurves;
+import xxl.core.spatial.TestPlot;
+import xxl.core.spatial.histograms.utils.SpatialHistogramUtils;
 import xxl.core.spatial.rectangles.DoublePointRectangle;
 import xxl.core.spatial.rectangles.Rectangles;
 import xxl.core.util.Pair;
@@ -458,14 +462,24 @@ public class SimpleBulkLoadingExample {
 	}
 	
 	/**
-	 * 
+	 * visualizes node MBRs
 	 */
-	public static void showRtreeLevel(){
-		//TODO
+	public static void showRtreeLevel(String name, int level, final RTree tree){
+		if(level > tree.height())
+			throw new RuntimeException("level!");
+		Iterator<DoublePointRectangle> levelDescriptors = new Mapper<>(new AbstractFunction<Object, DoublePointRectangle>() {
+			
+			@Override
+			public DoublePointRectangle invoke(Object argument) {
+				return (DoublePointRectangle)tree.descriptor(argument);
+			}
+			
+		}, tree.query(level));
+		new TestPlot( name, levelDescriptors, 500,  SpatialHistogramUtils.universeUnit(DIMENSION));
 	}
 	
 	public static void main(String[] args) throws IOException {
-		//boolean showTrees = false;
+		boolean showTrees = true;
 		//create Rtree 
 		Pair<RTree, CounterContainer> rtree = createAndLoadSortBased();
 		//create STR
@@ -485,8 +499,14 @@ public class SimpleBulkLoadingExample {
 		testQuery(strRtree, RANGE_QUERY_PATH);
 		System.out.println("*********************\n");
 		testQuery(optRtree, RANGE_QUERY_PATH);
+		// show mbr of leaf level
+		if(showTrees){
+			int leafLevel = 1; 
+			showRtreeLevel("RTree Hilbert Curve", leafLevel, rtree.getElement1());
+			showRtreeLevel("RTree STR", leafLevel, strRtree.getElement1());
+			showRtreeLevel("RTree Hilbert Curve GOPT volume optimized", leafLevel, optRtree.getElement1());
+		}
 		
-
 	}
 
 }
