@@ -553,7 +553,7 @@ public class MVBT extends MVBTree {
 					return false;
 				}
 			};
-			return new Filter(new Sequentializer<>(this.iterator(), liveEntries.iterator()), test);
+			return new Filter(new Sequentializer(this.iterator(), liveEntries.iterator()), test);
 		}
 
 		/*
@@ -597,7 +597,7 @@ public class MVBT extends MVBTree {
 		 */
 		@SuppressWarnings({ "rawtypes", "unchecked" })
 		public Iterator query(final Lifespan lifespan) {
-			return new Filter(	new Sequentializer<>(iterator(), liveEntries.iterator()),
+			return new Filter(	new Sequentializer(iterator(), liveEntries.iterator()),
 								new AbstractPredicate() {
 									public boolean invoke(Object entry) {									 	
 										return ((MVSeparator)separator(entry)).lifespan().overlaps(lifespan);
@@ -612,7 +612,7 @@ public class MVBT extends MVBTree {
 		@SuppressWarnings({ "rawtypes", "unchecked" })
 		public Iterator iterator() {
 			if(level > 0 )
-				return new Sequentializer<>(entries.iterator(), liveEntries.iterator());
+				return new Sequentializer(entries.iterator(), liveEntries.iterator());
 			return new Iterator() {
 				private int index=0;
 				private boolean removeable=false;
@@ -643,7 +643,7 @@ public class MVBT extends MVBTree {
 		 */
 		@SuppressWarnings({ "unchecked", "rawtypes", "serial" })
 		public Iterator getCurrentEntries() {
-			return new Filter( new Sequentializer<>(iterator(), liveEntries.iterator()),
+			return new Filter( new Sequentializer(iterator(), liveEntries.iterator()),
 								new AbstractPredicate() {
 									public boolean invoke(Object entry) {
 										return ((MVSeparator)separator(entry)).isAlive();
