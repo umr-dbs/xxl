@@ -178,7 +178,7 @@ public class QueueBuffer<E>  extends AbstractQueue<E> {
 				index =  tailOffSet-1;
 			}
 		}
-		size++;
+		//size++; is managed by super class
 	}
 	/*
 	 * (non-Javadoc)
@@ -209,7 +209,7 @@ public class QueueBuffer<E>  extends AbstractQueue<E> {
 			headId = head.prev;
 			
 		}
-		size--;
+//		size--;
 		return entry;
 	}
 
