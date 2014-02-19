@@ -732,7 +732,6 @@ public class MVBTPlusLoadingExample {
 				getKey, // getKey Function
 				mvbtRootsContainer_LRUtreePlus, // container roots tree
 				mvbtStorageContainer_LRUtreePlus, // main container
-				LongVersion.VERSION_MEASURED_CONVERTER, // converter for version object 
 				keyConverter, // key converter 
 				dataConverter, // data converter mapEntry
 				LongMVSeparator.FACTORY_FUNCTION, // factory function for separator
