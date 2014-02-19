@@ -155,7 +155,7 @@ public class MVBTPlus extends MVBT {
 	 * I order to initialize a MVBTPlus
 	 * 
 	 * 
-	 * Assumption we manage long timestamps
+	 * Assumption: we manage long time stamps.
 	 */
 	public static class LongVersion implements MVBTree.Version{
 		/**
@@ -285,7 +285,7 @@ public class MVBTPlus extends MVBT {
 	 */
 	protected static enum LoadState{
 		PUSH_INIT, // initial state 
-		PUSH_LOAD, // after root node is cretaed state
+		PUSH_LOAD, // after root node is created state
 		PUSH_ALL, // last state after the initial data is iterator is empty!
 	}
 	/**
@@ -332,11 +332,13 @@ public class MVBTPlus extends MVBT {
 	}
 
 	/**
-	 * stores index entry buffer information 
+	 * stores index entry buffer information. This a basic implementation. 
+	 * This map is stored in main memory. For a advanced application persistent map implementation can be used.
+	 *  
 	 */
 	protected Map<Long,Queue<Element>> bufferMap; 
 	/**
-	 *  factory function level buffers
+	 *  factory function level buffers. creates a generic buffer. Entries of type Element is stored in this queues during the bulk loading or bulk insertion.
 	 */
 	protected NullaryFunction<Queue<Element>> factoryBufferFunction;  
 	/**
@@ -360,46 +362,43 @@ public class MVBTPlus extends MVBT {
 	 */
 	protected UnaryFunction<IndexEntry, Boolean> violatesWeight;
 	/**
-	 * function min live weight
+	 * function minimal live weight
 	 */
 	protected BinaryFunction<Integer, Integer, Integer> minLiveWeight;
 	/**
-	 * 
+	 * function minimal live weight strong
 	 */
 	protected BinaryFunction<Integer, Integer, Integer> minLiveWeightStrong;
 	/**
-	 * 
+	 * function maximal live weight
 	 */
 	protected BinaryFunction<Integer, Integer, Integer> maxLiveWeight;
 	/**
-	 * 
+	 * function maximal live weight strong 
 	 */
 	protected BinaryFunction<Integer, Integer, Integer> maxLiveWeightStrong;
  	/**
- 	 * 
+ 	 * returns maximal weight
  	 */
 	protected UnaryFunction<Integer, Integer> getMaxWeight;
-	
-	
 	/**
-	 * 
+	 * returns true if a level has buffers, in non bulk load case this function returns always false;
 	 */
 	protected UnaryFunction<Integer, Boolean> isBufferLevel; 
-	
-	
 	/**
-	 * 
+	 * special queue for a root node
 	 */
 	protected Queue<Element> rootQueue;
 	/**
-	 * 
+	 * Auxiliary set, is used to mark buffer overflows
 	 */
 	protected Set<Long> markSet; 
 	/**
+	 * the maximal number of elements stored in a buffer of node
 	 * 
+	 *  default value is equal to 1/4 of the available memory
 	 */
 	private int reducedMemory;
-	
 	
 	/**
 	 * Default constructor. 
@@ -539,7 +538,6 @@ public class MVBTPlus extends MVBT {
 		return this;						
 	}
 	
-	
 	/**
 	 * 
 	 */
@@ -568,7 +566,6 @@ public class MVBTPlus extends MVBT {
 		//Note:
 //		initWeightFunctions();
 	}
-	
 	
 	/**
 	 * 
@@ -720,7 +717,6 @@ public class MVBTPlus extends MVBT {
 		// DEBUG
 //		PRINT_STAT();
 //		System.out.println("buffers -> " + bufferMap.size());
-		
 	}
 	
 	/**
@@ -732,7 +728,6 @@ public class MVBTPlus extends MVBT {
 	public void bulkInsert(Iterator<Element> data, NullaryFunction<Queue<Element>> factoryQueueFunction, int memoryCapacity){
 		bulkLoad(data, factoryQueueFunction, memoryCapacity); 
 	}
-	
 	
 	/**
 	 * 
@@ -761,7 +756,6 @@ public class MVBTPlus extends MVBT {
 		}
 	}
 
-	
 	/**
 	 * 
 	 * @param bufferOverflowWeightViolationStack
@@ -785,6 +779,7 @@ public class MVBTPlus extends MVBT {
 	protected void removeFromStack(Long id){
 		markSet.remove(id);
 	}
+	
 	/**
 	 * Flush buffer 
 	 * 
@@ -796,6 +791,7 @@ public class MVBTPlus extends MVBT {
 		ReorgInfo reorgInfo = infoObject.getElement4();
 		pushDownBuffer(currentRoot, reorgInfo, reducedMemory, false);
 	}
+	
 	/**
 	 * 
 	 * @param currentRoot
@@ -831,6 +827,7 @@ public class MVBTPlus extends MVBT {
 		}
 		currentRoot.update(node, true); // 
 	}
+	
 	/**
 	 * Appends to queue if queue not exists allocates new queue 
 	 * @param rootEntry
@@ -843,6 +840,7 @@ public class MVBTPlus extends MVBT {
 		}
 		buffer.enqueue(element);
 	}
+	
 	/**
 	 * 
 	 * @param rootEntry
@@ -943,6 +941,7 @@ public class MVBTPlus extends MVBT {
 		}
 		return path;
 	}
+	
 	/**
 	 * 
 	 * @param path
@@ -1301,7 +1300,7 @@ public class MVBTPlus extends MVBT {
 	 * 
 	 */
 	@SuppressWarnings({ "unchecked", "deprecation" })
-	private List<IndexEntry> handlePhysicalOverflow(IndexEntry currentLiveEntry, Node currentLiveNode){
+	protected List<IndexEntry> handlePhysicalOverflow(IndexEntry currentLiveEntry, Node currentLiveNode){
 		// check if the number of elements > than B 
 		// leave only live elements in the node
 		// allocate historical node
