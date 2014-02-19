@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.IntStream;
 
 import xxl.core.collections.containers.Container;
 import xxl.core.collections.containers.CounterContainer;
@@ -490,6 +491,7 @@ public class MVBTPlusLoadingExample {
 		/*****************************************************************************************
 		 * test data generation
 		 ******************************************************************************************/
+		
 		String conatinerType= "raw"; //"memory"
 		// create ASCII File with 200_000 operations
 		SimpleLoadMVBTree.createASCIIFile(TREE_PATH+"data.dat", SimpleLoadMVBTree.generatedDeleteWorkload(OPERATIONS_NUMBER , 0.5d, 42));  
@@ -504,7 +506,7 @@ public class MVBTPlusLoadingExample {
 		int LRU_SLOTS = M;
 		LRUBuffer memory = new LRUBuffer<>(LRU_SLOTS);
 		// we initialize tree
-		MVBTPlus mvbtplus = new MVBTPlus(BLOCK_SIZE, D, E, FANOUT_PARAMETER_A, memoryCapacity, Long.MIN_VALUE);
+		MVBTPlus mvbtplus = new MVBTPlus(BLOCK_SIZE, D, E,  Long.MIN_VALUE);
 		// now we create a container were we store buffers
 		// we will use QueueBuffer alternatively BlockBasedQueue can be used
 		final Container bufferStorage =  getContainer(TREE_PATH + "queues.dat", conatinerType);
@@ -542,8 +544,6 @@ public class MVBTPlusLoadingExample {
 				dataConverter, // data converter mapEntry
 				LongMVSeparator.FACTORY_FUNCTION, // factory function for separator
 				LongMVRegion.FACTORY_FUNCTION); // factory function for MultiVersion Regions
-		// here we provide additional information about how and what kind of queues are used as buffers
-		mvbtplus.initForLoad(queueFunction);
 		// 
 		Mapper<Element,Element> mapper = new Mapper<>(new AbstractFunction<Element, Element>() {
 			int k = 1;
@@ -558,8 +558,9 @@ public class MVBTPlusLoadingExample {
 		}, it);
 		System.out.println();
 		long time = System.currentTimeMillis();
+		// here we provide additional information about how and what kind of queues are used as buffers
 		// start bulk loading
-		mvbtplus.bulkLoad(mapper);
+		mvbtplus.bulkLoad(mapper, queueFunction,  memoryCapacity);
 		System.out.println();
 		time = System.currentTimeMillis()-time;
 		//print number of I/Os for queues
@@ -640,7 +641,7 @@ public class MVBTPlusLoadingExample {
 		System.out.printf(Locale.GERMANY, "overlall I/O %d ; time %d ; \n",  main, time);
 		System.out.println();
 		/*****************************************************************************************
-		 * bulk load MVBTree naive tuple-by-tuple
+		 * bulk load MVBTtree naive tuple-by-tuple
 		 ******************************************************************************************/
 		System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
 		System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
@@ -704,6 +705,65 @@ public class MVBTPlusLoadingExample {
 		System.out.println();
 		time = System.currentTimeMillis()-time;
 		main = cContainerMVBT_LRUtree.gets +  cContainerMVBT_LRUtree.updates + cContainerMVBT_LRUtree.inserts;
+		System.out.printf(Locale.GERMANY, "overall I/O  %d ; time %d ; \n",  main, time);
+		System.out.println();
+		
+		/*****************************************************************************************
+		 * bulk load MVBTPlus naive tuple-by-tuple
+		 ******************************************************************************************/
+		System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+		System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+		// create MVBT
+		MVBTPlus mvbttreePlus = new MVBTPlus(BLOCK_SIZE, D, E, Long.MIN_VALUE);
+		LRUBuffer memMVBTreePlus = new LRUBuffer<>(LRU_SLOTS);
+		//1.Init MVBT roots tree and main nodes are in the same container
+		CounterContainer cContainerMVBT_LRUtreePlus = new CounterContainer(getContainer((TREE_PATH + "mvbttreeLRUPlus.dat"), conatinerType));
+		Container containerMVBT_LRUtreePlus = new ConverterContainer(cContainerMVBT_LRUtreePlus, mvbttreePlus.nodeConverter()); // mvbt main
+		Container cContainerMVBT_LRU_rootstreePlus = new ConverterContainer(cContainerMVBT_LRUtreePlus, mvbttreePlus.roots.nodeConverter()); // roots
+		Container fMVBTContainer_LRUtreePlus = new BufferedContainer(containerMVBT_LRUtreePlus, memMVBTreePlus);
+		CounterContainer cfMVBTContainer_LRUtreePlus = new CounterContainer(fMVBTContainer_LRUtreePlus);
+		Container fMVBTContainer_LRU_rootstreePlus = new BufferedContainer(cContainerMVBT_LRU_rootstreePlus, memMVBTreePlus);
+		//CounterContainer cfMVBTContainer = new CounterContainer(containerMVBT);
+		Container mvbtStorageContainer_LRUtreePlus = cfMVBTContainer_LRUtreePlus;
+		Container mvbtRootsContainer_LRUtreePlus = fMVBTContainer_LRU_rootstreePlus;
+		mvbttreePlus.initialize(null, // rootEntry
+				null, // Descriptor MVRegion
+				null, // roots tree root Entry
+				null, // descriptro KeyRange
+				getKey, // getKey Function
+				mvbtRootsContainer_LRUtreePlus, // container roots tree
+				mvbtStorageContainer_LRUtreePlus, // main container
+				LongVersion.VERSION_MEASURED_CONVERTER, // converter for version object 
+				keyConverter, // key converter 
+				dataConverter, // data converter mapEntry
+				LongMVSeparator.FACTORY_FUNCTION, // factory function for separator
+				LongMVRegion.FACTORY_FUNCTION); // factory function for MultiVersion Regions
+		// create iterator for reading dat set
+		it = getIteratorDataSet(TREE_PATH+"data.dat");
+		System.out.println();
+		// 
+		mapper = new Mapper<>(new AbstractFunction<Element, Element>() {
+					int k = 1;
+					  @Override
+					public Element invoke(Element argument) {
+							if(k % 10_000 == 0 )
+								System.out.print(".");
+							k++;
+						return argument;
+					}
+					
+		}, it);
+		time = System.currentTimeMillis();
+		k = 0;
+		// insert elements
+		while(mapper.hasNext()){
+			Element record = (Element) mapper.next();
+			mvbttreePlus.insert(record);
+			k++;
+		}
+		System.out.println();
+		time = System.currentTimeMillis()-time;
+		main = cContainerMVBT_LRUtreePlus.gets +  cContainerMVBT_LRUtreePlus.updates + cContainerMVBT_LRUtreePlus.inserts;
 		System.out.printf(Locale.GERMANY, "overall I/O  %d ; time %d ; \n",  main, time);
 		System.out.println();
 	}

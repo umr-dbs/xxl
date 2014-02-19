@@ -45,6 +45,8 @@ import java.util.Stack;
 
 import xxl.core.collections.containers.Container;
 import xxl.core.collections.queues.Queue;
+import xxl.core.collections.queues.io.BlockBasedQueue;
+import xxl.core.collections.queues.io.QueueBuffer;
 import xxl.core.cursors.filters.Filter;
 import xxl.core.cursors.unions.Merger;
 import xxl.core.cursors.unions.Sequentializer;
@@ -63,34 +65,85 @@ import xxl.core.util.Quadruple;
 import xxl.core.util.Triple;
 
 /**
- * This class implements a MVBTPlus bulk loading solution; 
+ * This class implements a MVBTPlus bulk-loading algorithm; 
  * 
  * see D. Achakeev, B. Seeger, Efficient bulk updates on multiversion B-trees, PVLDB Vol 6 Issue 14, 2013
  * 
  * 
+ * For loading purpose MVBTPlus is initialized as follows (the first two steps are similar to #MVBT)
+ * 
+ * 1. we create MVBTPlus using a {@link #MVBTPlus(int, float, float, int, int, Comparable)}
+ * we provide BlockSize, fraction of minimal number of live entries (D),  fraction of D as minimal number of elements needed for a next reorg.  
+ *  and a minimal value from key domain.  
+ * 
+ * 2. we call {@link #initialize(xxl.core.indexStructures.BPlusTree.IndexEntry, Descriptor, xxl.core.indexStructures.BPlusTree.IndexEntry, Descriptor, Function, Container, Container, MeasuredConverter, MeasuredConverter, MeasuredConverter, Function, Function)}
+ *  e.g 	mvbtplus.initialize(null, // rootEntry
+ *						null, // Descriptor MVRegion
+ *					null, // roots tree root Entry
+ *						null, // descriptor KeyRange
+ * 						getKey, // getKey Function
+ *						rootsPlusContainer, // container roots tree
+ *						mainTreeContainer, // main container
+ *						LongVersion.VERSION_MEASURED_CONVERTER, // converter for version object 
+ *						keyConverter, // key converter 
+ *						dataConverter, // data converter mapEntry
+ *						LongMVSeparator.FACTORY_FUNCTION, // factory function for separator
+ *						LongMVRegion.FACTORY_FUNCTION); // factory function for MultiVersion Regions
+ * 3. we provide a factory function for queue creation; Node buffers are implement queue ({@link Queue}) interface.
+ * e.g. with a {@link QueueBuffer} 
+ * 		final LRUBuffer memory = new LRUBuffer(bufferSlots);
+ *     	final Container bufferStorage =  new BlockFileContainer("C:/buffers", blockSize);
+ *		final CounterContainer cBufferStorage = new CounterContainer(new ConverterContainer(bufferStorage, QueueBuffer.getPageConverter(recordConverter)));
+ *		//the queue buffer pages are managed by LRUbuffer 
+ *		final CounterContainer memoryQueueStorage  = new CounterContainer(new BufferedContainer(cBufferStorage, memory));
+ *		// this is a factory function that is used for bulk loading
+ *		NullaryFunction<Queue<Element>> queueFunction = new NullaryFunction<Queue<Element>>() {
+ *			@Override
+ *			public Queue<Element> invoke() {
+ *				return new QueueBuffer<>(memoryQueueStorage, recordConverter.getMaxObjectSize(), BLOCK_SIZE);
+ *			}
+ *			
+ *		};
+ * e.g with a {@link BlockBasedQueue}
+ *      final LRUBuffer memory = new LRUBuffer(bufferSlots);
+ *     	final Container bufferStorage =  new BlockFileContainer("C:/buffers", blockSize);
+ *      // @link {@link BlockBasedQueue}
+ *		final CounterContainer cBufferStorage = new CounterContainer(new ConverterContainer(bufferStorage, QueueBuffer.getPageConverter(recordConverter)));
+ *		//the queue buffer pages are managed by LRUbuffer 
+ *		final CounterContainer memoryQueueStorage  = new CounterContainer(new BufferedContainer(cBufferStorage, memory));
+ *		// this is a factory function that is used for bulk loading
+ *		NullaryFunction<Queue<Element>> queueFunction = new NullaryFunction<Queue<Element>>() {
+ *			@Override
+ *			public Queue<Element> invoke() {
+ *				return new BlockBasedQueue(memoryQueueStorage, blockSize, recordConverter, new {@link Constant}(recordConverter.getMaxObjectSize()), new {@link Constant}(recordConverter.getMaxObjectSize())  );
+ *			}
+ *			
+ *		};
+ * 
+ * and branching parameter, number of elements that can be stored in memory (for queue and a sub-tree nodes). 
+ * 
+ * in the {@link #bulkLoad(Iterator, NullaryFunction, int)} or {@link #bulkInsert(Iterator, NullaryFunction, int)} method. 
  * 
  * 
- * Assumption: 8KB pages; IndexEntry size:=  8  long + 8 key + 8 start ts  + 8 end ts + 4 wCounter + 4 tCounter = 40 Bytes  
- * Header: short level + integer number + 2 * previous links = 86 Bytes
- * Payload := 8192 - 86 = 8106    
- * ~ 200 entries per node
+ * Note in this class: uses {@link LongVersion} as default version implementation; 
+ * Additionally the input of the tree are object of type @link {@link Element}.
  * 
- * 
- * 
- * 
- * 
- * 
- * Experimental version: 
- * 
- * In this version we use map to store queue and index entries
- * 
- *
+ * Experimental version:  In this version we use map to store queue and index entries.
  * 
  */
 public class MVBTPlus extends MVBT {
-	
+//	Example of serialization and header: 8KB pages; IndexEntry size:=  8  long + 8 key + 8 start ts  + 8 end ts + 4 wCounter + 4 tCounter = 40 Bytes  
+//			 * Header: short level + integer number + 2 * previous links = 86 Bytes
+//			 * Payload := 8192 - 86 = 8106    
+//			 * ~ 200 entries per node
+	/**
+	 * 
+	 */
 	public static final int INDEX_FIRST = 0;
 	
+	/**
+	 * 
+	 */
 	public static final int LEAF_LEVEL = 0;
 
 	
@@ -307,6 +360,14 @@ public class MVBTPlus extends MVBT {
  	 * 
  	 */
 	protected UnaryFunction<Integer, Integer> getMaxWeight;
+	
+	
+	/**
+	 * 
+	 */
+	protected UnaryFunction<Integer, Boolean> isBufferLevel; 
+	
+	
 	/**
 	 * 
 	 */
@@ -320,22 +381,21 @@ public class MVBTPlus extends MVBT {
 	 */
 	private int reducedMemory;
 	
+	
 	/**
 	 * 
 	 * @param blockSize
+	 * @param minCapRatio
 	 * @param e
 	 * @param fanout_parameter_A
 	 * @param memoryCapacity
+	 * @param keyDomainMinValue
 	 */
-	public MVBTPlus(final int blockSize, 
-			 float minCapRatio, float e,
-			final int fanout_parameter_A, 
-			final int memoryCapacity, Comparable keyDomainMinValue) {
+	public MVBTPlus(final int blockSize,  float minCapRatio, float e, Comparable keyDomainMinValue) {
 		super(blockSize, minCapRatio, e);
-		this.memoryCapacity = memoryCapacity;
-		this.parameter_A = fanout_parameter_A;
 		this.keyDomainMinValue = keyDomainMinValue;
 	}
+	
 	/**
 	 * 
 	 * @param rootEntry
@@ -361,7 +421,8 @@ public class MVBTPlus extends MVBT {
 			MeasuredConverter keyConverter, 
 			MeasuredConverter dataConverter,
 			Function createMVSeparator,
-			Function createMVRegion){
+			Function createMVRegion, 
+			final int fanout_parameter_A){
 		 super.initialize(rootEntry, 
 				liveRootDescriptor, 
 				rootsRootEntry,	
@@ -374,12 +435,76 @@ public class MVBTPlus extends MVBT {
 				dataConverter,
 				createMVSeparator,
 				createMVRegion);
+		this.parameter_A = fanout_parameter_A;  
+		// non buffer node case
+		this.memoryCapacity = 0; 
+		//
+		bufferMap = new HashMap<Long, Queue<Element>>();
+		markSet = new HashSet<Long>();
+		//return always false
+		// if bulk load or bulk update then this will be updated
+		isBufferLevel = new UnaryFunction<Integer, Boolean>() {
+			@Override
+			public Boolean invoke(Integer level) {
+				//
+				return false;
+			}
+		};
+		//
+		initWeightFunctions();
+		return this;						
+	}
+	
+	/**
+	 * 
+	 * @param rootEntry
+	 * @param liveRootDescriptor
+	 * @param rootsRootEntry
+	 * @param rootsRootDescriptor
+	 * @param getKey
+	 * @param rootsContainer
+	 * @param treeContainer
+	 * @param versionConverter
+	 * @param keyConverter
+	 * @param dataConverter
+	 * @param createMVSeparator
+	 * @param createMVRegion
+	 * @return
+	 */
+	public MVBT initialize(IndexEntry rootEntry, 
+			Descriptor liveRootDescriptor, 
+			IndexEntry rootsRootEntry,	
+			Descriptor rootsRootDescriptor, 
+			final Function getKey,
+			final Container rootsContainer, 
+			final Container treeContainer, 
+			MeasuredConverter versionConverter, 
+			MeasuredConverter keyConverter, 
+			MeasuredConverter dataConverter,
+			Function createMVSeparator,
+			Function createMVRegion){
+		 this.initialize(rootEntry, 
+				liveRootDescriptor, 
+				rootsRootEntry,	
+				rootsRootDescriptor, 
+				getKey,
+				rootsContainer, 
+				treeContainer, 
+				versionConverter, 
+				keyConverter, 
+				dataConverter,
+				createMVSeparator,
+				createMVRegion, 16);
+		this.parameter_A = this.B_IndexNode/4;  
+		// update
+		initWeightFunctions();
 		return this;						
 	}
 	/**
 	 * 
 	 */
-	public void initForLoad(NullaryFunction<Queue<Element>> factoryQueueFunction){
+	protected void initForLoad(NullaryFunction<Queue<Element>> factoryQueueFunction, int memoryCapacity){
+		this.memoryCapacity = memoryCapacity;
 		loadState = LoadState.PUSH_INIT;
 		this.factoryBufferFunction = factoryQueueFunction;
 		bufferMap = new HashMap<Long, Queue<Element>>();
@@ -389,6 +514,28 @@ public class MVBTPlus extends MVBT {
 		double logLevel = Math.floor(Math.log(reducedMemory/B_IndexNode) / Math.log(B_IndexNode)); 
 		firstBufferLevel = (int) Math.max(logLevel, 1.0); 
 		rootQueue = factoryQueueFunction.invoke();
+		//
+		isBufferLevel = new UnaryFunction<Integer, Boolean>() {
+			@Override
+			public Boolean invoke(Integer level) {
+				// if leaf level no buffer 
+				// otherwise modulo
+				boolean hasBuffer = (level == 0) ? false : 
+					(level) % firstBufferLevel == 0;
+				return hasBuffer;
+			}
+		};
+		//Note:
+//		initWeightFunctions();
+	}
+	
+	
+	/**
+	 * 
+	 * @param factoryQueueFunction
+	 * @param memoryCapacity
+	 */
+	protected void initWeightFunctions(){
 		/// init functions 
 		minLiveWeight = new BinaryFunction<Integer, Integer, Integer>() {
 			
@@ -454,12 +601,9 @@ public class MVBTPlus extends MVBT {
 				int tCounter = entry.tCounter;
 				int minLive =  minLiveWeight.invoke(parameter_A, level);
 				int maxLive =  maxLiveWeight.invoke(parameter_A, level);
-				int minLiveStrong =  minLiveWeightStrong.invoke(parameter_A, level);
-				int maxLiveStrong =  maxLiveWeightStrong.invoke(parameter_A, level);
 				if(entry == rootEntry && wCounter <= minLive){
-					return false; // FIXME
+					return false; // 
 				}
-				
 				if( tCounter >= maxLive || wCounter <= minLive ){
 					return true;
 				}
@@ -468,15 +612,19 @@ public class MVBTPlus extends MVBT {
 			
 		};
 		//DEBUG
-		DEBUG("PARAMETERS: " + firstBufferLevel +"; " +  B_IndexNode + " ; " + B_LeafNode + ";" +  "Memory To Push  " + reducedMemory);
-		DEBUG("Level one min cap "+  minLiveWeight.invoke(parameter_A, 1) );
-		DEBUG("Level one max cap "+  maxLiveWeight.invoke(parameter_A, 1) );
+//		DEBUG("PARAMETERS: " + firstBufferLevel +"; " +  B_IndexNode + " ; " + B_LeafNode + ";" +  "Memory To Push  " + reducedMemory);
+//		DEBUG("Level one min cap "+  minLiveWeight.invoke(parameter_A, 1) );
+//		DEBUG("Level one max cap "+  maxLiveWeight.invoke(parameter_A, 1) );
 	}
+
 	/**
 	 * 
 	 * @param data
+	 * @param factoryQueueFunction
+	 * @param memoryCapacity
 	 */
-	public void bulkLoad(Iterator<Element> data){
+	public void bulkLoad(Iterator<Element> data, NullaryFunction<Queue<Element>> factoryQueueFunction, int memoryCapacity){
+		initForLoad(factoryQueueFunction, memoryCapacity);
 		LongVersion minVersion = null;
 		Stack<StackInfoObject> bufferOverflowWeightViolationStack = new Stack<MVBTPlus.StackInfoObject>();
 		while(data.hasNext()){// put into root buffer
@@ -538,9 +686,11 @@ public class MVBTPlus extends MVBT {
 	/**
 	 * 
 	 * @param data
+	 * @param factoryQueueFunction
+	 * @param memoryCapacity
 	 */
-	public void bulkInsert(Iterator<Element> data){
-		bulkLoad(data); 
+	public void bulkInsert(Iterator<Element> data, NullaryFunction<Queue<Element>> factoryQueueFunction, int memoryCapacity){
+		bulkLoad(data, factoryQueueFunction, memoryCapacity); 
 	}
 	
 	
@@ -557,9 +707,9 @@ public class MVBTPlus extends MVBT {
 				//
 				if(isBufferIndexEntry(rEntry) &&  bufferMap.containsKey((Long)rEntry.id())){
 					ReorgInfo info = new ReorgInfo(SplitTocken.BUFFER_FULL, new LongVersion(Long.MAX_VALUE), null, false);
-					if(VERBOSE){
-						debug_buffer_bufferAll++;
-					}
+//					if(VERBOSE){
+//						debug_buffer_bufferAll++;
+//					}
 					pushDownBuffer(rEntry, info, reducedMemory, true);
 				}
 				Node node = (Node) rEntry.get(true);
@@ -1265,8 +1415,10 @@ public class MVBTPlus extends MVBT {
 	 * @return
 	 */
 	protected boolean isBufferIndexEntry(IndexEntry entry){
-		boolean hasBuffer = (entry.parentLevel()-1 == 0) ? false : 
-			(entry.parentLevel()-1) % firstBufferLevel == 0;
+		boolean hasBuffer = isBufferLevel.invoke(entry.parentLevel()-1);
+//		old code
+//		boolean hasBuffer = (entry.parentLevel()-1 == 0) ? false : 
+//			(entry.parentLevel()-1) % firstBufferLevel == 0;
 		return hasBuffer && entry != rootEntry;
 	}
 	/**
@@ -1385,8 +1537,10 @@ public class MVBTPlus extends MVBT {
 	@Override
 	public xxl.core.indexStructures.Tree.IndexEntry createIndexEntry(
 			int parentLevel) {
-		boolean hasBuffer = (parentLevel-1 == 0) ? false : 
-			(parentLevel-1) % firstBufferLevel == 0;
+		boolean hasBuffer = isBufferLevel.invoke(parentLevel-1);
+//		old code; change to more generic version
+//		boolean hasBuffer = (parentLevel-1 == 0) ? false : 
+//			(parentLevel-1) % firstBufferLevel == 0;
 		IndexEntry entry = new IndexEntry(parentLevel, hasBuffer);
 		return entry;
 	}
@@ -1413,6 +1567,64 @@ public class MVBTPlus extends MVBT {
 	protected NodeConverter createNodeConverter() {
 		return new NodeConverter();
 	}
+	
+	/**
+	 * 
+	 * @param insertVersion
+	 * @param data
+	 */
+	@Override
+	public void insert(Version insertVersion, Object data) {
+		throw new UnsupportedOperationException("Please call insert(Element entryToInsert) method!");
+	}
+	
+	/**
+	 * 
+	 * @param removeVersion
+	 * @param data
+	 * @return
+	 */
+	@Override
+	public Object remove(Version removeVersion, Object data) {
+		throw new UnsupportedOperationException("Please call insert(Element entryToInsert) method!");
+	}
+	
+	/**
+	 * 
+	 * @param updateVersion
+	 * @param oldData
+	 * @param newData
+	 */
+	@Override
+	public void update(Version updateVersion, Object oldData, Object newData) {
+		throw new UnsupportedOperationException("Please call insert(Element entryToInsert) method!");
+	}
+	
+	/**
+	 * 
+	 * @param element
+	 */
+	public void insert(Element entryToInsert){
+		LongVersion minVersion = null;
+		MVSeparator mvSep = getMVSepartor(entryToInsert);
+		if(rootDescriptor == null && rootEntry == null){
+			rootDescriptor =  createMVRegion(mvSep.insertVersion(), null, this.keyDomainMinValue , mvSep.sepValue());
+			rootEntry = createIndexEntry(LEAF_LEVEL+1); // also creates buffer if necessery 
+			Node firstNode = (Node)createNode(LEAF_LEVEL);
+			Object id = container().reserve(new Constant<Node>(firstNode));
+			((IndexEntry)rootEntry).initialize(id, toMVSeparator((MVRegion)rootDescriptor));
+			rootEntry.update(firstNode);
+		}else{
+			rootDescriptor.union(mvSep);
+		}
+		if (minVersion == null){
+			minVersion = (LongVersion)entryToInsert.getElement2().clone();
+		}
+		Stack<StackInfoObject> bufferOverflowWeightViolationStack = new Stack<MVBTPlus.StackInfoObject>();
+		Stack<Triple<IndexEntry, Node, Boolean>> stack =  pushEntry(entryToInsert, (IndexEntry)rootEntry, null, bufferOverflowWeightViolationStack);
+		updatePath(stack);
+	}
+	
 	/**************************************************************************************
 	 * End of Legacy Part of MVBT
 	 * 
