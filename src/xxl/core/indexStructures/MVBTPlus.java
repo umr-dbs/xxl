@@ -146,50 +146,15 @@ public class MVBTPlus extends MVBT {
 	 */
 	public static final int LEAF_LEVEL = 0;
 
-	
 	/**
-	 * Data entry wrapper 
-	 * Type Def
-	 */
-	public static class Element extends Triple<Object, LongVersion, OperationType>{
-		/**
-		 * 
-		 */
-		private static final long serialVersionUID = 1L;
-
-		public Element(Object data, LongVersion  version, OperationType type) {
-			super(data, version, type);
-		}
-	}
-	/**
-	 * Type of operation 
-	 */
-	public static enum OperationType{
-		INSERT, 
-		UPDATE,
-		DELETE,
-	}
-	/**
-	 * reorganization tockens
-	 */
-	public static enum SplitTocken{
-		VERSION_SPLIT,
-		KEY_SPLIT,
-		MERGE,
-		MERGE_KEY_SPLIT,
-		BUFFER_FULL,
-		BUFFER_FLUSH,
-	}
-	/**
-	 * Current Bulk-loading state
-	 */
-	public static enum LoadState{
-		PUSH_INIT, // initial state 
-		PUSH_LOAD, // after root node is cretaed state
-		PUSH_ALL, // last state after the initial data is iterator is empty!
-	}
-	/**
-	 * Version wrapper
+	 * Version wrapper. This is a default implementation of a Version interface. 
+	 * Internally all versions are implemented as LongVersion.  
+	 *  
+	 * {@link MVBTPlus#initialize(IndexEntry, Descriptor, IndexEntry, Descriptor, Function, Container, Container, MeasuredConverter, MeasuredConverter, MeasuredConverter, Function, Function)}
+	 * 
+	 * I order to initialize a MVBTPlus
+	 * 
+	 * 
 	 * Assumption we manage long timestamps
 	 */
 	public static class LongVersion implements MVBTree.Version{
@@ -277,19 +242,68 @@ public class MVBTPlus extends MVBT {
 		}
 	}
 	
+	/**
+	 * Type of operation decoded in {@link Element}. 
+	 */
+	public static enum OperationType{
+		INSERT, 
+		UPDATE,
+		DELETE,
+	}
 	
 	/**
+	 * Data entry wrapper. This MVBT implementation manages this object in buffers. 
 	 * 
-	 * SplitInfo
-	 *
+	 *  {@link #bulkLoad}
+	 *  {@link #bulkInsert}
+	 *  {@link #insert}   
+	 * 
 	 */
-	public static class ReorgInfo extends Quadruple<SplitTocken, LongVersion, IndexEntry, Boolean>{
-		
+	public static class Element extends Triple<Object, LongVersion, OperationType>{
 		/**
 		 * 
 		 */
 		private static final long serialVersionUID = 1L;
 
+		public Element(Object data, LongVersion  version, OperationType type) {
+			super(data, version, type);
+		}
+	}
+	/**
+	 * This tokens are used for decoding reorganization type
+	 */
+	protected static enum SplitTocken{
+		VERSION_SPLIT,
+		KEY_SPLIT,
+		MERGE,
+		MERGE_KEY_SPLIT,
+		BUFFER_FULL,
+		BUFFER_FLUSH,
+	}
+	/**
+	 * Current bulk-loading state
+	 */
+	protected static enum LoadState{
+		PUSH_INIT, // initial state 
+		PUSH_LOAD, // after root node is cretaed state
+		PUSH_ALL, // last state after the initial data is iterator is empty!
+	}
+	/**
+	 * SplitInfo: contains necessary information for conducting a node reorganization operation
+	 */
+	protected static class ReorgInfo extends Quadruple<SplitTocken, LongVersion, IndexEntry, Boolean>{
+		
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+		/**
+		 * 
+		 * @param reorgOperation
+		 * @param violationVersion
+		 * @param neighbourEntry
+		 * @param lowMergeKey
+		 */
 		public ReorgInfo(SplitTocken reorgOperation, LongVersion violationVersion, IndexEntry neighbourEntry, Boolean lowMergeKey){
 			super(reorgOperation, violationVersion, neighbourEntry, lowMergeKey);
 		}
@@ -299,14 +313,19 @@ public class MVBTPlus extends MVBT {
 	 *
 	 *
 	 */
-	public static class StackInfoObject extends Quadruple<IndexEntry, IndexEntry, Node , ReorgInfo>{
-		
+	protected static class StackInfoObject extends Quadruple<IndexEntry, IndexEntry, Node , ReorgInfo>{
 		/**
 		 * 
 		 */
 		private static final long serialVersionUID = 1L;
-
-		public StackInfoObject (IndexEntry entryNodePair,IndexEntry parentindexEntry,  Node parentNode, ReorgInfo reorgInfo){
+		/**
+		 * 
+		 * @param entryNodePair
+		 * @param parentindexEntry
+		 * @param parentNode
+		 * @param reorgInfo
+		 */
+		public StackInfoObject (IndexEntry entryNodePair, IndexEntry parentindexEntry,  Node parentNode, ReorgInfo reorgInfo){
 			super( entryNodePair, parentindexEntry,  parentNode, reorgInfo);
 		}
 		
@@ -383,34 +402,99 @@ public class MVBTPlus extends MVBT {
 	
 	
 	/**
+	 * Default constructor. 
 	 * 
-	 * @param blockSize
-	 * @param minCapRatio
-	 * @param e
-	 * @param fanout_parameter_A
-	 * @param memoryCapacity
-	 * @param keyDomainMinValue
+	 * The minimal number of live entries per node are set to 1/4 of a maximal node node capacity.
+	 * Epsilon value is set to 0.5f that means that the amount of entries needed to trigger next leaf node reorganization is equal to 1/8 of the node capacity. 
+	 * if {@link #initialize(IndexEntry, Descriptor, IndexEntry, Descriptor, Function, Container, Container, MeasuredConverter, MeasuredConverter, Function, Function)} is called for initialization.
+	 * Then weight balancing branching parameter is set also to 1/4 of a maximal node node capacity. 
+	 * 
+	 * With this parameters the minimal maximal node capacity should be greater equal to 64. 
+	 * 
+	 * 
+	 * @param blockSize is used to determine maximal and minimal number of  entries per node. 
+	 * @param keyDomainMinValue the minimal value of a key domain
+	 */
+	public MVBTPlus(final int blockSize,  Comparable keyDomainMinValue) {
+		this(blockSize, 0.25f, 0.5f, keyDomainMinValue);
+	}
+	
+	/**
+	 * Generic constructor. 
+	 * 
+	 * @param blockSize is used to determine maximal and minimal number of  entries per node. 
+	 * @param minCapRatio is a fraction of node capacity. this defines the minimal allowed number of live entries per node.
+	 * @param e is a fraction of the the minimal allowed number of live entries per node. This will defines the minimal number of entries needed to insert before next reorganization occurs.
+	 * @param keyDomainMinValue the minimal value of a key domain
 	 */
 	public MVBTPlus(final int blockSize,  float minCapRatio, float e, Comparable keyDomainMinValue) {
 		super(blockSize, minCapRatio, e);
 		this.keyDomainMinValue = keyDomainMinValue;
 	}
+
+	/**
+	 * Default initialization method. Note: in this implementation we use @link {@link LongVersion} for Versions (time stamps). The Version Converter is set to 
+	 * {@link LongVersion#VERSION_MEASURED_CONVERTER}.
+	 * 
+	 * The value of weight balancing branching parameter is set to equal to the value of minimal live number of entries per node.
+	 *  
+	 * @param rootEntry of the tree if a tree is used for a first time this value is null
+	 * @param rootsRootEntry of the root structure (BPlusTree) if a tree is used for a first time this value is null 
+	 * @param getKey function to extract (map) to a key 
+	 * @param rootsContainer container that manages nodes of a roots BplusTree
+	 * @param treeContainer container that manages MVBT nodes
+	 * @param keyConverter converter for keys
+	 * @param dataConverter 
+	 * @param createMVSeparator factory function for creating {@link MVSeparator}  objects
+	 * @param createMVRegion factory function for creating {@link MVRegion}  objects
+	 * @return MVBTPlus
+	 */
+	public MVBTPlus initialize(IndexEntry rootEntry, 
+			Descriptor liveRootDescriptor, 
+			IndexEntry rootsRootEntry,	
+			Descriptor rootsRootDescriptor, 
+			final Function getKey,
+			final Container rootsContainer, 
+			final Container treeContainer, 
+			MeasuredConverter keyConverter, 
+			MeasuredConverter dataConverter,
+			Function createMVSeparator,
+			Function createMVRegion){
+		 this.initialize(rootEntry, 
+				liveRootDescriptor, 
+				rootsRootEntry,	
+				rootsRootDescriptor, 
+				getKey,
+				rootsContainer, 
+				treeContainer, 
+				LongVersion.VERSION_MEASURED_CONVERTER, 
+				keyConverter, 
+				dataConverter,
+				createMVSeparator,
+				createMVRegion, 16);
+		this.parameter_A = this.D_IndexNode;   
+		// update
+		initWeightFunctions();
+		return this;						
+	}
+	
 	
 	/**
-	 * 
-	 * @param rootEntry
-	 * @param rootsRootEntry
-	 * @param getKey
-	 * @param rootsContainer
-	 * @param treeContainer
-	 * @param versionConverter
-	 * @param keyConverter
-	 * @param dataConverter
-	 * @param createMVSeparator
-	 * @param createMVRegion
-	 * @return
+	 * Generic initialization method similar to {@link MVBT#initialize(xxl.core.indexStructures.BPlusTree.IndexEntry, Descriptor, xxl.core.indexStructures.BPlusTree.IndexEntry, Descriptor, Function, Container, Container, MeasuredConverter, MeasuredConverter, MeasuredConverter, Function, Function)}
+	 * @param rootEntry of the tree if a tree is used for a first time this value is null
+	 * @param rootsRootEntry of the root structure (BPlusTree) if a tree is used for a first time this value is null 
+	 * @param getKey function to extract (map) to a key 
+	 * @param rootsContainer container that manages nodes of a roots BplusTree
+	 * @param treeContainer container that manages MVBT nodes
+	 * @param versionConverter converter for version objects
+	 * @param keyConverter converter for keys
+	 * @param dataConverter 
+	 * @param createMVSeparator factory function for creating {@link MVSeparator}  objects
+	 * @param createMVRegion factory function for creating {@link MVRegion}  objects
+	 * @param fanout_parameter_A is used for weight balancing. 
+	 * @return MVBTPlus
 	 */
-	public MVBT initialize(IndexEntry rootEntry, 
+	protected MVBTPlus initialize(IndexEntry rootEntry, 
 			Descriptor liveRootDescriptor, 
 			IndexEntry rootsRootEntry,	
 			Descriptor rootsRootDescriptor, 
@@ -455,51 +539,7 @@ public class MVBTPlus extends MVBT {
 		return this;						
 	}
 	
-	/**
-	 * 
-	 * @param rootEntry
-	 * @param liveRootDescriptor
-	 * @param rootsRootEntry
-	 * @param rootsRootDescriptor
-	 * @param getKey
-	 * @param rootsContainer
-	 * @param treeContainer
-	 * @param versionConverter
-	 * @param keyConverter
-	 * @param dataConverter
-	 * @param createMVSeparator
-	 * @param createMVRegion
-	 * @return
-	 */
-	public MVBT initialize(IndexEntry rootEntry, 
-			Descriptor liveRootDescriptor, 
-			IndexEntry rootsRootEntry,	
-			Descriptor rootsRootDescriptor, 
-			final Function getKey,
-			final Container rootsContainer, 
-			final Container treeContainer, 
-			MeasuredConverter versionConverter, 
-			MeasuredConverter keyConverter, 
-			MeasuredConverter dataConverter,
-			Function createMVSeparator,
-			Function createMVRegion){
-		 this.initialize(rootEntry, 
-				liveRootDescriptor, 
-				rootsRootEntry,	
-				rootsRootDescriptor, 
-				getKey,
-				rootsContainer, 
-				treeContainer, 
-				versionConverter, 
-				keyConverter, 
-				dataConverter,
-				createMVSeparator,
-				createMVRegion, 16);
-		this.parameter_A = this.B_IndexNode/4;  
-		// update
-		initWeightFunctions();
-		return this;						
-	}
+	
 	/**
 	 * 
 	 */
