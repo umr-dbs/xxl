@@ -90,6 +90,7 @@ public class Flatten extends AbstractCursor {
 	 * @param getCursor Function which gets the currently processed element  
 	 * 	and returns an Object.
 	 */
+    //TODO: Improve documentation!
 	public Flatten(Iterator iteratorsCursor, Function getCursor) {
 		this.getCursor = getCursor;
 		
