@@ -282,6 +282,7 @@ public class MVBTPlus extends MVBT {
 	}
 	/**
 	 * Current bulk-loading state
+	 * used internally to mark the current processing step
 	 */
 	protected static enum LoadState{
 		PUSH_INIT, // initial state 
@@ -309,8 +310,8 @@ public class MVBTPlus extends MVBT {
 		}
 	}
 	/**
-	 * Buffer working 
-	 *
+	 * This class implements a tuple. This tuple contains information for needed for buffer emptying. 
+	 * 
 	 *
 	 */
 	protected static class StackInfoObject extends Quadruple<IndexEntry, IndexEntry, Node , ReorgInfo>{
@@ -346,59 +347,63 @@ public class MVBTPlus extends MVBT {
 	 */
 	protected LoadState loadState;
 	/**
-	 * branching factor
+	 * 
+	 * branching factor; can be user defined; 
+	 * default value is equal to a minimal number of live entries in an index node.
+	 * 
 	 */
 	protected int parameter_A;
 	/**
-	 * memory capacity 
+	 * memory capacity expressed in the number of elements 
 	 */
 	protected int memoryCapacity;
+	/**
+	 * the maximal number of elements stored in a buffer of node
+	 * 
+	 *  default value is equal to 1/4 of the available memory; (1/4 of memory capacity)
+	 */
+	private int reducedMemory;
 	/**
 	 * the lowest buffer level 
 	 */
 	protected int firstBufferLevel = 1;
 	/**
-	 * function for weight violation 
+	 * internal function for weight violation 
 	 */
 	protected UnaryFunction<IndexEntry, Boolean> violatesWeight;
 	/**
-	 * function minimal live weight
+	 * internal function minimal live weight
 	 */
 	protected BinaryFunction<Integer, Integer, Integer> minLiveWeight;
 	/**
-	 * function minimal live weight strong
+	 * internal function minimal live weight strong
 	 */
 	protected BinaryFunction<Integer, Integer, Integer> minLiveWeightStrong;
 	/**
-	 * function maximal live weight
+	 * internal function maximal live weight
 	 */
 	protected BinaryFunction<Integer, Integer, Integer> maxLiveWeight;
 	/**
-	 * function maximal live weight strong 
+	 * internal function maximal live weight strong 
 	 */
 	protected BinaryFunction<Integer, Integer, Integer> maxLiveWeightStrong;
  	/**
- 	 * returns maximal weight
+ 	 * internal functions returns maximal weight
  	 */
 	protected UnaryFunction<Integer, Integer> getMaxWeight;
 	/**
-	 * returns true if a level has buffers, in non bulk load case this function returns always false;
+	 * internal functions returns true if a level has buffers, in non bulk load case this function returns always false;
 	 */
 	protected UnaryFunction<Integer, Boolean> isBufferLevel; 
 	/**
-	 * special queue for a root node
+	 * internal functions special queue for a root node
 	 */
 	protected Queue<Element> rootQueue;
 	/**
-	 * Auxiliary set, is used to mark buffer overflows
+	 * auxiliary set, is used to mark buffer overflows
 	 */
 	protected Set<Long> markSet; 
-	/**
-	 * the maximal number of elements stored in a buffer of node
-	 * 
-	 *  default value is equal to 1/4 of the available memory
-	 */
-	private int reducedMemory;
+	
 	
 	/**
 	 * Default constructor. 
@@ -539,6 +544,14 @@ public class MVBTPlus extends MVBT {
 	}
 	
 	/**
+	 * this internal method is called in if bulk load or bulk insert method called
+	 * it initializes {@link #isBufferLevel} functions, sets {@link #firstBufferLevel} value, factory function for buffer creation is also initialized
+	 * 
+	 * @param  factoryQueueFunction
+	 * @param memoryCapacity is given by the number of entries, e.g. if entry serialized size is 32 Bytes and the reserved memory for a bulk-loading is 1024 KB 
+	 * then mamoryCapacity is equal to (1024*1024)/32.
+	 * 
+	 * Note: that actual memory size allocated in main memory is greater than the serialized size of entries. 
 	 * 
 	 */
 	protected void initForLoad(NullaryFunction<Queue<Element>> factoryQueueFunction, int memoryCapacity){
@@ -569,8 +582,8 @@ public class MVBTPlus extends MVBT {
 	
 	/**
 	 * 
-	 * @param factoryQueueFunction
-	 * @param memoryCapacity
+	 * this method initializes weight functions
+	 * 
 	 */
 	protected void initWeightFunctions(){
 		/// init functions 
@@ -655,12 +668,37 @@ public class MVBTPlus extends MVBT {
 	}
 
 	/**
+	 * Builds MVBT from scratch. If tree is not empty exception will be thrown. 
+	 * If tree is not empty, consider to execute {@link #bulkInsert(Iterator, NullaryFunction, int)} or {@link #insert(Element)} method.
 	 * 
-	 * @param data
-	 * @param factoryQueueFunction
-	 * @param memoryCapacity
+	 * @param data is an iterator of #Element objects, they decode an actual tuple, time stamp of operation and the operation type #OperationType.
+	 * Note: time stamps are implemented as #LongVersion objects.
+	 * @param  factoryQueueFunction
+	 * @param memoryCapacity is given by the number of entries, e.g. if entry serialized size is 32 Bytes and the reserved memory for a bulk-loading is 1024 KB 
+	 * then mamoryCapacity is equal to (1024*1024)/32.
+	 * 
+	 * Note: that actual memory size allocated in main memory is greater than the serialized size of entries, depending on JVM. 
 	 */
 	public void bulkLoad(Iterator<Element> data, NullaryFunction<Queue<Element>> factoryQueueFunction, int memoryCapacity){
+		if(rootDescriptor != null || rootEntry != null){
+			throw new RuntimeException("The tree is not empty! Please execute bulkInsert method!");
+		}
+		bulkInsert(data, factoryQueueFunction, memoryCapacity); 
+	}
+	
+	/**
+	 * Generic bulk insert (update) method.  After executing this method all buffers are emptied.
+	 * 
+	 * 
+	 * @param data is an iterator of #Element objects, they decode an actual tuple, time stamp of operation and the operation type #OperationType.
+	 * Note: time stamps are implemented as #LongVersion objects.
+	 * @param  factoryQueueFunction
+	 * @param memoryCapacity is given by the number of entries, e.g. if entry serialized size is 32 Bytes and the reserved memory for a bulk-loading is 1024 KB 
+	 * then mamoryCapacity is equal to (1024*1024)/32.
+	 * 
+	 * Note: that actual memory size allocated in main memory is greater than the serialized size of entries, depending on JVM. 
+	 */
+	public void bulkInsert(Iterator<Element> data, NullaryFunction<Queue<Element>> factoryQueueFunction, int memoryCapacity){
 		initForLoad(factoryQueueFunction, memoryCapacity);
 		LongVersion minVersion = null;
 		Stack<StackInfoObject> bufferOverflowWeightViolationStack = new Stack<MVBTPlus.StackInfoObject>();
@@ -705,31 +743,19 @@ public class MVBTPlus extends MVBT {
 		loadState = LoadState.PUSH_ALL;
 		pushAllBuffers((IndexEntry)rootEntry);
 		IndexEntry currentRoot = (IndexEntry)rootEntry;
-		List<IndexEntry> overflowChainMain = computeOveflowChain(currentRoot, null);
-		for(IndexEntry idxEntry:  overflowChainMain){
-			MVRegion mvreg= toMVRegion((MVSeparator)((IndexEntry)idxEntry).separator());
-			 Root newOldRoot= new Root(mvreg, idxEntry.id(), idxEntry.parentLevel());
-			 roots.insert(newOldRoot);
-		}
+//		List<IndexEntry> overflowChainMain = computeOveflowChain(currentRoot, null);
+//		for(IndexEntry idxEntry:  overflowChainMain){
+//			MVRegion mvreg= toMVRegion((MVSeparator)((IndexEntry)idxEntry).separator());
+//			 Root newOldRoot= new Root(mvreg, idxEntry.id(), idxEntry.parentLevel());
+//			 roots.insert(newOldRoot);
+//		}
 		((Lifespan)roots.rootDescriptor()).updateMinBound(minVersion);
 		((Lifespan)roots.rootDescriptor()).updateMaxBound(currentRoot.getInsertVersion());
 		loadState = LoadState.PUSH_ALL;
-		// DEBUG
-//		PRINT_STAT();
-//		System.out.println("buffers -> " + bufferMap.size());
 	}
 	
 	/**
-	 * 
-	 * @param data
-	 * @param factoryQueueFunction
-	 * @param memoryCapacity
-	 */
-	public void bulkInsert(Iterator<Element> data, NullaryFunction<Queue<Element>> factoryQueueFunction, int memoryCapacity){
-		bulkLoad(data, factoryQueueFunction, memoryCapacity); 
-	}
-	
-	/**
+	 * this method is called for emptying all buffers after the input iterator is completely consumed.
 	 * 
 	 * @param rootEntry
 	 */
@@ -757,7 +783,7 @@ public class MVBTPlus extends MVBT {
 	}
 
 	/**
-	 * 
+	 * this method processes overflow buffer node stack 
 	 * @param bufferOverflowWeightViolationStack
 	 */
 	protected void processWorkStack(Stack<StackInfoObject> bufferOverflowWeightViolationStack){
@@ -768,12 +794,11 @@ public class MVBTPlus extends MVBT {
 				processStackObject(stackInfo);
 				markSet.remove(stackInfo.getElement1().id());
 			}
-			
 		}
 	}
 	
 	/**
-	 * 
+	 * marks buffer as processed
 	 * @param id
 	 */
 	protected void removeFromStack(Long id){
@@ -781,10 +806,9 @@ public class MVBTPlus extends MVBT {
 	}
 	
 	/**
-	 * Flush buffer 
+	 * processes single buffer node. 
 	 * 
-	 * @param rootEntry
-	 * @return
+	 * @param infoObject
 	 */
 	protected void processStackObject(StackInfoObject infoObject){
 		IndexEntry currentRoot = infoObject.getElement1();
@@ -793,8 +817,12 @@ public class MVBTPlus extends MVBT {
 	}
 	
 	/**
-	 * 
-	 * @param currentRoot
+	 * processes elements from a single node buffer 
+	 *  
+	 * @param currentRoot 
+	 * @param info object what reorganization operation should be executed 
+	 * @param maxSize maximal number of elements pushed down
+	 * @param all indicates if buffer should be completely emptied.
 	 */
 	protected void pushDownBuffer(IndexEntry currentRoot, ReorgInfo info, int maxSize, boolean all){
 		Queue<Element> buffer = bufferMap.get(currentRoot.id());
@@ -829,7 +857,9 @@ public class MVBTPlus extends MVBT {
 	}
 	
 	/**
-	 * Appends to queue if queue not exists allocates new queue 
+	 * Enqueues element to a node buffer
+	 * 
+	 * @param element
 	 * @param rootEntry
 	 */
 	protected void appendToBuffer(Element element, IndexEntry rootEntry) {
@@ -840,11 +870,14 @@ public class MVBTPlus extends MVBT {
 		}
 		buffer.enqueue(element);
 	}
-	
+
 	/**
+	 * pushes an element towards leaf nodes.
 	 * 
+	 * @param element
 	 * @param rootEntry
-	 * @param parentNode
+	 * @param pNode
+	 * @param bufferOverflowWeightViolationStack
 	 * @return
 	 */
 	protected Stack<Triple<IndexEntry, Node, Boolean>> pushEntry(Element element, IndexEntry rootEntry,  Node pNode, 	
@@ -943,7 +976,7 @@ public class MVBTPlus extends MVBT {
 	}
 	
 	/**
-	 * 
+	 * updates(writes dirty pages (nodes) to a container) path 
 	 * @param path
 	 */
 	protected void updatePath(Stack<Triple<IndexEntry, Node, Boolean>> path){
@@ -958,11 +991,10 @@ public class MVBTPlus extends MVBT {
 	}
 	
 	/**
-	 * 
+	 * conducts a local structure reorganization such as merge, key-split, node copy or merge key split
 	 * @param currentEntry
 	 * @param parentNode
 	 * @param reorgInfo
-	 * @param mvSeparator
 	 * @return
 	 */
 	protected Quadruple<Pair<IndexEntry, Node>, Pair<IndexEntry, Node>, Boolean, Pair<IndexEntry, Node>>  reorganize(IndexEntry currentEntry,
@@ -1063,7 +1095,8 @@ public class MVBTPlus extends MVBT {
 			int oldRootParentLevel= currentEntry.parentLevel(); // currentEntry is rootEntry
 			Object oldRootId= currentEntry.id();
 			MVRegion oldRootReg= toMVRegion((MVSeparator)((IndexEntry)currentEntry).separator());
-			List<IndexEntry> overflowChainMain = computeOveflowChain(currentEntry, null);
+//			List<IndexEntry> overflowChainMain = computeOveflowChain(currentEntry, null);
+			List<IndexEntry> overflowChainMain = new ArrayList<>();
 			if(newSiblingKeyPair!=null){ // key split tree grows level update
 				int rootWeight = newNodeEntryPair.getElement1().wCounter + newSiblingKeyPair.getElement1().wCounter; 
 				Node rootNode = (Node)createNode(height());
@@ -1097,10 +1130,10 @@ public class MVBTPlus extends MVBT {
 			if (currentLevel > LEAF_LEVEL){
 				List<IndexEntry> overflowChainMain = new ArrayList<>();
 				List<IndexEntry> overflowChainNeighbour = new ArrayList<>();
-				overflowChainMain = computeOveflowChain(currentEntry, parentNode);
-				if (newNeighbourPair != null){
-					overflowChainNeighbour = computeOveflowChain(reorgInfo.getElement3(), parentNode);
-				}
+//				overflowChainMain = computeOveflowChain(currentEntry, parentNode);
+//				if (newNeighbourPair != null){
+//					overflowChainNeighbour = computeOveflowChain(reorgInfo.getElement3(), parentNode);
+//				}
 				for(IndexEntry idx: overflowChainMain){
 					parentNode.growIndexNode(idx);
 				}
@@ -1119,7 +1152,8 @@ public class MVBTPlus extends MVBT {
 	}
 	
 	/**
-	 * 
+	 * removes a link between buffer queue and buffer node
+	 *  
 	 * @param id
 	 */
 	protected void releaseQueue(Long id){
@@ -1127,7 +1161,11 @@ public class MVBTPlus extends MVBT {
 	}
 	
 	/**
-	 * Version split
+	 * executes version copy (node copy) 
+	 * 
+	 * @param entry
+	 * @param reorgInfo
+	 * @param level
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
@@ -1155,12 +1193,14 @@ public class MVBTPlus extends MVBT {
 		newEntry.setWeights(entry.wCounter, entry.wCounter); // set only live counter!!! 
 		return new Pair<IndexEntry,Node>(newEntry, tempNode);
 	}
+	
 	/**
-	 * 
-	 * @param currentNodePair node to copy into from neighbour
+	 * conducts node merge operation 
+	 *  
+	 * @param currentNodePair
 	 * @param reorgInfo
 	 * @param level
-	 * @return pair neighbour index entry and its node
+	 * @return
 	 */
 	protected Pair<IndexEntry, Node> merge(Pair<IndexEntry, Node> currentNodePair, 
 			Quadruple<SplitTocken, LongVersion, IndexEntry, Boolean> reorgInfo, int level){  
@@ -1207,8 +1247,13 @@ public class MVBTPlus extends MVBT {
 		}
 		return new Pair<MVBTPlus.IndexEntry, MVBTPlus.Node>(neighbourEntry,neighbourNodeMVBT); //
 	}
+	
 	/**
-	 * key split
+	 * conducts node key split operation
+	 * 
+	 * @param currentNodePair
+	 * @param reorgInfo
+	 * @param level
 	 * @return
 	 */
 	@SuppressWarnings({ "deprecation", "unchecked" })
@@ -1278,26 +1323,24 @@ public class MVBTPlus extends MVBT {
 		return new Pair<MVBTPlus.IndexEntry, MVBTPlus.Node>(keySplitEntry, keyNodeMVBT);
 	}
 	
-	/**
-	 * 
-	 * push this if only on reorganize
-	 * 
-	 * 
-	 * @param node
-	 * @return
-	 */
-	protected List<IndexEntry> computeOveflowChain(final IndexEntry entry,  Node parentNode){
-		List<IndexEntry> overflowChain = new ArrayList<>();
-		return overflowChain;
-	}
+//	/**
+//	 * Auxiliary method. in this implementation
+//	 * 
+//	 * @param entry
+//	 * @param parentNode
+//	 * @return
+//	 */
+//	protected List<IndexEntry> computeOveflowChain(final IndexEntry entry,  Node parentNode){
+//		List<IndexEntry> overflowChain = new ArrayList<>();
+//		return overflowChain;
+//	}
 	
 	/**
-	 * Compute "shift" in time dimension:
-	 *  do not copy; cut live elements from node 
-	 * run procedure in lazy manner;
-	 * kick off is physical number of entries
+	 * this method extends node with additional pages.  
 	 * 
-	 * 
+	 * @param currentLiveEntry
+	 * @param currentLiveNode
+	 * @return
 	 */
 	@SuppressWarnings({ "unchecked", "deprecation" })
 	protected List<IndexEntry> handlePhysicalOverflow(IndexEntry currentLiveEntry, Node currentLiveNode){
@@ -1366,7 +1409,8 @@ public class MVBTPlus extends MVBT {
 	}
 	
 	/**
-	 * computes info about the split
+	 * computes information about a structure reorganization information e.g. merge, key split, node copy etc
+	 *  
 	 * @param element
 	 * @param currentEntry
 	 * @param parentNode
@@ -1408,7 +1452,9 @@ public class MVBTPlus extends MVBT {
 		}
 		return reorgInfo;
 	}
+	
 	/**
+	 * returns true on node weight violation
 	 * 
 	 * @param indexEntry
 	 * @return
@@ -1416,8 +1462,10 @@ public class MVBTPlus extends MVBT {
 	protected boolean violatesWeight(IndexEntry indexEntry){
 		return this.violatesWeight.invoke(indexEntry);
 	}
+	
 	/**
-	 * 
+	 * returns true if buffer should be emptied
+	 *  
 	 * @param currentEntry
 	 * @return
 	 */
@@ -1428,8 +1476,9 @@ public class MVBTPlus extends MVBT {
 		}	
 		return false;
 	}
+	
 	/**
-	 * 
+	 *  returns true on node overflow
 	 */
 	protected boolean isPhysicalOverflow(Node node) {
 		if(node.isLeaf()){
@@ -1439,6 +1488,7 @@ public class MVBTPlus extends MVBT {
 	}
 
 	/**
+	 * creates {@link MVSeparator} from {@link Element}
 	 * 
 	 * @param element
 	 * @return
@@ -1448,8 +1498,10 @@ public class MVBTPlus extends MVBT {
 		LeafEntry leafentry =  new LeafEntry(lifespan, element.getElement1());
 		return (MVSeparator) this.separator(leafentry);
 	}
+	
 	/**
-	 * 
+	 * returns true if entry points to node on buffer level
+	 *  
 	 * @param entry
 	 * @return
 	 */
@@ -1460,24 +1512,29 @@ public class MVBTPlus extends MVBT {
 //			(entry.parentLevel()-1) % firstBufferLevel == 0;
 		return hasBuffer && entry != rootEntry;
 	}
+	
 	/**
-	 * 
+	 * extracts key from {@link Element}
+	 *  
 	 * @param element
 	 * @return
 	 */
 	protected Comparable getKeyFromElement(Element element){
 		return this.key(element.getElement1()); 
 	}
+	
 	/**
-	 * Idicates whether currenEntry is point to leaf
+	 * returns true if currenEntry points to leaf
 	 * @param currentEntry
 	 * @return
 	 */
 	protected boolean isLeafEntry(IndexEntry currentEntry) {
 		return currentEntry.level() == 0;
 	}
+	
 	/**
-	 * Creates Hitorical Links
+	 * creates predecessors link for leaf nodes
+	 * 
 	 * @param tocken
 	 */
 	@SuppressWarnings("unchecked")
@@ -1530,7 +1587,9 @@ public class MVBTPlus extends MVBT {
 			}
 		}
 	}
+	
 	/**
+	 * attaches buffer to a buffer node
 	 * 
 	 * @param entry
 	 */
@@ -1539,8 +1598,10 @@ public class MVBTPlus extends MVBT {
 		Queue<Element> buffer = this.factoryBufferFunction.invoke();
 		bufferMap.put(id, buffer);
 	}
+	
 	/**
-	 * 
+	 * remove buffer linkage
+	 *  
 	 * @param entry
 	 */
 	protected void removeBuffer(IndexEntry entry){
@@ -1640,6 +1701,7 @@ public class MVBTPlus extends MVBT {
 	}
 	
 	/**
+	 * this method is used for inserting elements.
 	 * 
 	 * @param element
 	 */
@@ -1669,25 +1731,26 @@ public class MVBTPlus extends MVBT {
 	 * 
 	 **************************************************************************************/
 	/**
-	 * 
-	 * Extended index entry
-	 *
+	 * This class extends {@link BPlusTree.IndexEntry}. 
+	 * It manages an address to the node. Additionally it maintains two weight counters. These are updated if new elements are inserted to attached nodes. 
+	 *  	
 	 */
 	public class IndexEntry extends BPlusTree.IndexEntry{
 		/**
-		 * 
+		 *  tracks the number of operations since the node creation 
 		 */
 		private int tCounter;
 		/**
-		 * 
+		 * tracks the number of live entries since the node creation
 		 */
 		private int wCounter;
 		/**
-		 * 
+		 * true if index entry points to buffer node
 		 */
 		private boolean hasBuffer;
 		/**
-		 * 
+		 * default constructor
+		 *  
 		 * @param parentLevel
 		 * @param hasbuffer
 		 */
@@ -1695,14 +1758,20 @@ public class MVBTPlus extends MVBT {
 			super(parentLevel);
 			this.hasBuffer = hasbuffer; 
 		}
-		
+		/**
+		 * sets counters
+		 * 
+		 * @param wCounter
+		 * @param tCounter
+		 */
 		public void setWeights(int wCounter, int tCounter){
 			
 			this.wCounter = wCounter;
 			this.tCounter = tCounter;
 		}
 		/**
-		 * 
+		 * updates counters 
+		 *  
 		 * @param element
 		 */
 		protected void updateCounter(Element element){ 
@@ -1722,14 +1791,15 @@ public class MVBTPlus extends MVBT {
 		}
 		
 		/**
-		 * 
+		 * returns attributed {@link MVSeparator}
 		 * @return
 		 */
 		protected MVSeparator getMVSeparator(){
 			return (MVSeparator)this.separator();
 		}
+		
 		/**
-		 * 
+		 * returns delete version  
 		 * @return
 		 */
 		protected Version getDeleteVersion(){
@@ -1737,7 +1807,7 @@ public class MVBTPlus extends MVBT {
 		}
 		
 		/**
-		 * 
+		 * returns insert version
 		 * @return
 		 */
 		protected Version getInsertVersion(){
@@ -1745,13 +1815,18 @@ public class MVBTPlus extends MVBT {
 		}
 		
 		/**
+		 * returns true if node has a buffer attached
 		 * 
 		 * @return
 		 */
 		public boolean hasBuffer(){
 			return hasBuffer;
 		}
-
+		
+		/*
+		 * (non-Javadoc)
+		 * @see xxl.core.indexStructures.BPlusTree.IndexEntry#toString()
+		 */
 		@Override
 		public String toString() {
 			return "IndexEntry [tCounter=" + tCounter + ", wCounter="
@@ -1759,17 +1834,18 @@ public class MVBTPlus extends MVBT {
 					+ ", parentLevel=" + parentLevel + "]";
 		}
 		
-		
-		
 	}
 	/**
+	 * This is a MVBT node implementation. Note that MVBTPlus maps i node to a O(B) number of physical blocks. Maximal number of pages one index node can span is 6, if default settings used.
+	 * Leaf nodes have one-to-one mapping to blocks. 
 	 * 
 	 * @author achakeye
 	 *
 	 */
 	public class Node extends MVBT.Node{
+		
 		/**
-		 * 
+		 * internal comparator
 		 */
 		private Comparator<IndexEntry> deadIndexEntryComparator = new Comparator<MVBTPlus.IndexEntry>() {
 			
@@ -1780,36 +1856,45 @@ public class MVBTPlus extends MVBT {
 				return v1.compareTo(v2);
 			}
 		};
+		
 		/**
+		 * default constructor
 		 * 
 		 * @param level
 		 */
 		public Node(int level) {
 			super(level);
 		}
+		
 		/**
-		 * 
+		 * returns true if node is a leaf node
 		 * @return
 		 */
 		protected boolean isLeaf(){
 			return level == LEAF_LEVEL;
 		}
+		
 		/**
+		 * insert an index entry
 		 * 
 		 * @param entry
 		 */
 		protected void growIndexNode(IndexEntry entry){
 			this.grow(entry, new Stack<>());
 		}
+		
 		/**
-		 * 
+		 * insert a an element in leaf node
+		 *  
 		 * @param entry
 		 */
 		protected void growLeafNode(LeafEntry entry){
 			this.grow(entry, new Stack<>());
 		}
+		
 		/**
-		 * 
+		 * insert a an element in leaf node
+		 *  
 		 * @param element
 		 */
 		@SuppressWarnings({ "unchecked", "unused", "rawtypes" })
@@ -1863,7 +1948,9 @@ public class MVBTPlus extends MVBT {
 			default : break;
 			}
 		}
+		
 		/**
+		 * finds neighbour for merge and key-merge structure reorganization
 		 * 
 		 * @param entry
 		 * @return
@@ -1895,8 +1982,11 @@ public class MVBTPlus extends MVBT {
 			return (IndexEntry)subtree;
 		}
 		
-		/*
+		/**
+		 * return index of an entry with a minimal key
 		 * 
+		 * @param entries
+		 * @return
 		 */
 		@SuppressWarnings("rawtypes")
 		protected int searchMinimumKey(List entries) {
@@ -1907,15 +1997,20 @@ public class MVBTPlus extends MVBT {
 			}
 			return index;
 		}
+		
 		/**
-		 * 
+		 * returns entry list 
+		 * @return
 		 */
 		protected List getEntriesList(){
 			return this.entries;
 		}
 		
 		
-		/** Searches all entries of this <tt>Node</tt> whose <tt>Lifespans</tt> overlap the given <tt>Lifespan</tt>.
+		/** 
+		 * Searches all entries of this <tt>Node</tt> whose <tt>Lifespans</tt> overlap the given <tt>Lifespan</tt>.
+		 * If node spans multiple pages, all pages are traversed.
+		 * 
 		 * @param lifespan the <tt>Lifespan</tt> of the query.
 		 * @return a <tt>Iterator</tt> pointing to all responses (i.e. all entries of this <tt>Node</tt> whose 
 		 * <tt>Lifespans</tt> overlap the given <tt>Lifespan</tt>).
@@ -1968,6 +2063,7 @@ public class MVBTPlus extends MVBT {
 		}
 		
 		/**
+		 * search for a index entry in a given node
 		 * 
 		 * @param id
 		 * @return
@@ -1986,7 +2082,9 @@ public class MVBTPlus extends MVBT {
 			}
 			throw new RuntimeException("Check correctness entry not found");
 		}
+		
 		/**
+		 * auxilary method for index nodes
 		 * 
 		 * @return
 		 */
@@ -2016,6 +2114,12 @@ public class MVBTPlus extends MVBT {
 	} 
 	
 	/**
+	 * 
+	 * Converter for MVBTPlus Nodes.
+	 * 
+	 * If index node spans multiple pages only one page of the index is loaded, since the MVBTPlus is designed such way that the maximal number of live entries per index node is B. 
+	 * Therefore, for inserting only live part of index node is loaded. For querying {@link Node#query(Lifespan)} is used by query cursor. 
+	 * This method reads also historical pages of an index node.  
 	 * 
 	 * @author 
 	 *
