@@ -33,7 +33,7 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
-import java.util.stream.IntStream;
+//import java.util.stream.IntStream;
 
 import xxl.core.collections.containers.Container;
 import xxl.core.collections.containers.CounterContainer;
