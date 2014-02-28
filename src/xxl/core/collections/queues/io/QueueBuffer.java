@@ -196,7 +196,6 @@ public class QueueBuffer<E>  extends AbstractQueue<E> {
 			entry = head.entries.get(index);
 		}catch(Exception ex){
 			//
-			System.out.println("Fehler");
 			throw new RuntimeException(ex);
 		}
 		index++; 
@@ -224,7 +223,9 @@ public class QueueBuffer<E>  extends AbstractQueue<E> {
 	public void clear() {
 		 // simple strategy
 		// delete all dequeue all objects
-		
+		while(!this.isEmpty()){
+			this.dequeue();
+		}
 		
 	}
 	/*
