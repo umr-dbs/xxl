@@ -458,11 +458,12 @@ public class SimpleBulkLoadingExample {
 		int dataSize = DIMENSION *  2 * 8; // number of bytes needed to store DoublePointRectangle
 		int descriptorSize = dataSize; // in our example they are equal
 		double minMaxFactor = 0.33; // is used to define a minimal number of elements per node
-		int memoryEntries = memorySizeForBuffers / dataSize; 
+		// you can change this size 
+		int memoryEntries = memorySizeForBuffers / dataSize;   // NOTE: actual size of a memory is larger, since we have a constant amount of an additional memory per java object. 	
 		int bufferPages = memorySizeForBuffers / BLOCK_SIZE;
 		System.out.println(bufferPages);
 		System.out.println(memoryEntries);
-		RtreeBuffer<DoublePointRectangle> rtree = new RtreeBuffer<>(BLOCK_SIZE, dataSize, DIMENSION); 
+		BufferedRtree<DoublePointRectangle> rtree = new BufferedRtree<>(BLOCK_SIZE, dataSize, DIMENSION); 
 		//1. create container
 		// since we initialize container for the first time,  we need two parameter path and blocksize
 		// otherwise we provide only path parameter, block size is then obtained from the meta information stored in blockfile container
