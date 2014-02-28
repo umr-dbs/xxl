@@ -1,6 +1,5 @@
 package xxl.core.indexStructures.rtrees;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -11,41 +10,26 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
-
-
-
 import xxl.core.collections.MapEntry;
 import xxl.core.collections.containers.Container;
-import xxl.core.collections.containers.CounterContainer;
-import xxl.core.collections.containers.io.BlockFileContainer;
-import xxl.core.collections.containers.io.BufferedContainer;
-import xxl.core.collections.containers.io.ConverterContainer;
 import xxl.core.collections.queues.Queue;
-import xxl.core.collections.queues.io.QueueBuffer;
 import xxl.core.cursors.filters.Filter;
 import xxl.core.cursors.sources.EmptyCursor;
 import xxl.core.cursors.sources.SingleObjectCursor;
-import xxl.core.cursors.sources.io.FileInputCursor;
 import xxl.core.functions.Constant;
-import xxl.core.functions.Identity;
 import xxl.core.functions.Functional.NullaryFunction;
 import xxl.core.functions.Functional.UnaryFunction;
 import xxl.core.indexStructures.Descriptor;
 import xxl.core.indexStructures.ORTree;
 import xxl.core.indexStructures.RTree;
-import xxl.core.indexStructures.ORTree.IndexEntry;
-import xxl.core.io.LRUBuffer;
-import xxl.core.io.converters.ConvertableConverter;
 import xxl.core.io.converters.Converter;
 import xxl.core.predicates.AbstractPredicate;
 import xxl.core.spatial.rectangles.DoublePointRectangle;
-import xxl.core.spatial.rectangles.Rectangle;
-import xxl.core.spatial.rectangles.Rectangles;
 import xxl.core.util.Pair;
 import xxl.core.util.Triple;
 /**
  * 
- * Implementation of R-tree with buffer technique proposed by
+ * Implementation of R-tree with buffer technique designed by
  * 
  * Lars Arge, Klaus Hinrichs, Jan Vahrenhold, Jeffrey Scott Vitter: Efficient Bulk Operations on Dynamic R-Trees. Algorithmica 33(1): 104-128 (2002)
  * 
