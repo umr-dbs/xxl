@@ -29,6 +29,8 @@ import java.io.IOException;
 import java.util.Comparator;
 import java.util.Iterator;
 
+
+
 import xxl.core.collections.containers.Container;
 import xxl.core.collections.containers.CounterContainer;
 import xxl.core.collections.containers.io.BlockFileContainer;
@@ -36,12 +38,14 @@ import xxl.core.collections.containers.io.BufferedContainer;
 import xxl.core.collections.containers.io.ConverterContainer;
 import xxl.core.collections.queues.Queue;
 import xxl.core.collections.queues.io.BlockBasedQueue;
+import xxl.core.collections.queues.io.QueueBuffer;
 import xxl.core.cursors.Cursors;
 import xxl.core.cursors.mappers.Mapper;
 import xxl.core.cursors.sorters.MergeSorter;
 import xxl.core.cursors.sources.io.FileInputCursor;
 import xxl.core.functions.AbstractFunction;
 import xxl.core.functions.Function;
+import xxl.core.functions.Functional.NullaryFunction;
 import xxl.core.functions.Functional.UnaryFunction;
 import xxl.core.functions.Identity;
 import xxl.core.indexStructures.ORTree;
@@ -51,6 +55,7 @@ import xxl.core.indexStructures.Tree;
 import xxl.core.indexStructures.rtrees.AbstractIterativeRtreeBulkloader.ProcessingType;
 import xxl.core.indexStructures.rtrees.GenericPartitioner.CostFunctionArrayProcessor;
 import xxl.core.indexStructures.rtrees.GenericPartitioner.DefaultArrayProcessor;
+import xxl.core.io.Buffer;
 import xxl.core.io.LRUBuffer;
 import xxl.core.io.converters.ConvertableConverter;
 import xxl.core.io.converters.Converter;
@@ -438,6 +443,62 @@ public class SimpleBulkLoadingExample {
 		return new Pair<RTree, CounterContainer>(optBulkloader.getRTree(), ioCounter); 
 	}
 	
+	
+	/**
+	 * Builds an Rtree using 
+	 * Bulk loading technique
+	 * 
+	 * Lars Arge, Klaus Hinrichs, Jan Vahrenhold, Jeffrey Scott Vitter: Efficient Bulk Operations on Dynamic R-Trees. Algorithmica 33(1): 104-128 (2002)
+	 * 
+	 * 
+	 * @return
+	 */
+	public static Pair<RTree, CounterContainer>  loadRtreeBufferDoublePointRectangle(){
+		int memorySizeForBuffers= 1024*1024*10; // we provide the same amount of memory for buffers 10 MB
+		int dataSize = DIMENSION *  2 * 8; // number of bytes needed to store DoublePointRectangle
+		int descriptorSize = dataSize; // in our example they are equal
+		double minMaxFactor = 0.33; // is used to define a minimal number of elements per node
+		int memoryEntries = memorySizeForBuffers / dataSize; 
+		int bufferPages = memorySizeForBuffers / BLOCK_SIZE;
+		System.out.println(bufferPages);
+		System.out.println(memoryEntries);
+		RtreeBuffer<DoublePointRectangle> rtree = new RtreeBuffer<>(BLOCK_SIZE, dataSize, DIMENSION); 
+		//1. create container
+		// since we initialize container for the first time,  we need two parameter path and blocksize
+		// otherwise we provide only path parameter, block size is then obtained from the meta information stored in blockfile container
+		Container fileContainer = new BlockFileContainer(RTREE_PATH + "bufferRtree", BLOCK_SIZE);
+		//2.now we need to provide converterContainer that serializes (maps rtree nodes to a blocks)
+		// before we can initialize converterContainer, we need initialize node converter of the rtree
+		// default descriptor typ of the rtree is DoublePointRectangle. Therefore, we need to provide converter for input objects
+		//Since, they are also of type DoublePointRectangle we do the following
+		Converter<DoublePointRectangle> objectConverter = new ConvertableConverter<>(Rectangles.factoryFunctionDoublePointRectangle(DIMENSION));
+		// we wrap file container with counter
+		CounterContainer ioCounter = new CounterContainer(fileContainer);
+		Container converterContainer = new ConverterContainer(ioCounter, rtree.nodeConverter(objectConverter, DIMENSION));
+		//3.converterContainer is now responsible for serializing rtree nodes. 
+		//4. we use buffer this implements available memory and holds node buffers
+		LRUBuffer<?, ?, ?> lruBuffer = new LRUBuffer<>(bufferPages);
+		CounterContainer treeContainer = new  CounterContainer( new BufferedContainer(converterContainer, lruBuffer));
+		// now we initialize conatiner that manages buffers
+		final Container bufferedContainer = new BufferedContainer(
+					new ConverterContainer(new BlockFileContainer(RTREE_PATH + "buffers", BLOCK_SIZE),
+							QueueBuffer.getPageConverter(Rectangles.getDoublePointRectangleConverter(DIMENSION))), lruBuffer);
+		NullaryFunction<Queue<DoublePointRectangle>> queueFunction = new NullaryFunction<Queue<DoublePointRectangle>>() {
+			@Override
+			public Queue<DoublePointRectangle> invoke() {
+				return new xxl.core.collections.queues.io.QueueBuffer<>(bufferedContainer,dataSize, BLOCK_SIZE);
+			}
+		};
+		//5. now we can initialize tree
+		// the first  argument is null 
+		// if we want to reuse an Rtree we can provide root entry,  but in our case we do it for the first time.
+		rtree.initialize(null, new Identity<DoublePointRectangle>(), treeContainer, BLOCK_SIZE, dataSize, descriptorSize, minMaxFactor); 
+		Iterator<DoublePointRectangle> unsortedInput = new FileInputCursor<DoublePointRectangle>(objectConverter, new File(DATA_PATH));  
+		rtree.bulkLoad(unsortedInput, queueFunction, memoryEntries); 
+		return new Pair<>(rtree, treeContainer); 
+	} 
+	
+	
 	/**
 	 * 
 	 */
@@ -452,11 +513,13 @@ public class SimpleBulkLoadingExample {
 			DoublePointRectangle query = queryRectangles.next(); 
 			// reset counter before test
 			rtreePair.getElement2().reset();
+			rtreePair.getElement2().flush(); // if buffer 
 			// run query and count results
 			int cT = Cursors.count(rtreePair.getElement1().query(query));
 			counter++; 
 			resultsPerQuery+=cT; 
-			ios += rtreePair.getElement2().gets; 
+			ios += rtreePair.getElement2().gets;
+			
 		}
 		System.out.printf("queries %f, avg. per query I/O  %.2f\n", counter, (ios/counter));	
 	}
@@ -486,6 +549,10 @@ public class SimpleBulkLoadingExample {
 		Pair<RTree, CounterContainer> strRtree = createAndLoadSTR();
 		//create opt Rtree
 		Pair<RTree, CounterContainer> optRtree = createAndLoadSortBasedOptimal();
+		//craete buffer rtree
+		Pair<RTree, CounterContainer>  argeRTree = loadRtreeBufferDoublePointRectangle();
+		
+		
 		//conduct point queries
 		System.out.println("Point queries");
 		testQuery(rtree, POINT_QUERY_PATH);
@@ -493,18 +560,24 @@ public class SimpleBulkLoadingExample {
 		testQuery(strRtree, POINT_QUERY_PATH);
 		System.out.println("*********************\n");
 		testQuery(optRtree, POINT_QUERY_PATH);
+		System.out.println("*********************\n");
+		testQuery(argeRTree, POINT_QUERY_PATH);
+		System.out.println("\n\n");
 		System.out.println("Range queries");
 		testQuery(rtree, RANGE_QUERY_PATH);
 		System.out.println("*********************\n");
 		testQuery(strRtree, RANGE_QUERY_PATH);
 		System.out.println("*********************\n");
 		testQuery(optRtree, RANGE_QUERY_PATH);
+		System.out.println("*********************\n");
+		testQuery(argeRTree, RANGE_QUERY_PATH);
 		// show mbr of leaf level
 		if(showTrees){
 			int leafLevel = 1; 
 			showRtreeLevel("RTree Hilbert Curve", leafLevel, rtree.getElement1());
 			showRtreeLevel("RTree STR", leafLevel, strRtree.getElement1());
 			showRtreeLevel("RTree Hilbert Curve GOPT volume optimized", leafLevel, optRtree.getElement1());
+			showRtreeLevel("RTree R* Split top down Arge et al. Buffer loaded", leafLevel, argeRTree.getElement1());
 		}
 		
 	}
