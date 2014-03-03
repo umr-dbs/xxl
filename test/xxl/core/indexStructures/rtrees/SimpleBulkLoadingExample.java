@@ -501,6 +501,70 @@ public class SimpleBulkLoadingExample {
 	
 	
 	/**
+	 * This method uses {@link TGSBulkLoader} class. 
+	 *  
+	 * For initializing the TGS loader we need 
+	 * an Rtree, number of dimensions, blocksize, storage utilization per node in percent, and MBR of a data space, this will be used for cost function computation.  
+	 * 
+	 * 
+	 * 
+	 * @return a pair Rtree and CounterContainer, this is used for counting I/Os
+	 * @throws IOException 
+	 */
+	public static Pair<RTree, CounterContainer> createAndLoadTGS() throws IOException{
+		RTree rtree = new RTree(); 
+		// and we provide again the object size, since it as DoublePointRectangle in two-dimensional space
+		//1. create container
+		// since we initialize container for the first time,  we need two parameter path and blocksize
+		// otherwise we provide only path parameter, block size is then obtained from the meta information stored in blockfile container
+		Container fileContainer = new BlockFileContainer(RTREE_PATH + "tgsrtree", BLOCK_SIZE);
+		//2.now we need to provide converterContainer that serializes (maps rtree nodes to a blocks)
+		// before we can initialize converterContainer, we need initialize node converter of the rtree
+		// default descriptor typ of the rtree is DoublePointRectangle. Therefore, we need to provide converter for input objects
+		//Since, they are also of type DoublePointRectangle we do the following
+		Converter<DoublePointRectangle> objectConverter = new ConvertableConverter<>(Rectangles.factoryFunctionDoublePointRectangle(DIMENSION));
+		// we wrap file container with counter
+		CounterContainer ioCounter = new CounterContainer(fileContainer);
+		Container converterContainer = new ConverterContainer(ioCounter, rtree.nodeConverter(objectConverter, DIMENSION));
+		Container treeContainer = converterContainer;
+		//3.converterContainer is now responsible for serializing rtree nodes. 
+		//4.alternatively we can also provide  main memory buffer  
+		//in our case we will use a small buffer of 10 pages 
+		//. Since want to test actual I/O query performance, default setting is without buffer. 
+		if(BUFFER){
+			LRUBuffer<?, ?, ?> lruBuffer = new LRUBuffer<>(BUFFER_PAGES);
+			treeContainer = new BufferedContainer(converterContainer, lruBuffer);
+		}
+		//5. now we can initialize tree
+		// the first  argument is null 
+		// if we want to reuse an Rtree we can provide root entry,  but in our case we do it for the first time.
+		int dataSize = DIMENSION *  2 * 8; // number of bytes needed to store DoublePointRectangle
+		int descriptorSize = dataSize; // in our example they are equal
+		double minMaxFactor = 0.33; // is used to define a minimal number of elements per node
+		rtree.initialize(null, new Identity<DoublePointRectangle>(), treeContainer, BLOCK_SIZE, dataSize, descriptorSize, minMaxFactor); 
+		// this sorting function is used by str to sort first and to partition  by x-axis and then by y-axis respectively
+		TGSBulkLoader<DoublePointRectangle> strBulkloader = new TGSBulkLoader<DoublePointRectangle>(rtree, RTREE_PATH+"tgs", DIMENSION, BLOCK_SIZE, 0.33, 0.8, Rectangles.getUnitUniverseDoublePointRectangle(DIMENSION)); 
+		// before we can start a bulk loading we need to provide
+		// the number of objects
+		// this can be computed e.g. using the following code pattern
+		int number = Cursors.count(new FileInputCursor<>(objectConverter, new File(DATA_PATH))); 
+		// again we use 10MB memory for external sorting
+		int memorySizeForRuns = 1024*1024*10; // with this value we provide an available memeory for initial run generation and for last merging; 
+		// 
+//		UnaryFunction<DoublePointRectangle, DoublePointRectangle> identity = (x -> x);  for java 8
+		strBulkloader.init(number, memorySizeForRuns, dataSize, objectConverter, new UnaryFunction<DoublePointRectangle, DoublePointRectangle>() {
+			
+			@Override
+			public DoublePointRectangle invoke(DoublePointRectangle arg) {
+				return arg;
+			}
+		}); 
+		// conduct bulk-loading
+		strBulkloader.buildRTree(new FileInputCursor<>(objectConverter, new File(DATA_PATH)));
+		return new Pair<RTree, CounterContainer>(strBulkloader.getRTree(), ioCounter); 
+	}
+	
+	/**
 	 * 
 	 */
 	public static void testQuery(Pair<RTree, CounterContainer>  rtreePair, String queryPath){
@@ -551,9 +615,9 @@ public class SimpleBulkLoadingExample {
 		//create opt Rtree
 		Pair<RTree, CounterContainer> optRtree = createAndLoadSortBasedOptimal();
 		//craete buffer rtree
-		Pair<RTree, CounterContainer>  argeRTree = loadRtreeBufferDoublePointRectangle();
-		
-		
+		Pair<RTree, CounterContainer>  bufferRTree = loadRtreeBufferDoublePointRectangle();
+		//craete buffer rtree
+		Pair<RTree, CounterContainer>  tgsRTree = createAndLoadTGS();
 		//conduct point queries
 		System.out.println("Point queries");
 		testQuery(rtree, POINT_QUERY_PATH);
@@ -562,7 +626,9 @@ public class SimpleBulkLoadingExample {
 		System.out.println("*********************\n");
 		testQuery(optRtree, POINT_QUERY_PATH);
 		System.out.println("*********************\n");
-		testQuery(argeRTree, POINT_QUERY_PATH);
+		testQuery(bufferRTree, POINT_QUERY_PATH);
+		System.out.println("*********************\n");
+		testQuery(tgsRTree, POINT_QUERY_PATH);
 		System.out.println("\n\n");
 		System.out.println("Range queries");
 		testQuery(rtree, RANGE_QUERY_PATH);
@@ -571,14 +637,17 @@ public class SimpleBulkLoadingExample {
 		System.out.println("*********************\n");
 		testQuery(optRtree, RANGE_QUERY_PATH);
 		System.out.println("*********************\n");
-		testQuery(argeRTree, RANGE_QUERY_PATH);
+		testQuery(bufferRTree, RANGE_QUERY_PATH);
+		System.out.println("*********************\n");
+		testQuery(tgsRTree, RANGE_QUERY_PATH);
 		// show mbr of leaf level
 		if(showTrees){
 			int leafLevel = 1; 
 			showRtreeLevel("RTree Hilbert Curve", leafLevel, rtree.getElement1());
 			showRtreeLevel("RTree STR", leafLevel, strRtree.getElement1());
 			showRtreeLevel("RTree Hilbert Curve GOPT volume optimized", leafLevel, optRtree.getElement1());
-			showRtreeLevel("RTree R* Split top down Arge et al. Buffer loaded", leafLevel, argeRTree.getElement1());
+			showRtreeLevel("RTree R* Split top down Arge et al. Buffer loaded", leafLevel, bufferRTree.getElement1());
+			showRtreeLevel("RTree TGS loaded with volume as a cost function", leafLevel, tgsRTree.getElement1());
 		}
 		
 	}
