@@ -114,7 +114,8 @@ public class STRBulkLoader<T> extends AbstractIterativeRtreeBulkloader<T>{
 	 * @param path
 	 * @param dimension
 	 * @param blockSize
-	 * @param ratio
+	 * @param ratio is used after loading for R* split 
+	 * @param nodeUtil based on this value maximal entries per node are computed
 	 * @param sortingFunction
 	 */
 	public STRBulkLoader(RTree rtree, 
@@ -122,8 +123,9 @@ public class STRBulkLoader<T> extends AbstractIterativeRtreeBulkloader<T>{
 			int dimension,
 			int blockSize, 
 			double ratio, 
+			double nodeUtil,
 			int[] sortingFunction) {
-		super(rtree, dimension, blockSize, ratio, 1.0, 20_000);
+		super(rtree, dimension, blockSize, ratio, nodeUtil, 20_000);
 		this.path = path;
 		this.sortingFunction = sortingFunction;
 		//check if it right
@@ -143,6 +145,9 @@ public class STRBulkLoader<T> extends AbstractIterativeRtreeBulkloader<T>{
 			final Converter<T> dataConverter, 
 			UnaryFunction<T, DoublePointRectangle> toRectangle){
 		super.init(null, ProcessingType.SIMPLE, dataSize, dataConverter, toRectangle);
+		int payload = blockSize-6;
+		B_Leaf = (int)((double)(payload / (dataSize)) * storageUtil);
+		B_Index = (int)((double)(payload / (dimension * 16 + 8 ))*storageUtil);
 		this.numberOfDataObjects = number; 
 		this.SORT_BUFFER_SIZE = sortMemoryBufferSize;
 		return this; 

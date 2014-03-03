@@ -344,7 +344,7 @@ public class SimpleBulkLoadingExample {
 		rtree.initialize(null, new Identity<DoublePointRectangle>(), treeContainer, BLOCK_SIZE, dataSize, descriptorSize, minMaxFactor); 
 		// this sorting function is used by str to sort first and to partition  by x-axis and then by y-axis respectively
 		int[] sortingFunction = {0,1};  
-		STRBulkLoader<DoublePointRectangle> strBulkloader = new STRBulkLoader<>(rtree, RTREE_PATH+"str", DIMENSION, BLOCK_SIZE, 0.8, sortingFunction); 
+		STRBulkLoader<DoublePointRectangle> strBulkloader = new STRBulkLoader<>(rtree, RTREE_PATH+"str", DIMENSION, BLOCK_SIZE, 0.33, 0.8, sortingFunction); 
 		// before we can start a bulk loading we need to provide
 		// the number of objects
 		// this can be computed e.g. using the following code pattern
