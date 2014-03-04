@@ -468,7 +468,6 @@ public class BufferedRtree<E> extends RTree{
 						IndexEntry newRootEntry = (IndexEntry) createIndexEntry(rootNodeLevel+1); 
 						((IndexEntry)newRootEntry.initialize(container, container.insert(rootNode))).initialize(universe);
 						rootEntry = newRootEntry;
-						System.out.println("new root ->  " + rootEntry);
 					}
 				}else{// new root TODO
 					Container container = this.getContainer(); 
@@ -487,7 +486,6 @@ public class BufferedRtree<E> extends RTree{
 					((IndexEntry)newRootEntry.initialize(container, container.insert(rootNode))).initialize(universe);
 					rootEntry = newRootEntry; 
 					currentRoot = (IndexEntry) rootEntry; 
-//					System.out.println("new root first ->  " + rootEntry);
 				}
 			}
 		}
@@ -539,8 +537,6 @@ public class BufferedRtree<E> extends RTree{
 		// use descriptor to find the parent node
 		int parentLevel = currentRoot.parentLevel(); 
 		Stack<PathEntry> path = new Stack<>();
-		if(((Long)currentRoot.id()).equals(Long.valueOf(11927552)))
-			System.out.println("Stop");
 		if(parentLevel > firstBufferLevel  && currentRoot != rootEntry){			
 			Stack<Iterator<IndexEntry>> stack  = new Stack<>();  
 			stack.push(new SingleObjectCursor<IndexEntry>((IndexEntry)rootEntry)); 
@@ -606,7 +602,6 @@ public class BufferedRtree<E> extends RTree{
 		// take the buffer from the lod node
 		Queue<E> oldBuffer = getBuffer(entryOld.getElement1()); 
 		if(oldBuffer != null){ // the buffer can be empty in last phase in case of all buffers are emptied in top down level wise manner
-//			System.out.println();
 		//create mocked node 
 			Node node = (Node) createNode(entryOld.getElement2().level()+1); 
 			node.grow(entryOld.getElement1());
@@ -628,7 +623,7 @@ public class BufferedRtree<E> extends RTree{
 			bufferMap.put((Long)entryOld.getElement1().id(), newBufferOld);
 			bufferMap.put((Long)entryNew.getElement1().id(), newBufferNew);
 		}else{
-			System.out.println("No Buffer why ? -> " +  entryOld.getElement1());
+			// do nothing!
 		}
 	}
 	
