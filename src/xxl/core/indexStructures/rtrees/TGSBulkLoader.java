@@ -41,7 +41,7 @@ import xxl.core.spatial.rectangles.DoublePointRectangle;
 /**
  * This is an implementation of TGS R tree loading approach:
  * 
- * 	Yván J. García R, Mario A. López and  Scott T. Leutenegger A greedy algorithm for bulk loading R-trees
+ * 	Yvan J. Garcia R, Mario A. Lopez and  Scott T. Leutenegger A greedy algorithm for bulk loading R-trees
  * 
  * 
  * Note: This is an experimental version.   This loading implementation is conducted in main memory. 
