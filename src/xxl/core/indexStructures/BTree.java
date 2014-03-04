@@ -42,7 +42,12 @@ import xxl.core.functions.AbstractFunction;
 import xxl.core.io.converters.Converter;
 import xxl.core.util.Interval1D;
 
-/** This class implements a B+Tree.
+/** 
+ * This class implements a B+Tree based index. 
+ * Note that this implementation is based a one-dimensional R-tree. 
+ * 
+ * B+tree implementation with a linked leaf nodes is {@link BPlusTree}
+ * 
  * 
  * For a detailed discussion see Douglas Comer: 
  * "The Ubiquitous B-Tree",
