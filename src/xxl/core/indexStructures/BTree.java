@@ -46,7 +46,7 @@ import xxl.core.util.Interval1D;
  * This class implements a B+Tree based index. 
  * Note that this implementation is based a one-dimensional R-tree. 
  * 
- * B+tree implementation with a linked leaf nodes is {@link BPlusTree}
+ * B+tree implementation with linked leaf nodes is {@link BPlusTree}
  * 
  * 
  * For a detailed discussion see Douglas Comer: 
