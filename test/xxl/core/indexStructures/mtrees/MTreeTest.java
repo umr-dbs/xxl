@@ -23,7 +23,7 @@ License along with this library;  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-package xxl.core.indexStructures;
+package xxl.core.indexStructures.mtrees;
 
 import java.io.File;
 import java.util.Comparator;
@@ -43,10 +43,14 @@ import xxl.core.cursors.sorters.MergeSorter;
 import xxl.core.functions.AbstractFunction;
 import xxl.core.functions.Constant;
 import xxl.core.functions.Function;
+import xxl.core.indexStructures.Common;
 import xxl.core.indexStructures.MTree;
+import xxl.core.indexStructures.ORTree;
 import xxl.core.indexStructures.SlimTree;
 import xxl.core.indexStructures.SortBasedBulkLoading;
 import xxl.core.indexStructures.Sphere;
+import xxl.core.indexStructures.Tree;
+import xxl.core.indexStructures.Tree.Query;
 import xxl.core.indexStructures.Tree.Query.Candidate;
 import xxl.core.io.Convertable;
 import xxl.core.io.LRUBuffer;

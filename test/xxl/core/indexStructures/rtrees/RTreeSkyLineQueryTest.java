@@ -23,7 +23,7 @@ License along with this library;  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-package xxl.core.indexStructures;
+package xxl.core.indexStructures.rtrees;
 
 import java.awt.Color;
 import java.util.Random;
@@ -35,6 +35,11 @@ import xxl.core.collections.containers.io.ConverterContainer;
 import xxl.core.collections.queues.DynamicHeap;
 import xxl.core.cursors.Cursor;
 import xxl.core.indexStructures.RTree;
+import xxl.core.indexStructures.ShowCursor;
+import xxl.core.indexStructures.Tree;
+import xxl.core.indexStructures.RTree.AsymmetricTwoDimensionalSkylineQuery;
+import xxl.core.indexStructures.RTree.SymmetricSkylineQuery;
+import xxl.core.indexStructures.Tree.Query;
 import xxl.core.indexStructures.Tree.Query.Candidate;
 import xxl.core.io.LRUBuffer;
 import xxl.core.io.converters.ConvertableConverter;

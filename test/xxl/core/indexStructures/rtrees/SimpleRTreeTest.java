@@ -23,7 +23,7 @@ License along with this library;  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-package xxl.core.indexStructures;
+package xxl.core.indexStructures.rtrees;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -45,6 +45,9 @@ import xxl.core.functions.AbstractFunction;
 import xxl.core.functions.Function;
 import xxl.core.indexStructures.ORTree;
 import xxl.core.indexStructures.RTree;
+import xxl.core.indexStructures.Tree;
+import xxl.core.indexStructures.ORTree.IndexEntry;
+import xxl.core.indexStructures.Tree.Query;
 import xxl.core.indexStructures.Tree.Query.Candidate;
 import xxl.core.io.LRUBuffer;
 import xxl.core.io.converters.ConvertableConverter;

@@ -1,12 +1,12 @@
-package xxl.core.indexStructures.testData;
+package xxl.core.indexStructures.descriptors;
 
 import java.util.List;
 
 import xxl.core.functions.Function;
-import xxl.core.indexStructures.SimpleLoadMVBTree;
 import xxl.core.indexStructures.MVBTree.MVRegion;
 import xxl.core.indexStructures.MVBTree.MVSeparator;
 import xxl.core.indexStructures.MVBTree.Version;
+import xxl.core.indexStructures.mvbts.SimpleLoadMVBTree;
 /**
  * 
  * This class is implements interface @see {@link MVSeparator} and is used in the test class @see {@link SimpleLoadMVBTree}.

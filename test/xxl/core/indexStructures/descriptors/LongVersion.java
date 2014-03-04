@@ -1,4 +1,4 @@
-package xxl.core.indexStructures.testData;
+package xxl.core.indexStructures.descriptors;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -6,7 +6,7 @@ import java.io.IOException;
 
 import xxl.core.indexStructures.MVBTree;
 import xxl.core.indexStructures.MVBTree.Version;
-import xxl.core.indexStructures.SimpleLoadMVBTree;
+import xxl.core.indexStructures.mvbts.SimpleLoadMVBTree;
 import xxl.core.io.converters.Converter;
 import xxl.core.io.converters.LongConverter;
 import xxl.core.io.converters.MeasuredConverter;
@@ -20,7 +20,7 @@ public class LongVersion implements MVBTree.Version{
 	/**
 	 * 
 	 */
-	protected long version;
+	public long version;
 	/**
 	 * 
 	 */

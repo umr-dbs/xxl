@@ -1,9 +1,9 @@
-package xxl.core.indexStructures.testData;
+package xxl.core.indexStructures.descriptors;
 
 import xxl.core.functions.AbstractFunction;
 import xxl.core.functions.Function;
-import xxl.core.indexStructures.SimpleLoadMVBTree;
 import xxl.core.indexStructures.BPlusTree.KeyRange;
+import xxl.core.indexStructures.mvbts.SimpleLoadMVBTree;
 
 /**
  * 

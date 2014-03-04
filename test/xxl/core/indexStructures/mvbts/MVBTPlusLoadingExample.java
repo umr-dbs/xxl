@@ -22,7 +22,7 @@ License along with this library;  If not, see <http://www.gnu.org/licenses/>.
     http://code.google.com/p/xxl/
 
 */
-package xxl.core.indexStructures;
+package xxl.core.indexStructures.mvbts;
 
 import java.io.BufferedReader;
 import java.io.DataInput;
@@ -34,6 +34,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 //import java.util.stream.IntStream;
+
 
 import xxl.core.collections.containers.Container;
 import xxl.core.collections.containers.CounterContainer;
@@ -48,9 +49,13 @@ import xxl.core.cursors.mappers.Mapper;
 import xxl.core.functions.AbstractFunction;
 import xxl.core.functions.Function;
 import xxl.core.functions.Functional.NullaryFunction;
+import xxl.core.indexStructures.MVBT;
+import xxl.core.indexStructures.MVBTPlus;
+import xxl.core.indexStructures.MVBTree;
 import xxl.core.indexStructures.MVBTPlus.Element;
 import xxl.core.indexStructures.MVBTPlus.LongVersion;
 import xxl.core.indexStructures.MVBTPlus.OperationType;
+import xxl.core.indexStructures.MVBTree.LeafEntry;
 import xxl.core.indexStructures.MVBTree.MVRegion;
 import xxl.core.indexStructures.MVBTree.MVSeparator;
 import xxl.core.indexStructures.MVBTree.Version;

@@ -23,7 +23,7 @@ License along with this library;  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-package xxl.core.indexStructures;
+package xxl.core.indexStructures.btrees;
 
 
 import java.io.DataInput;
@@ -39,10 +39,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
-import org.testng.Assert;
+/*import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
-import org.testng.annotations.Test;
+import org.testng.annotations.Test;*/
+
 
 import xxl.core.collections.containers.Container;
 import xxl.core.collections.containers.io.BlockFileContainer;
@@ -52,6 +53,7 @@ import xxl.core.cursors.Cursor;
 import xxl.core.cursors.Cursors;
 import xxl.core.functions.AbstractFunction;
 import xxl.core.functions.Function;
+import xxl.core.indexStructures.AbstractTreeIndexTest;
 import xxl.core.indexStructures.keyRanges.StringKeyRange;
 import xxl.core.indexStructures.separators.StringSeparator;
 import xxl.core.indexStructures.testData.Student;

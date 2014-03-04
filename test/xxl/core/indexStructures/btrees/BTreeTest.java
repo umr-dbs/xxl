@@ -23,7 +23,7 @@ License along with this library;  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-package xxl.core.indexStructures;
+package xxl.core.indexStructures.btrees;
 
 import java.util.Iterator;
 

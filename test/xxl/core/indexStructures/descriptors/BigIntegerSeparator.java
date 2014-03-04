@@ -23,7 +23,7 @@ License along with this library;  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-package xxl.core.indexStructures;
+package xxl.core.indexStructures.descriptors;
 
 import java.math.BigInteger;
 
@@ -33,7 +33,7 @@ import xxl.core.indexStructures.Separator;
 
 /** An example for {@link xxl.core.indexStructures.Separator} with BigInteger values.
  */
-class BigIntegerSeparator extends Separator {
+public class BigIntegerSeparator extends Separator {
 
 	/**
 	 * An factory function providing an <tt>BigIntegerSeparator</tt> if invoked

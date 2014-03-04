@@ -1,4 +1,4 @@
-package xxl.core.indexStructures;
+package xxl.core.indexStructures.mvbts;
 
 import java.io.BufferedReader;
 import java.io.DataInput;
@@ -29,11 +29,18 @@ import xxl.core.cursors.filters.Taker;
 import xxl.core.cursors.sources.Permutator;
 import xxl.core.functions.AbstractFunction;
 import xxl.core.functions.Function;
+import xxl.core.indexStructures.BPlusTree;
+import xxl.core.indexStructures.Descriptor;
+import xxl.core.indexStructures.MVBTree;
+import xxl.core.indexStructures.Tree;
 import xxl.core.indexStructures.BPlusTree.IndexEntry;
 import xxl.core.indexStructures.BPlusTree.KeyRange;
-import xxl.core.indexStructures.testData.LongMVRegion;
-import xxl.core.indexStructures.testData.LongMVSeparator;
-import xxl.core.indexStructures.testData.LongVersion;
+import xxl.core.indexStructures.MVBTree.Lifespan;
+import xxl.core.indexStructures.MVBTree.MVRegion;
+import xxl.core.indexStructures.MVBTree.MVSeparator;
+import xxl.core.indexStructures.descriptors.LongMVRegion;
+import xxl.core.indexStructures.descriptors.LongMVSeparator;
+import xxl.core.indexStructures.descriptors.LongVersion;
 import xxl.core.io.Buffer;
 import xxl.core.io.LRUBuffer;
 import xxl.core.io.converters.BooleanConverter;

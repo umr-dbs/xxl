@@ -23,7 +23,7 @@ License along with this library;  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-package xxl.core.indexStructures;
+package xxl.core.indexStructures.btrees;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -39,6 +39,9 @@ import xxl.core.cursors.Cursors;
 import xxl.core.functions.AbstractFunction;
 import xxl.core.functions.Function;
 import xxl.core.indexStructures.BPlusTree;
+import xxl.core.indexStructures.BPlusTree.KeyRange;
+import xxl.core.indexStructures.descriptors.BigIntegerKeyRange;
+import xxl.core.indexStructures.descriptors.BigIntegerSeparator;
 import xxl.core.io.LRUBuffer;
 import xxl.core.io.converters.BigIntegerConverter;
 import xxl.core.io.converters.MeasuredConverter;
