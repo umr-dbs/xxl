@@ -39,6 +39,7 @@ import xxl.core.cursors.filters.Filter;
 import xxl.core.functions.Functional.UnaryFunction;
 import xxl.core.predicates.AbstractPredicate;
 import xxl.core.spatial.SpaceFillingCurves;
+import xxl.core.spatial.SpatialUtils;
 import xxl.core.spatial.points.DoublePoint;
 import xxl.core.spatial.rectangles.DoublePointRectangle;
 import xxl.core.util.Pair;
@@ -266,7 +267,7 @@ public class STHist {
 		// sort data according predifined SFC
 		Comparator<STHist.STHistBucket> bucketComparator = new Comparator<STHist.STHistBucket>() {
 			
-			Comparator<DoublePointRectangle> recComparator = SpatialHistogramUtils.getHilbert2DComparator(universe, 1 << 30);
+			Comparator<DoublePointRectangle> recComparator = SpatialUtils.getHilbert2DComparator(universe, 1 << 30);
 			
 			@Override
 			public int compare(STHistBucket o1, STHistBucket o2) {

@@ -35,6 +35,7 @@ import xxl.core.cursors.Cursor;
 import xxl.core.indexStructures.ORTree;
 import xxl.core.indexStructures.RTree;
 import xxl.core.indexStructures.RTree.Node;
+import xxl.core.spatial.SpatialUtils;
 import xxl.core.spatial.points.DoublePoint;
 import xxl.core.spatial.rectangles.DoublePointRectangle;
 /**
@@ -75,7 +76,7 @@ public class RKhist {
 		List<MapEntry< Double,List<MapEntry<DoublePointRectangle, RTree.Node>>>> nodeList = new ArrayList<MapEntry< Double,List<MapEntry<DoublePointRectangle, RTree.Node>>>>();
 		List<MapEntry< Double,List<MapEntry<DoublePointRectangle, RTree.Node>>>> penaltyList = new ArrayList<MapEntry< Double,List<MapEntry<DoublePointRectangle, RTree.Node>>>>();
 		// cursor of level 0 leaf nodes buckets
-		Cursor<MapEntry<DoublePointRectangle, RTree.Node>> nodes = SpatialHistogramUtils.getNodesAndMBRs(bulkLoadedRTree, 1);
+		Cursor<MapEntry<DoublePointRectangle, RTree.Node>> nodes = SpatialUtils.getNodesAndMBRs(bulkLoadedRTree, 1);
 		// create hyperblocks and create penalty list;
 		while(nodes.hasNext()){
 			List<MapEntry<DoublePointRectangle, RTree.Node>> hyperNode = new ArrayList<MapEntry<DoublePointRectangle, RTree.Node>>();
@@ -199,7 +200,7 @@ formark:	for(int i = 0; i < penaltyList.size(); i++){
 //		Cursor<MapEntry<DoublePointRectangle, RTree.Node>> nodes = RGOhist.getNodesAndMBRs(bulkLoadedRTree, 1);
 		
 		
-		Cursor<MapEntry<DoublePointRectangle, ORTree.IndexEntry>> nodes =  SpatialHistogramUtils.getIndexEntriesAndMBRs(bulkLoadedRTree, 1); 
+		Cursor<MapEntry<DoublePointRectangle, ORTree.IndexEntry>> nodes =  SpatialUtils.getIndexEntriesAndMBRs(bulkLoadedRTree, 1); 
 		
 		// create hyperblocks and create penalty list;
 		while(nodes.hasNext()){

@@ -22,7 +22,7 @@ License along with this library;  If not, see <http://www.gnu.org/licenses/>.
     http://code.google.com/p/xxl/
 
 */
-package xxl.core.spatial.histograms.utils;
+package xxl.core.spatial;
 
 
 
@@ -50,7 +50,8 @@ import xxl.core.indexStructures.ORTree.IndexEntry;
 import xxl.core.indexStructures.RTree;
 import xxl.core.indexStructures.RTree.Node;
 import xxl.core.io.converters.ConvertableConverter;
-import xxl.core.spatial.SpaceFillingCurves;
+import xxl.core.spatial.histograms.utils.STHist;
+import xxl.core.spatial.histograms.utils.SpatialHistogramBucket;
 import xxl.core.spatial.histograms.utils.STHist.STHistBucket;
 import xxl.core.spatial.points.DoublePoint;
 import xxl.core.spatial.rectangles.DoublePointRectangle;
@@ -62,7 +63,7 @@ import xxl.core.spatial.rectangles.DoublePointRectangle;
  * helper class for spatial histograms 
  *
  */
-public class SpatialHistogramUtils {
+public class SpatialUtils {
 	
 	
 	
@@ -677,9 +678,9 @@ public class SpatialHistogramUtils {
 			double estimation = 0;
 			double diff = 0;
 			if(histogram != null){
-				estimation =  SpatialHistogramUtils.computeEstimation(histogram.iterator(), queryRec);
+				estimation =  SpatialUtils.computeEstimation(histogram.iterator(), queryRec);
 			}else{
-				estimation = SpatialHistogramUtils.computeEstimation(rtree, queryRec, 1);
+				estimation = SpatialUtils.computeEstimation(rtree, queryRec, 1);
 			}
 			diff = Math.abs(actualCount-estimation);
 			avgerror += diff/(Math.max(1, actualCount)); 

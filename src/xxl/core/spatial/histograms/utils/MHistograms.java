@@ -61,6 +61,7 @@ import xxl.core.io.converters.ConvertableConverter;
 import xxl.core.io.converters.Converter;
 import xxl.core.predicates.AbstractPredicate;
 import xxl.core.predicates.Predicate;
+import xxl.core.spatial.SpatialUtils;
 import xxl.core.spatial.histograms.utils.RVHistogram.HistType;
 import xxl.core.spatial.histograms.utils.PartitionerUtils.ProcessorType;
 import xxl.core.spatial.histograms.utils.STHist.STHistBucket;
@@ -137,7 +138,7 @@ public class MHistograms {
 		 */
 		@Override
 		public double getSelectivity(DoublePointRectangle queryRec) {
-			return SpatialHistogramUtils.computeEstimation(histogram.iterator(), queryRec);
+			return SpatialUtils.computeEstimation(histogram.iterator(), queryRec);
 		}
 		/*
 		 * (non-Javadoc)
@@ -181,11 +182,11 @@ public class MHistograms {
 		 * input rectangle  (DoublePointRectangle) converter
 		 *   
 		 */
-		protected Converter<DoublePointRectangle> converter = new ConvertableConverter<DoublePointRectangle>(SpatialHistogramUtils.factoryFunction(dimension));// default 2D Converter
+		protected Converter<DoublePointRectangle> converter = new ConvertableConverter<DoublePointRectangle>(SpatialUtils.factoryFunction(dimension));// default 2D Converter
 		/**
 		 * comparator, based on SFC mapping; For two-dimensional space we use Hilbert, otherwise Z-Curve.
 		 */
-		protected Comparator<DoublePointRectangle> comparator = SpatialHistogramUtils.getHilbert2DComparator(SpatialHistogramUtils.universeUnit(dimension), FILLING_CURVE_PRECISION); // default 2D comparator
+		protected Comparator<DoublePointRectangle> comparator = SpatialUtils.getHilbert2DComparator(SpatialUtils.universeUnit(dimension), FILLING_CURVE_PRECISION); // default 2D comparator
 		/**
 		 * Path were temporal sort files are stored
 		 */
@@ -232,10 +233,10 @@ public class MHistograms {
 				precision = 1 << (bitProDim-1);
 				blockSize = new Integer(props.getProperty(RTREE_BLOCK_SIZE, "4096")); // default value
 				dimension = new Integer(props.getProperty(RTREE_DIMENSION, "2")); // default value
-				converter = new ConvertableConverter<DoublePointRectangle>(SpatialHistogramUtils.factoryFunction(dimension));// default 2D Converter
+				converter = new ConvertableConverter<DoublePointRectangle>(SpatialUtils.factoryFunction(dimension));// default 2D Converter
 				comparator = (dimension == 2 ) ? 
-						SpatialHistogramUtils.getHilbert2DComparator(SpatialHistogramUtils.universeUnit(dimension),precision) :
-							SpatialHistogramUtils.getZCurveComparator(SpatialHistogramUtils.universeUnit(dimension), bitProDim);
+						SpatialUtils.getHilbert2DComparator(SpatialUtils.universeUnit(dimension),precision) :
+							SpatialUtils.getZCurveComparator(SpatialUtils.universeUnit(dimension), bitProDim);
 //							: RGOhist.getHilbertComparator(RGOhist.universeUnit(dimension), bitProDim); // default 2D comparator
 //				comparator = 
 //								RGOhist.getZCurveComparator(RGOhist.universeUnit(dimension), 31); // default 2D comparator
@@ -270,7 +271,7 @@ public class MHistograms {
 				ProcessingType pType = (bulkLoad == GOPT_BULKLOAD) ? ProcessingType.GOPT : ProcessingType.SOPT_F;
 				tree = buildExtRtree(sortedRectangles, pType);
 			}
-			histogram = SpatialHistogramUtils.computeSimpleRTreeHistogram(tree, numberOfBuckets);
+			histogram = SpatialUtils.computeSimpleRTreeHistogram(tree, numberOfBuckets);
 		}
 		
 		/**
@@ -436,7 +437,7 @@ public class MHistograms {
 				Cursor<DoublePointRectangle> queryPoints, 
 				DoublePointRectangle universe) {
 			this(dimension, blockSize, rtreeRatio, hratio,avgratio, type, pType);
-			sideLength = SpatialHistogramUtils.computeQuerySides(queryPoints, dimension, universe); 
+			sideLength = SpatialUtils.computeQuerySides(queryPoints, dimension, universe); 
 		}
 		
 		
@@ -452,9 +453,9 @@ public class MHistograms {
 				sortedRectangles = sortData(rectangles);
 				tree = buildExtRtree(sortedRectangles, ProcessingType.GOPT);
 			}
-			int count = Cursors.count(SpatialHistogramUtils.getRectanglesLevel1(tree));
+			int count = Cursors.count(SpatialUtils.getRectanglesLevel1(tree));
 			if(count <= numberOfBuckets){
-				this.histogram = SpatialHistogramUtils.computeSimpleRTreeHistogram(tree, numberOfBuckets);
+				this.histogram = SpatialUtils.computeSimpleRTreeHistogram(tree, numberOfBuckets);
 				return;
 			}
 			// after computing the leaf node level of R-tree
@@ -487,10 +488,10 @@ public class MHistograms {
 			double rat = ((double)f)/ (double)B;
 			if (count > 20000) // 128*128
 				this.histogram =  RVHistogram.computeHistogramOPT(
-						SpatialHistogramUtils.getRectanglesLevel1(tree), b , B, count, numberOfBuckets, rat, arrayProcessor, type, 10000);
+						SpatialUtils.getRectanglesLevel1(tree), b , B, count, numberOfBuckets, rat, arrayProcessor, type, 10000);
 			else
 				this.histogram =  RVHistogram.computeHistogramOPT(
-						SpatialHistogramUtils.getRectanglesLevel1(tree), b , B, count, numberOfBuckets,  arrayProcessor, type);
+						SpatialUtils.getRectanglesLevel1(tree), b , B, count, numberOfBuckets,  arrayProcessor, type);
 		}
 		
 		
@@ -505,9 +506,9 @@ public class MHistograms {
 		public void buildHistogram(	int numberOfBuckets, Properties props, int b, int B) throws IOException {
 			// set properties 
 			setProperties(props);
-			int count = Cursors.count(SpatialHistogramUtils.getRectanglesLevel1(tree));
+			int count = Cursors.count(SpatialUtils.getRectanglesLevel1(tree));
 			if(count <= numberOfBuckets){
-				this.histogram = SpatialHistogramUtils.computeSimpleRTreeHistogram(tree, numberOfBuckets);
+				this.histogram = SpatialUtils.computeSimpleRTreeHistogram(tree, numberOfBuckets);
 				return;
 			}
 			//.out.println("B for tree "  + B +" min b " +b  + " entries to consider " + count);
@@ -523,10 +524,10 @@ public class MHistograms {
 //				this.histogram =  PHist2L.computeHistogramOPT(
 //						RGOhist.getRectanglesLevel1(tree), b , B, count, numberOfBuckets, avgratio, arrayProcessor, type, 128*128);
 				this.histogram =  RVHistogram.computeHistogramOPT(
-						SpatialHistogramUtils.getRectanglesLevel1(tree), b , B, count, numberOfBuckets, rat, arrayProcessor, type, 128*128);
+						SpatialUtils.getRectanglesLevel1(tree), b , B, count, numberOfBuckets, rat, arrayProcessor, type, 128*128);
 			else
 				this.histogram =  RVHistogram.computeHistogramOPT(
-						SpatialHistogramUtils.getRectanglesLevel1(tree), b , B, count, numberOfBuckets,  arrayProcessor, type);
+						SpatialUtils.getRectanglesLevel1(tree), b , B, count, numberOfBuckets,  arrayProcessor, type);
 		}
 		
 		/**
@@ -534,7 +535,7 @@ public class MHistograms {
 		 * @param numberOfBuckets
 		 */
 		public void buildSimpleHist(int numberOfBuckets){
-			histogram = SpatialHistogramUtils.computeSimpleRTreeHistogram(tree, numberOfBuckets);
+			histogram = SpatialUtils.computeSimpleRTreeHistogram(tree, numberOfBuckets);
 		}
 		
 		
@@ -573,7 +574,7 @@ public class MHistograms {
 					tree = buildExtRtree(sortedRectangles, pType);
 				}
 			}
-			int numberOfNodes = Cursors.count(SpatialHistogramUtils.getNodes(tree, 1));
+			int numberOfNodes = Cursors.count(SpatialUtils.getNodes(tree, 1));
 			histogram = RKhist.buildRKHist(tree, numberOfNodes, numberOfBuckets, undersampligRatio, dimension);
 		}
 		
@@ -618,7 +619,7 @@ public class MHistograms {
 			setProperties(props);
 			createTmpFile(rectangles);
 			Cursor<DoublePointRectangle> recCursor = new FileInputCursor<DoublePointRectangle>(
-					new ConvertableConverter<DoublePointRectangle>(SpatialHistogramUtils.factoryFunction(dimension)), new File(tempPath)){	
+					new ConvertableConverter<DoublePointRectangle>(SpatialUtils.factoryFunction(dimension)), new File(tempPath)){	
 						@Override
 						public boolean supportsReset() {
 							return true;
@@ -638,7 +639,7 @@ public class MHistograms {
 							}
 						}
 			};
-			this.histogram = MinSkewHist.buildHistogram(recCursor, SpatialHistogramUtils.universeUnit(dimension), bitsPerDim, dimension, numberOfBuckets); 
+			this.histogram = MinSkewHist.buildHistogram(recCursor, SpatialUtils.universeUnit(dimension), bitsPerDim, dimension, numberOfBuckets); 
 		}
 
 		@Override
@@ -685,7 +686,7 @@ public class MHistograms {
 			setProperties(props);
 			createTmpFile(rectangles);
 			Cursor<DoublePointRectangle> recCursor = new FileInputCursor<DoublePointRectangle>(
-					new ConvertableConverter<DoublePointRectangle>(SpatialHistogramUtils.factoryFunction(dimension)), new File(tempPath)){	
+					new ConvertableConverter<DoublePointRectangle>(SpatialUtils.factoryFunction(dimension)), new File(tempPath)){	
 						@Override
 						public boolean supportsReset() {
 							return true;
@@ -705,7 +706,7 @@ public class MHistograms {
 							}
 						}
 			};
-			this.histogram = MinSkewHist.buildProgressiveRefinement(recCursor, SpatialHistogramUtils.universeUnit(dimension), bitsPerDim, dimension, numberOfBuckets, refSteps); 
+			this.histogram = MinSkewHist.buildProgressiveRefinement(recCursor, SpatialUtils.universeUnit(dimension), bitsPerDim, dimension, numberOfBuckets, refSteps); 
 		}
 
 		@Override
@@ -777,7 +778,7 @@ public class MHistograms {
 		public void buildHistogram(Cursor<DoublePointRectangle> rectangles,
 				int numberOfBuckets, Properties props) throws IOException {
 			STHist histogram = new STHist();
-			histogram.buildHotSpotForest(rectangles, SpatialHistogramUtils.universeUnit(2), numberOfBuckets);
+			histogram.buildHotSpotForest(rectangles, SpatialUtils.universeUnit(2), numberOfBuckets);
 			forest = histogram.forest;
 			buckets = new ArrayList<SpatialHistogramBucket>();
 			STHist.forest(forest, buckets);
