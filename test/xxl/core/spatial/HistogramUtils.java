@@ -39,7 +39,7 @@ import xxl.core.predicates.AbstractPredicate;
 import xxl.core.spatial.rectangles.DoublePointRectangle;
 import xxl.core.spatial.rectangles.Rectangles;
 
-public class SpatialUtils {
+public class HistogramUtils {
 	
 	
 	/**
@@ -59,7 +59,7 @@ public class SpatialUtils {
 	/**
 	 * 
 	 */
-	public static Function<DoublePointRectangle, Long> toSFC = Functions.toFunction(xxl.core.spatial.histograms.utils.SpatialHistogramUtils.zCruveSFC(universe, BITS_PRO_DIM));
+	public static Function<DoublePointRectangle, Long> toSFC = Functions.toFunction(xxl.core.spatial.SpatialUtils.zCruveSFC(universe, BITS_PRO_DIM));
 	
 	/**
 	 * cursor should implement reset method!

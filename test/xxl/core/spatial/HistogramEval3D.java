@@ -51,7 +51,6 @@ import xxl.core.io.converters.ConvertableConverter;
 import xxl.core.io.converters.Converter;
 import xxl.core.spatial.histograms.utils.MHistogram;
 import xxl.core.spatial.histograms.utils.MHistograms;
-import xxl.core.spatial.histograms.utils.SpatialHistogramUtils;
 import xxl.core.spatial.histograms.utils.MHistograms.MinSkewHistogram;
 import xxl.core.spatial.histograms.utils.MHistograms.MinSkewProgressiveRefinementHistogram;
 import xxl.core.spatial.histograms.utils.MHistograms.RHistogram;
@@ -106,9 +105,9 @@ public class HistogramEval3D {
 	 */
 	public HistogramEval3D(Cursor<DoublePointRectangle> inputData, String tempPath, int dimension) throws IOException{
 		// build RTree over the data set
-		comparator  = (dimension == 2 ) ?  SpatialHistogramUtils.getHilbert2DComparator(SpatialHistogramUtils.universeUnit(dimension), FILLING_CURVE_PRECISION)
-					: SpatialHistogramUtils.getZCurveComparator(SpatialHistogramUtils.universeUnit(dimension), BITS_PRO_DIM); // default 2D comparator
-		converter = new ConvertableConverter<DoublePointRectangle>(SpatialHistogramUtils.factoryFunction(dimension)); 
+		comparator  = (dimension == 2 ) ?  SpatialUtils.getHilbert2DComparator(SpatialUtils.universeUnit(dimension), FILLING_CURVE_PRECISION)
+					: SpatialUtils.getZCurveComparator(SpatialUtils.universeUnit(dimension), BITS_PRO_DIM); // default 2D comparator
+		converter = new ConvertableConverter<DoublePointRectangle>(SpatialUtils.factoryFunction(dimension)); 
 		this.tempPath = tempPath;
 		rtree =  buildExtRtree(sortData(inputData));
 	}
@@ -406,7 +405,7 @@ public class HistogramEval3D {
 		props.setProperty(MHistograms.RTREE_RATIO, new Double(0.4).toString());
 		props.setProperty(MHistograms.RTREE_PATH, tempPath + "soptTree");
 		rhistogram_QA = new RHistogram(DIMENSION, BLOCKSIZE, rtreeRatio, hRatio, avgRatio,  histType, ProcessorType.VOLUME, queries, 
-				SpatialHistogramUtils.universeUnit(DIMENSION));
+				SpatialUtils.universeUnit(DIMENSION));
 //		if(soptTree != null)
 //			rhistogram_QA.tree = soptTree;
 		rhistogram_QA.buildHistogram(getData(), numberOfBuckets, props);
@@ -497,7 +496,7 @@ public class HistogramEval3D {
 	 * 
 	 */
 	public TestPlot showHist(String name, MHistogram hist){
-		return new TestPlot( name , hist.getBuckets().iterator(), 500,  SpatialHistogramUtils.universeUnit(DIMENSION));
+		return new TestPlot( name , hist.getBuckets().iterator(), 500,  SpatialUtils.universeUnit(DIMENSION));
 	}
 	
 	

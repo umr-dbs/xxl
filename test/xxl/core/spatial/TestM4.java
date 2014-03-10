@@ -33,7 +33,6 @@ import xxl.core.cursors.Cursor;
 import xxl.core.cursors.Cursors;
 import xxl.core.cursors.sources.io.FileInputCursor;
 import xxl.core.io.converters.ConvertableConverter;
-import xxl.core.spatial.histograms.utils.SpatialHistogramUtils;
 import xxl.core.spatial.rectangles.DoublePointRectangle;
 
 
@@ -72,7 +71,7 @@ public class TestM4 {
 			System.out.println("++++++++++++++++++++++++++++++++++++\n");
 			System.out.println("Data: " + p);
 			FileInputCursor<DoublePointRectangle> data = new FileInputCursor<DoublePointRectangle>(
-					new ConvertableConverter<DoublePointRectangle>(SpatialHistogramUtils.factoryFunction(2)), 
+					new ConvertableConverter<DoublePointRectangle>(SpatialUtils.factoryFunction(2)), 
 					new File(dataPath + "/" + p +"02.rec"));
 			HistogramEval eval = new HistogramEval(data, path); 
 			for(int numberOfBuckets : buckets){
@@ -88,7 +87,7 @@ public class TestM4 {
 				Cursor<DoublePointRectangle> queryCursor = null;
 				System.out.println("RTree");
 				queryCursor = new FileInputCursor<DoublePointRectangle>(
-						new ConvertableConverter<DoublePointRectangle>(SpatialHistogramUtils.factoryFunction(2)), new File(query));
+						new ConvertableConverter<DoublePointRectangle>(SpatialUtils.factoryFunction(2)), new File(query));
 				eval.testHistogram(queryCursor, eval.getRTreeHist());
 //				System.out.println("RK-Hist");
 //				queryCursor = new FileInputCursor<DoublePointRectangle>(
@@ -96,7 +95,7 @@ public class TestM4 {
 //				eval.testHistogram(queryCursor, eval.getRkHist());
 				System.out.println("RTree Volume");
 				queryCursor = new FileInputCursor<DoublePointRectangle>(
-						new ConvertableConverter<DoublePointRectangle>(SpatialHistogramUtils.factoryFunction(2)), new File(query));
+						new ConvertableConverter<DoublePointRectangle>(SpatialUtils.factoryFunction(2)), new File(query));
 				eval.testHistogram(queryCursor, eval.getRhistogram_V());
 				eval.showHist("Normal", eval.getRTreeHist()); 
 				eval.showHist("Volume", eval.getRhistogram_V()); 
