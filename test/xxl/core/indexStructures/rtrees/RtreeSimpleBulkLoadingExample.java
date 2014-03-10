@@ -32,6 +32,7 @@ import java.util.Iterator;
 
 
 
+
 import xxl.core.collections.containers.Container;
 import xxl.core.collections.containers.CounterContainer;
 import xxl.core.collections.containers.io.BlockFileContainer;
@@ -63,8 +64,8 @@ import xxl.core.io.converters.ConvertableConverter;
 import xxl.core.io.converters.Converter;
 import xxl.core.predicates.AbstractPredicate;
 import xxl.core.spatial.SpaceFillingCurves;
+import xxl.core.spatial.SpatialUtils;
 import xxl.core.spatial.TestPlot;
-import xxl.core.spatial.histograms.utils.SpatialHistogramUtils;
 import xxl.core.spatial.rectangles.DoublePointRectangle;
 import xxl.core.spatial.rectangles.Rectangles;
 import xxl.core.util.Pair;
@@ -802,7 +803,7 @@ public class RtreeSimpleBulkLoadingExample {
 			}
 			
 		}, tree.query(level));
-		new TestPlot( name, levelDescriptors, 500,  SpatialHistogramUtils.universeUnit(DIMENSION));
+		new TestPlot( name, levelDescriptors, 500,  SpatialUtils.universeUnit(DIMENSION));
 	}
 	
 	public static void main(String[] args) throws IOException {
