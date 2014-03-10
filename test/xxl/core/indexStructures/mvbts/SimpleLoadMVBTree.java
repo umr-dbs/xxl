@@ -396,10 +396,10 @@ public class SimpleLoadMVBTree {
 	 */
 	public static void saveMetaInfo(String path, MVBTree tree) throws IOException{
 		DataOutputStream dos = new DataOutputStream(new FileOutputStream(new File(path)));
-		IndexEntry rootEntry = (IndexEntry)tree.rootEntry;   
-		LongMVRegion rootDescriptor = (LongMVRegion)tree.rootDescriptor; 
-		IndexEntry rootRootEntry = (IndexEntry) tree.roots.rootEntry; 
-		KeyRange rootsRootKeyRange = (KeyRange)tree.roots.rootDescriptor; 
+		IndexEntry rootEntry = (IndexEntry)tree.rootEntry();   
+		LongMVRegion rootDescriptor = (LongMVRegion)tree.rootDescriptor(); 
+		IndexEntry rootRootEntry = (IndexEntry) tree.roots.rootEntry(); 
+		KeyRange rootsRootKeyRange = (KeyRange)tree.roots.rootDescriptor(); 
 		//write root entry information
 		boolean hasRootEntry = (tree.rootEntry() != null);
 		BooleanConverter.DEFAULT_INSTANCE.writeBoolean(dos, hasRootEntry);
