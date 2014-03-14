@@ -11,6 +11,7 @@ import java.util.List;
 
 
 
+
 import xxl.core.collections.MapEntry;
 import xxl.core.cursors.AbstractCursor;
 import xxl.core.cursors.filters.Filter;
@@ -26,8 +27,8 @@ import xxl.core.indexStructures.Tree.Node;
 import xxl.core.predicates.AbstractPredicate;
 import xxl.core.predicates.Predicate;
 import xxl.core.spatial.rectangles.DoublePointRectangle;
-import xxl.core.spatial.spatialBPlusTree.LongKeyRange;
 import xxl.core.spatial.spatialBPlusTree.AdaptiveZCurveMapper.SpatialZQueryRange;
+import xxl.core.spatial.spatialBPlusTree.separators.LongKeyRange;
 @SuppressWarnings("rawtypes")
 public class SpatialMultiRangeCursor extends AbstractCursor{
 	/**

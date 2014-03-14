@@ -1,4 +1,4 @@
-package xxl.core.spatial.spatialBPlusTree;
+package xxl.core.spatial.spatialBPlusTree.separators;
 
 import xxl.core.functions.AbstractFunction;
 import xxl.core.functions.Function;

@@ -30,6 +30,8 @@ import xxl.core.io.converters.ConvertableConverter;
 import xxl.core.io.converters.Converter;
 import xxl.core.io.converters.LongConverter;
 import xxl.core.spatial.rectangles.DoublePointRectangle;
+import xxl.core.spatial.spatialBPlusTree.separators.LongKeyRange;
+import xxl.core.spatial.spatialBPlusTree.separators.LongSeparator;
 
 
 public class SingleLevelwiseOptimizedBulkloader {

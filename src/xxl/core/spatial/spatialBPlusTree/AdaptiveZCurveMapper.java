@@ -1,17 +1,15 @@
 package xxl.core.spatial.spatialBPlusTree;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
 
-import xxl.core.collections.MapEntry;
 import xxl.core.util.Pair;
-import xxl.core.util.Triple;
-
+/**
+ * 
+ * @author achakeye
+ *
+ */
 public class AdaptiveZCurveMapper {
 	
 	
@@ -19,11 +17,17 @@ public class AdaptiveZCurveMapper {
 	 * Z Curve optimizations
 	 *******************************************************/
 	/**
+	 * This is an implementation of asymmetric z-curve. 
+	 * 
+	 * This method can be used for generation of adaptive sorting
+	 * 
+	 * see D. Achakeev, B. Seeger P. Widmayer "Sort-based query-adaptive loading of R-trees" Technical Report, Philipps-University Marburg, 2012 
+	 * and CIKM 2012
 	 * 
 	 * @param dimIndex  sorted in ascending order g to the length of the query of dimensions e.g. [2,1,0] if the size of the query z dimension is smaller than x and y than 
 	 * @param prefixLength
 	 * @param resolutions array of e.g. [6, 4 , 2] dimension z has resolution of 2 bits
-	 * @return returns array with dimensions as a 
+	 * @return returns array with dimensions as a function e.g. for symmetric z-curve we return [0,1,0,1,0,1,0,1] if we have a 4 bits for each dimension  
 	 */
 	public static int[]  computeShuffleFunctionAspectRatio(int[] dimIndex,  int[] prefixLength, int[] dimensionResolutions){
 		// compute the length of the key
@@ -66,7 +70,7 @@ public class AdaptiveZCurveMapper {
 	}
 	
 	/**
-	 * computes z value using map function
+	 * computes z value using a given z map function
 	 * @param xyz
 	 * @param mapFunction
 	 * @param masks
@@ -94,10 +98,11 @@ public class AdaptiveZCurveMapper {
 		return key; 
 	}
 	
-
 	/**
+	 * computes a ranges of a z-curve for a given rectangle. 
+	 * rectangle is given by low-left and upper-right point. 
 	 * 
-	 * @return
+	 * @return list of ranges
 	 */
 	public static List<SpatialZQueryRange> computesRanges(int[] lowPoint, int[] highPoint, 
 			final int[] mapFunction, final int[] resolutions,  final int[] resolutionsAcc,  final int lastDimensionFirstIndex, 	int hyperPlaneIndex){
@@ -105,10 +110,6 @@ public class AdaptiveZCurveMapper {
 		List<SpatialZQueryRange> list = new LinkedList<>();
 		long low = computeZKey(lowPoint, mapFunction, resolutions);
 		long high = computeZKey(highPoint, mapFunction, resolutions);
-//		System.out.println("+++++++++++++++++++++++++++++++++++++++++++");
-//		System.out.println("hyperPlaneIndex " + hyperPlaneIndex);
-//		System.out.println("Z High " +  BigInteger.valueOf(high).toString(2)); 
-//		System.out.println("Z Low  " +  BigInteger.valueOf(low).toString(2)); 
 		if (low > high){
 			throw new RuntimeException("Low point > High point!"); 
 		}
@@ -117,10 +118,8 @@ public class AdaptiveZCurveMapper {
 			list.add(new SpatialZQueryRange(low, high)); 
 			return list;
 		}
-		
 		//1. check if after (inclusive) index the lower point has following pattern 0000000...00000
 		//2. check if after (inclusive) index the upper point has following pattern 1111111...11111
-		
 		// if not cut using hyperplane 
 		// go through and define hyperplane cut on dimension where the firts 0 at low and 1 high
 		int hyperplaneIndex = hyperPlaneIndex; 
@@ -233,8 +232,6 @@ public class AdaptiveZCurveMapper {
 		}
 		return length-1; 
 	}
-	
-	
 	/**
 	 * type def class
 	 * @author achakeye
@@ -250,7 +247,6 @@ public class AdaptiveZCurveMapper {
 			super(low, high);
 		}
 	}
-	
 	/**
 	 * 
 	 * @author achakeev
@@ -264,50 +260,47 @@ public class AdaptiveZCurveMapper {
 		}
 		
 	}
-	
-	
-	
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) {
-		// e.g. x,y,z
-		// query Z > Y > X 
-		// resolutions
-		// length L0 = 2; L1 = 3;  
-		// resolution x = 10 , y = 8 , z = 4 -> key = 22 bits
-		// X= 0000 0000 00 , Y = 0000 0000, Z = 00 00
-		// mapfunction [xyzxyz + xyxyxy + xxxxxyyy + zz]
-		int x = 0; 
-		int y = 1; 
-		int z = 2; 
-		int[] dimensions = {0,1,2};
-		
-		int[] length = {2,3};
-		int[] resolution = {10, 8, 4}; 
-		int[] mapFunction =  computeShuffleFunctionAspectRatio( 
-				dimensions,  length, resolution); 
-		String arrayString = Arrays.toString(mapFunction);
-		System.out.println(arrayString);
-		// e.g. x,y,z
-		// query Z > Y > X 
-		// resolutions
-		// length L0 = 2; L1 = 4;  
-		// resolution x = 10 , y = 5 , z = 4 -> key = 19 bits
-		// X= 0000 0000 00 , Y = 0000 0, Z = 00 00
-		// mapfunction [xyzxyz + xyxyxyx + xxxx + zz]
-		dimensions = new int[]{0,1,2};
-		length = new int[]{2,4};
-		resolution = new int[] {10, 5, 4}; 
-		mapFunction =  computeShuffleFunctionAspectRatio( 
-				dimensions,  length, resolution); 
-		arrayString = Arrays.toString(mapFunction);
-		System.out.println(arrayString);
-		// function 
-		long key =  computeZKey(new int[]{4,0}, new int[]{0,1,0,1,0,1}, new int[]{3,3});
-		System.out.println(key);
-		key =  computeZKey(new int[]{3,3}, new int[]{0,1,0,1,0,1}, new int[]{3,3});
-		System.out.println(key);
-	}
+//	/**
+//	 * @param args
+//	 */
+//	public static void main(String[] args) {
+//		// e.g. x,y,z
+//		// query Z > Y > X 
+//		// resolutions
+//		// length L0 = 2; L1 = 3;  
+//		// resolution x = 10 , y = 8 , z = 4 -> key = 22 bits
+//		// X= 0000 0000 00 , Y = 0000 0000, Z = 00 00
+//		// mapfunction [xyzxyz + xyxyxy + xxxxxyyy + zz]
+//		int x = 0; 
+//		int y = 1; 
+//		int z = 2; 
+//		int[] dimensions = {0,1,2};
+//		
+//		int[] length = {2,3};
+//		int[] resolution = {10, 8, 4}; 
+//		int[] mapFunction =  computeShuffleFunctionAspectRatio( 
+//				dimensions,  length, resolution); 
+//		String arrayString = Arrays.toString(mapFunction);
+//		System.out.println(arrayString);
+//		// e.g. x,y,z
+//		// query Z > Y > X 
+//		// resolutions
+//		// length L0 = 2; L1 = 4;  
+//		// resolution x = 10 , y = 5 , z = 4 -> key = 19 bits
+//		// X= 0000 0000 00 , Y = 0000 0, Z = 00 00
+//		// mapfunction [xyzxyz + xyxyxyx + xxxx + zz]
+//		dimensions = new int[]{0,1,2};
+//		length = new int[]{2,4};
+//		resolution = new int[] {10, 5, 4}; 
+//		mapFunction =  computeShuffleFunctionAspectRatio( 
+//				dimensions,  length, resolution); 
+//		arrayString = Arrays.toString(mapFunction);
+//		System.out.println(arrayString);
+//		// function 
+//		long key =  computeZKey(new int[]{4,0}, new int[]{0,1,0,1,0,1}, new int[]{3,3});
+//		System.out.println(key);
+//		key =  computeZKey(new int[]{3,3}, new int[]{0,1,0,1,0,1}, new int[]{3,3});
+//		System.out.println(key);
+//	}
 
 }
