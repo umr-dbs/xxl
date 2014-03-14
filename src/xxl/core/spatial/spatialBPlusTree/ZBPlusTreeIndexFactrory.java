@@ -1,21 +1,14 @@
 package xxl.core.spatial.spatialBPlusTree;
 
+
+
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-
-import javax.swing.plaf.multi.MultiRootPaneUI;
-
-
-
-
-
-
-
-
 
 
 
@@ -36,15 +29,19 @@ import xxl.core.indexStructures.BPlusTree;
 import xxl.core.indexStructures.BPlusTreeBulkLoading;
 import xxl.core.indexStructures.BPlusTree.Node;
 import xxl.core.io.Buffer;
+import xxl.core.io.converters.Converters;
 import xxl.core.io.converters.LongConverter;
 import xxl.core.io.converters.MeasuredConverter;
 import xxl.core.predicates.AbstractPredicate;
+import xxl.core.predicates.Predicate;
 import xxl.core.spatial.SpaceFillingCurves;
 import xxl.core.spatial.SpatialUtils;
 import xxl.core.spatial.rectangles.DoublePointRectangle;
 import xxl.core.spatial.spatialBPlusTree.AdaptiveZCurveMapper.SpatialZQueryRange;
 import xxl.core.spatial.spatialBPlusTree.SingleLevelwiseOptimizedBulkloader.DistributionType;
+import xxl.core.spatial.spatialBPlusTree.cursors.SFCFunctionSpatialCursor;
 import xxl.core.spatial.spatialBPlusTree.cursors.SpatialMultiRangeCursor;
+import xxl.core.spatial.spatialBPlusTree.cursors.SpatialRangeQueryBPlusCursor;
 import xxl.core.spatial.spatialBPlusTree.separators.LongKeyRange;
 import xxl.core.spatial.spatialBPlusTree.separators.LongSeparator;
 
@@ -58,65 +55,60 @@ import xxl.core.spatial.spatialBPlusTree.separators.LongSeparator;
 @SuppressWarnings("serial")
 public class ZBPlusTreeIndexFactrory {
 	
-	
+	/**
+	 * 
+	 */
 	public static final int DEFAULT_PARTITION_SIZE = 20_000; 
-	public static final double DEFAULT_MIN_CAPACITY = 0.4; 
-	public static final double  DEFAULT_AVG_LOAD = 0.8; 
-	
 	
 	/**
 	 * 
+	 */
+	public static final double DEFAULT_MIN_CAPACITY = 0.4; 
+	
+	/**
+	 * 
+	 */
+	public static final double  DEFAULT_AVG_LOAD = 0.8; 
+	
+	/**
+	 * 
+	 * @param bitsProDim
 	 * @param dimension
 	 * @return
 	 */
-	public static MeasuredConverter<DoublePointRectangle> createMeasuredDoublePointRectangleConverter(final int dimension){
-		return new MeasuredConverter<DoublePointRectangle>() {
+	public static  SFCFunctionSpatialCursor<Long> createSFCFunction(final int bitsProDim, final int dimension){
+		
+		return new SFCFunctionSpatialCursor<Long>(){
 
 			@Override
-			public int getMaxObjectSize() {
-				return 8*dimension *  2;
+			public Long getMaxKeyInBox(int[] lPoint, int[] rPoint, boolean max) {
+				return (max) ? SpaceFillingCurves.computeZCode(rPoint, bitsProDim) : 
+					SpaceFillingCurves.computeZCode(lPoint, bitsProDim);
 			}
 
 			@Override
-			public DoublePointRectangle read(DataInput dataInput,
-					DoublePointRectangle object) throws IOException {
-				DoublePointRectangle rec =  new DoublePointRectangle(dimension);
-				rec.read(dataInput);
-				return rec;
+			public Long getNextPointInBox(int[] lPoint, int[] rPoint, Long key,
+					boolean next) {
+				return  SpaceFillingCurves.nextInBoxZValue(key, lPoint, rPoint, bitsProDim, dimension);
 			}
 
 			@Override
-			public void write(DataOutput dataOutput, DoublePointRectangle object)
-					throws IOException {
-				object.write(dataOutput);
+			public Long getSuccessor(Long key) {
+				return key+1L;
 			}
+
+			
 		};
 	}
+	
 	/**
-	 * Key Converter
+	 * Key Converter, Z-strings are represented as long values
 	 */
-	public static MeasuredConverter<Long> longKeyMeasuredConverter = new MeasuredConverter<Long>() {
-
-		
-		@Override
-		public int getMaxObjectSize() {
-			return LongConverter.SIZE;
-		}
-
-		@Override
-		public Long read(DataInput dataInput, Long object) throws IOException {
-			return LongConverter.DEFAULT_INSTANCE.read(dataInput, object);
-		}
-
-		@Override
-		public void write(DataOutput dataOutput, Long object)
-				throws IOException {
-			LongConverter.DEFAULT_INSTANCE.write(dataOutput, object);
-			
-		}
-	};
+	public static MeasuredConverter<Long> longKeyMeasuredConverter = Converters.createMeasuredConverter(LongConverter.DEFAULT_INSTANCE);
+	
 	/**
-	 * 
+	 *  This method extracts low left or upper right  point of the rectangle 
+	 *  and maps it to integer value according to provided resolution and universe 
 	 * @param universe
 	 * @param rectangle
 	 * @param bitsProDim
@@ -275,46 +267,7 @@ public class ZBPlusTreeIndexFactrory {
 	}
 	
 	
-	/**
-	 * 
-	 * @param inputData
-	 * @param dataConverter
-	 * @param getKeyFunction
-	 * @param container
-	 * @param blockSize
-	 * @param buffer
-	 * @return
-	 */
-	public static  BPlusTree loadZBPlusTreeNonOptimizedDoublePointRectangle(Iterator<DoublePointRectangle> sortedData,
-			Function<DoublePointRectangle,Long> getKeyFunction, 
-			Container container, final  int blockSize, Buffer buffer, final double spaceUtil, int dimension){
-		MeasuredConverter<DoublePointRectangle>  dataConverter = createMeasuredDoublePointRectangleConverter(dimension); 
-		final int dataSize = dataConverter.getMaxObjectSize(); 
-		BPlusTree tree = new BPlusTree(blockSize, true);
-		Container treeContainer =  new ConverterContainer(container, tree.nodeConverter());
-		if (buffer != null){
-			treeContainer = new BufferedContainer(treeContainer, buffer); 
-		}
-		tree.initialize(null, null, 
-				getKeyFunction, 
-				treeContainer, 
-				ZBPlusTreeIndexFactrory.longKeyMeasuredConverter, 
-				dataConverter,
-				LongSeparator.FACTORY_FUNCTION,  
-				LongKeyRange.FACTORY_FUNCTION);
-		new BPlusTreeBulkLoading(tree, sortedData, tree.determineContainer, new AbstractPredicate() {
-			public boolean invoke(Object arg){
-				Node node = (Node)arg;
-				int payLoad = blockSize - 2 - 4 - 8;
-				int number = node.number();
-				if(node.level() == 0)
-					return number >= (int)((payLoad/(dataSize)) * spaceUtil);
-				return number >= (int)((payLoad/(8*2)) * spaceUtil) ;
-			}
-		});
-		treeContainer.flush();
-		return tree;
-	}
+	
 	
 	/**
 	 * 
@@ -326,10 +279,11 @@ public class ZBPlusTreeIndexFactrory {
 	 * @param buffer
 	 * @return
 	 */
-	public static BPlusTree loadZBPlusTreeOptimizedGOPTDoublePointRectangle(Iterator<DoublePointRectangle> sortedData,	Function<DoublePointRectangle,Long> getKeyFunction, 
+	public static <T> BPlusTree loadZBPlusTreeOptimizedGOP(Iterator<T> sortedData, MeasuredConverter<T> dataConverter, 
+			UnaryFunction<T,Long> getKeyFunction, 
 			Container container, String treePrefix,  final  int blockSize, Buffer buffer, final double spaceUtil, int dimension){
-		SingleLevelwiseOptimizedBulkloader bulkloader = new SingleLevelwiseOptimizedBulkloader
-				(DEFAULT_PARTITION_SIZE, 
+		SingleLevelwiseOptimizedBulkloader<T> bulkloader = new SingleLevelwiseOptimizedBulkloader<T>(dataConverter, 
+						DEFAULT_PARTITION_SIZE, 
 						dimension, 
 						blockSize,
 						DEFAULT_MIN_CAPACITY, 
@@ -346,10 +300,33 @@ public class ZBPlusTreeIndexFactrory {
 	
 	
 	
+	/**
+	 * 
+	 * @param tree
+	 * @param queryRec
+	 * @param universe
+	 * @param numberOfBitsPerDimension
+	 * @param dimension
+	 * @return
+	 */
+	public static Cursor queryNextPointInBoxCursor(BPlusTree tree, DoublePointRectangle queryRec, DoublePointRectangle universe, int numberOfBitsPerDimension, int dimension){
+		// create cursor
+		Predicate<DoublePointRectangle> leafNodePredicate = new AbstractPredicate<DoublePointRectangle>() {
+			@Override
+			public boolean invoke(DoublePointRectangle argument) {
+				return queryRec.overlaps(argument);
+			}
+		};
+		int[] lPoint = getPoint(universe, queryRec, numberOfBitsPerDimension, false);
+		int[] rPoint = getPoint(universe, queryRec, numberOfBitsPerDimension, true);
+		SpatialRangeQueryBPlusCursor cursor = 
+			new SpatialRangeQueryBPlusCursor(tree, lPoint, rPoint, createSFCFunction(numberOfBitsPerDimension, dimension), LongKeyRange.FACTORY_FUNCTION,
+					leafNodePredicate);
+		return cursor; 
+		
+	}
 	
-	
-	
-	
+
 	/**
 	 * Only for point data
 	 * @param tree
@@ -358,15 +335,6 @@ public class ZBPlusTreeIndexFactrory {
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public static Cursor queryMultiRangeJumper(BPlusTree tree, List<SpatialZQueryRange> ranges, DoublePointRectangle query){
-//		List<Cursor> cursors = new LinkedList<>(); 
-//		Iterator[] iterators = new Iterator[ranges.size()];
-//		int i = 0; 
-//		for(SpatialZQueryRange range: ranges){
-////			cursors.add();()
-//			iterators[i] = tree.rangeQuery(range.getFirst(), range.getSecond()); 
-////			System.out.println(range);
-//			i++;
-//		}
 		SpatialMultiRangeCursor multiRangeCursor = new SpatialMultiRangeCursor(ranges, tree, query, new UnaryFunction<Object, DoublePointRectangle>() {
 			@Override
 			public DoublePointRectangle invoke(Object arg) {
@@ -391,19 +359,10 @@ public class ZBPlusTreeIndexFactrory {
 		Iterator[] iterators = new Iterator[ranges.size()];
 		int i = 0; 
 		for(SpatialZQueryRange range: ranges){
-//			cursors.add();()
 			iterators[i] = tree.rangeQuery(range.getFirst(), range.getSecond()); 
-//			System.out.println(range);
 			i++;
 		}
-//		SpatialMultiRangeCursor multiRangeCursor = new SpatialMultiRangeCursor(ranges, tree, query, new UnaryFunction<Object, DoublePointRectangle>() {
-//			@Override
-//			public DoublePointRectangle invoke(Object arg) {
-//				DoublePointRectangle dpr = (DoublePointRectangle)arg; 
-//				return new DoublePointRectangle(dpr);
-//			}
-//		}); 
-		return  new Sequentializer<>(iterators); 
+		return new Sequentializer<>(iterators); 
 	}
 	
 	/**
@@ -496,7 +455,6 @@ public class ZBPlusTreeIndexFactrory {
 		}) ;
 	}
 	
-	
 	/**
 	 * 
 	 * @param tree
@@ -512,16 +470,6 @@ public class ZBPlusTreeIndexFactrory {
 		int lastDimensionFirstIndex = AdaptiveZCurveMapper.getLastDimensionPrefixIndex(firstPrefixL, bitsPerLastDim);
 		int hyperPlaneIndex = AdaptiveZCurveMapper.getIndexOfHighestBit(resolutions);
 		return queryMultiRangeZCurveJumper(tree,  query,  universe,   mappingFunction,  resolutions, lastDimensionFirstIndex, hyperPlaneIndex); 
-//		return new Filter<>( queryMultiRangeZCurveJumper(tree,  query,  universe,   mappingFunction,  resolutions, lastDimensionFirstIndex, hyperPlaneIndex)
-//				, new AbstractPredicate() {
-//		
-//		@Override
-//		public boolean invoke(Object argument) {
-//			DoublePointRectangle argR = (DoublePointRectangle)argument; 
-//			return query.overlaps(argR);
-//		}
-		
-//		}) ;
 	}
 	
 }

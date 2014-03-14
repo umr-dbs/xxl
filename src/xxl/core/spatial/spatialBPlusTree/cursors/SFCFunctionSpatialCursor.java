@@ -1,7 +1,9 @@
 package xxl.core.spatial.spatialBPlusTree.cursors;
 
 /**
- * Interface for B+tree cursor 
+ * Interface for B+tree cursor
+ * is used with {@link SpatialMultiRangeCursor} and {@link SpatialRangeQueryBPlusCursorVL}
+ *  
  * @author d
  *
  * @param <K>

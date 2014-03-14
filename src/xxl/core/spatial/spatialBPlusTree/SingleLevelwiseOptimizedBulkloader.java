@@ -22,36 +22,45 @@ import xxl.core.cursors.sources.io.FileInputCursor;
 import xxl.core.functions.AbstractFunction;
 import xxl.core.functions.Constant;
 import xxl.core.functions.Function;
+import xxl.core.functions.Functional.UnaryFunction;
+import xxl.core.functions.Functions;
 import xxl.core.indexStructures.BPlusTree;
 import xxl.core.indexStructures.BPlusTree.IndexEntry;
 import xxl.core.indexStructures.BPlusTree.Node;
+import xxl.core.indexStructures.rtrees.RtreeIterativeBulkloader;
 import xxl.core.io.Buffer;
 import xxl.core.io.converters.ConvertableConverter;
 import xxl.core.io.converters.Converter;
 import xxl.core.io.converters.LongConverter;
+import xxl.core.io.converters.MeasuredConverter;
 import xxl.core.spatial.rectangles.DoublePointRectangle;
 import xxl.core.spatial.spatialBPlusTree.separators.LongKeyRange;
 import xxl.core.spatial.spatialBPlusTree.separators.LongSeparator;
 
-
-public class SingleLevelwiseOptimizedBulkloader {
-
+/**
+ * This is a bulk loading class for a BPlusTree. Here we use a similar  optimization as in  {@link RtreeIterativeBulkloader}, since we use z-strings our optimization function is a 
+ * sum of prefixes of z-strings.   
+ * 
+ * 
+ * @author achakeev
+ *
+ */
+public class SingleLevelwiseOptimizedBulkloader<T> {
+	
+	/**
+	 * 
+	 * @author d
+	 *
+	 */
 	public static enum DistributionType{
 		DISTRIBUTION_GOPT,
 		DISTRIBUTION_OPT,
 	}
 	
-	
-	
 	/**
 	 * for writing data 
 	 */
-	public Converter<DoublePointRectangle> dataConverter = new ConvertableConverter<DoublePointRectangle>(
-			new AbstractFunction<DoublePointRectangle, DoublePointRectangle>() {
-				public DoublePointRectangle invoke(){
-					return new DoublePointRectangle(dimension);
-				}
-	});
+	public MeasuredConverter<T> dataConverter; 
 	
 	/**
 	 * for writing temp files
@@ -71,44 +80,103 @@ public class SingleLevelwiseOptimizedBulkloader {
 				MapEntry<Long, Long> arg1) throws IOException {
 			LongConverter.DEFAULT_INSTANCE.write(arg0, arg1.getKey());
 			LongConverter.DEFAULT_INSTANCE.write(arg0, arg1.getValue());
-		}};
+		}
+		
+	};
 	
-	
+	/**
+	 * 
+	 */
 	public BPlusTree tree;
 	
+	/**
+	 * 
+	 */
 	public int partitionSize;
-
+	
+	/**
+	 * 
+	 */
 	public int dimension;
 	
+	/**
+	 * 
+	 */
 	public int blockSize;
 	
+	/**
+	 * 
+	 */
 	public double ratio;
 	
+	/**
+	 * 
+	 */
 	public double ratioIndex;
 	
+	/**
+	 * 
+	 */
 	public int b_Leaf; 
 	
+	/**
+	 * 
+	 */
 	public int B_Leaf;
 	
+	/**
+	 * 
+	 */
 	public int b_Index; 
 	
+	/**
+	 * 
+	 */
 	public int B_Index;
 	
+	/**
+	 * 
+	 */
 	public int numberOfRectangles;
 	
+	/**
+	 * 
+	 */
 	public double minMemory;
+	
+	/**
+	 * 
+	 */
 	public double maxMemory;
 	
+	/**
+	 * 
+	 */
 	public Container treeContainer; 
 	
+	/**
+	 * 
+	 */
 	public DistributionType distributionType;
 	
+	/**
+	 * 
+	 */
 	public double[] a;
 	
+	/**
+	 * 
+	 */
 	String path;
 	
-	final Function getKey; 
+	/**
+	 * 
+	 */
+	final Function<T, Long> getKey; 
 	
+	/**
+	 * 
+	 */
 	LongKeyRange rootDescriptor;
 	
 	/**
@@ -123,7 +191,7 @@ public class SingleLevelwiseOptimizedBulkloader {
 	 * @param a
 	 * @param path
 	 */
-	public SingleLevelwiseOptimizedBulkloader(int partitionSize, 
+	public SingleLevelwiseOptimizedBulkloader(MeasuredConverter<T> dataConverter, int partitionSize, 
 			int dimension,
 			int blockSize, 
 			double ratio, 
@@ -132,11 +200,11 @@ public class SingleLevelwiseOptimizedBulkloader {
 			Container fileContainer,
 			DistributionType distributionType, 
 			String path, 
-			Function getKey, 
-			Buffer buffer
-			) {
+			UnaryFunction<T,Long> getKey, 
+			Buffer buffer) {
 		super();
-		this.getKey = getKey;
+		this.dataConverter = dataConverter;
+		this.getKey = Functions.toFunction(getKey);
 		// duplicates enabled
 		tree = new BPlusTree(blockSize, true);
 		this.partitionSize = partitionSize;
@@ -158,19 +226,23 @@ public class SingleLevelwiseOptimizedBulkloader {
 		b_Index =  (int)( (payload *  ratio)/ (8+8));
 		B_Index = payload / (8+8);
 		// hack to initialize detremineCpontainer Function;
-		tree.initialize(null, null, getKey , this.treeContainer, 
-			ZBPlusTreeIndexFactrory.longKeyMeasuredConverter, 
-			ZBPlusTreeIndexFactrory.createMeasuredDoublePointRectangleConverter(dimension),
-			LongSeparator.FACTORY_FUNCTION,  
-			LongKeyRange.FACTORY_FUNCTION );
+		tree.initialize(null, null, 
+				this.getKey,
+				this.treeContainer, 
+				ZBPlusTreeIndexFactrory.longKeyMeasuredConverter, 
+				this.dataConverter,
+				LongSeparator.FACTORY_FUNCTION,  
+				LongKeyRange.FACTORY_FUNCTION);
+		// 
 	}
 
-
-
-
-
-	public void buildRTree(Iterator rectangles) throws IOException{
-		Iterator tempIterator = rectangles;
+	/**
+	 * 
+	 * @param rectangles
+	 * @throws IOException
+	 */
+	public void buildBPlusTRee(Iterator data) throws IOException{
+		Iterator tempIterator = data;
 		int level = 0;
 		while(tempIterator.hasNext()){
 			File file = File.createTempFile("levelKeys_", "dat");
@@ -191,17 +263,26 @@ public class SingleLevelwiseOptimizedBulkloader {
 		LongSeparator rootSep = new LongSeparator(entry.getValue());
 		IndexEntry rootEntry = (IndexEntry) ((BPlusTree.IndexEntry)indexEntry).initialize( entry.getKey(), rootSep);
 		// hack to initialize detremineCpontainer Function;
-		tree.initialize(rootEntry, rootDescriptor, getKey , this.treeContainer, 
-			ZBPlusTreeIndexFactrory.longKeyMeasuredConverter, 
-			ZBPlusTreeIndexFactrory.createMeasuredDoublePointRectangleConverter(dimension),
-			LongSeparator.FACTORY_FUNCTION,  
-			LongKeyRange.FACTORY_FUNCTION );
+		tree.initialize(rootEntry, rootDescriptor,
+				getKey,
+				this.treeContainer, 
+				ZBPlusTreeIndexFactrory.longKeyMeasuredConverter, 
+				dataConverter,
+				LongSeparator.FACTORY_FUNCTION,  
+				LongKeyRange.FACTORY_FUNCTION );
 		
 	} 
 	
 	
-	
-	
+	/**
+	 * 
+	 * @param data
+	 * @param level
+	 * @param partitionSize
+	 * @param out
+	 * @return
+	 * @throws IOException
+	 */
 	public int writeLevel(Iterator data, final  int level, int partitionSize,final  DataOutput out) throws IOException{
 		// read  partitions size to a list
 		int counter = 0;
@@ -227,7 +308,7 @@ public class SingleLevelwiseOptimizedBulkloader {
 				Function mapping = new AbstractFunction() {
 					
 					public Object invoke(Object obj ){
-						return (level ==  0 )? getKey.invoke(obj) : ((IndexEntry)obj).separator.sepValue(); 
+						return (level ==  0 )? getKey.invoke((T)obj) : ((IndexEntry)obj).separator.sepValue(); 
 					}
 				}; 
 				final int[] distribution = computeDistribution((Iterator<Long>)new Mapper(mapping,  partition.iterator() ), 
@@ -245,7 +326,6 @@ public class SingleLevelwiseOptimizedBulkloader {
 	}
 	
 	public int writePartition(int[] distribution, Iterator data, int level, DataOutput out) throws IOException{
-		//System.out.println(Arrays.toString(distribution));
 		for(int i : distribution){
 			List entries = new ArrayList(i);
 			for(int k = 0;  data.hasNext() && k < i ; k++){
@@ -258,13 +338,6 @@ public class SingleLevelwiseOptimizedBulkloader {
 					entries.add(rec);
 				}
 			}
-			// 
-			
-			if ((i > B_Index && level > 0 ) || i > B_Leaf ){
-////				sysout
-//				System.out.println("Problem" +  i  + " B_Index " + B_Index + " B_Leaf" + B_Leaf + " level " + );
-			}
-				
 			MapEntry<Long, Long> entry = writeNode(entries, level);
 			mapEntryConverter.write(out, entry );
 		}
@@ -276,12 +349,12 @@ public class SingleLevelwiseOptimizedBulkloader {
 	public MapEntry<Long, Long> writeNode(final List entries, int level) {
 		Long descriptor = null;
 		if (level == 0){ 
-			descriptor = (Long) getKey.invoke(entries.get(entries.size()-1)); 
+			descriptor = (Long) getKey.invoke((T)entries.get(entries.size()-1)); 
 		}else{
 			descriptor = (Long) ((IndexEntry) entries.get(entries.size()-1)).separator().sepValue();
 		}
 		if(rootDescriptor == null){
-			Long smallestVal = (Long) getKey.invoke(entries.get(0)); 
+			Long smallestVal = (Long) getKey.invoke((T)entries.get(0)); 
 			rootDescriptor = new LongKeyRange(smallestVal, smallestVal);
 		}else{
 			rootDescriptor.union(descriptor);
@@ -316,16 +389,5 @@ public class SingleLevelwiseOptimizedBulkloader {
 		}
 		}
 	} 	
-	
-	
-	
-	
-
-
-
-
-
-
-
 
 }

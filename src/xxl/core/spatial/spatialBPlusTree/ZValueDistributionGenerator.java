@@ -11,7 +11,11 @@ import xxl.core.functions.AbstractFunction;
 import xxl.core.functions.Functional.BinaryFunction;
 import xxl.core.functions.Functional.UnaryFunction;
 import xxl.core.spatial.rectangles.DoublePointRectangle;
-
+/**
+ * 
+ * @author d
+ *
+ */
 public class ZValueDistributionGenerator {
 	
 	
@@ -190,15 +194,9 @@ public class ZValueDistributionGenerator {
 				// search for minimal cost 
 				double minCost = Double.MAX_VALUE;  
 				for(int l = b; j-l >= b && l < B; l++){
-					//XXX beachte indexe!!!		
-					// check if it possible assignment exists
 					if (matrix[j - l-1][i-1] != null  ){
-//						T zCodeLastBox = zCodes.get(j-l-1);
-//						T zCodeNewBox = zCodes.get(j-l);	
-//						double newCost = costFunction.invoke(zCodeLastBox, zCodeNewBox);
 						double newNewCost = costs[j-l];
 						double lastRowCost = matrix[j-l-1][i-1].getCost();
-						
 						double candidateCosts = lastRowCost + newNewCost; 
 						if (candidateCosts < minCost){
 							minCost = candidateCosts;
@@ -259,34 +257,6 @@ public class ZValueDistributionGenerator {
 		return binCosts[zCodes.size()-1];
 	}
 	
-	/**
-	 * need this step because there could be no distribution possible
-	 * @param matrix
-	 * @param N
-	 * @param n
-	 * @return
-	 */
-	public static int[] getDistribution(Bucket[][] matrix, int N , int n, int B){
-		if(matrix[N][n] != null)
-			return getDistribution(matrix[N][n]);
-		// try to back track to find a solution with and assign the last 
-		int[] distr = null;
-		// if there are any distribution which have less elements
-		int i = 0;
-		double cost = 0;
-		Bucket bestBucket = null;
-		for( i = 1 ; i > B; i++){
-			if(matrix[N-i][n] != null){
-				// TODO
-			}
-		}
-		if(bestBucket != null){
-			
-		}
-		
-		return distr;
-	}
-	
 	
 	/**
 	 * computes array 
@@ -303,8 +273,6 @@ public class ZValueDistributionGenerator {
 		}
 		return array;
 	}
-	
-	
 	
 	
 	/**
@@ -356,13 +324,13 @@ public class ZValueDistributionGenerator {
 	}
 	
 	
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) {
-		BinaryFunction< Long, Long, Double> function = createCostFunction();
-		double prefix = function.invoke(8L, 16L);
-		System.out.println(prefix);
-	}
+//	/**
+//	 * @param args
+//	 */
+//	public static void main(String[] args) {
+//		BinaryFunction< Long, Long, Double> function = createCostFunction();
+//		double prefix = function.invoke(8L, 16L);
+//		System.out.println(prefix);
+//	}
 
 }
