@@ -309,7 +309,7 @@ public class ZBPlusTreeIndexFactrory {
 	 * @param dimension
 	 * @return
 	 */
-	public static Cursor queryNextPointInBoxCursor(BPlusTree tree, DoublePointRectangle queryRec, DoublePointRectangle universe, int numberOfBitsPerDimension, int dimension){
+	public static Cursor queryNextPointInBoxCursor(BPlusTree tree, final DoublePointRectangle queryRec, DoublePointRectangle universe, int numberOfBitsPerDimension, int dimension){
 		// create cursor
 		Predicate<DoublePointRectangle> leafNodePredicate = new AbstractPredicate<DoublePointRectangle>() {
 			@Override
