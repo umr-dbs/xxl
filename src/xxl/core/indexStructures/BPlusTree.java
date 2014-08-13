@@ -285,7 +285,7 @@ public class BPlusTree extends Tree {
      *            a factory <tt>Function</tt> to create <tt>KeyRanges</tt>
      * @param getSplitMinRatio
      *            a <tt>Function</tt> to determine the minimal relative number
-     *            of entries which the node maycontain after a split
+     *            of entries which the node may contain after a split
      * @param getSplitMaxRatio
      *            a <tt>Function</tt> to determine the maximal relative number
      *            of entries which the node may contain after a split
@@ -894,16 +894,16 @@ public class BPlusTree extends Tree {
     /**
      * This method computes the path from the root to the leaf node referred by
      * the given <tt>indexEntry</tt>. The path nodes are fixed in the
-     * underlyig buffer. If they are no longer required the caller has to unfix them.
+     * underlying buffer. If they are no longer required the caller has to unfix them.
      * If the given node is not a leaf node an
      * {@link java.lang.UnsupportedOperationException}is thrown. The method
      * calls
      * {@link xxl.core.indexStructures.BPlusTree#pathToLeaf(xxl.core.indexStructures.BPlusTree.Node)}
-     * where <tt>node</tt> is the leaf refered by <tt>indexEntry</tt>.
+     * where <tt>node</tt> is the leaf referred by <tt>indexEntry</tt>.
      * 
      * @param indexEntry
      *            the Index Entry which refers the leaf node
-     * @return the path to the leaf node refered by the given index entry
+     * @return the path to the leaf node referred by the given index entry
      * @throws UnsupportedOperationException
      *             if invoked an a none leaf node
      * 
@@ -923,7 +923,7 @@ public class BPlusTree extends Tree {
      * {@link java.lang.UnsupportedOperationException}is thrown. The method
      * computes the key range of the leaf and then calls the method
      * {@link BPlusTree#pathToNode(BPlusTree.KeyRange, int)}(level=0). The path
-     * nodes are fixed in the underlayig buffer. 
+     * nodes are fixed in the underlying buffer.
      * If they are no longer required the caller has to unfix them.
      * 
      * @param leaf
@@ -946,7 +946,7 @@ public class BPlusTree extends Tree {
      * This method determines the path from the root to a <tt>Node</tt>. The
      * <tt>Node</tt> is specified by its key range. The level parameter is required to
      * determine the target level. The path nodes are fixed in the
-     * underlayig buffer. If they are no longer required the caller has to unfix them.
+     * underlying buffer. If they are no longer required the caller has to unfix them.
      * 
      * @param nodeRegion
      *            the <tt>KeyRange</tt> of the <tt>Node</tt>
@@ -977,7 +977,7 @@ public class BPlusTree extends Tree {
     public Cursor aloneKeyQuery(Comparable key){
     	if(!this.duplicate ){
     		throw new UnsupportedOperationException("B+Tree does not support duplicates!!! Please run " +
-    				"exactMatchQuery(Comparable key) methode ");
+    				"exactMatchQuery(Comparable key) method ");
     	} 
         KeyRange range = createKeyRange(key, key);
         return query(range, 0);
@@ -1645,7 +1645,7 @@ public class BPlusTree extends Tree {
          * Treats overflows which occur during an insertion. 
 		 * It splits the overflowing node in new nodes. It creates new index-entries 
 		 * for the new nodes. These index-entries will be be added to the given <tt>List</tt>. If the Leaf Node 
-		 * is found to be full, {@link BPlusTree.Node#redistributeLeaf(IndexEntry currentEntry, Node parentNode, IndexEntry parentIndex )} 
+		 * is found to be full, {@link BPlusTree.Node#redistributeNode(Stack)}
 		 * is attempted to avoid a split.
 		 * The method {@link BPlusTree.Node#post(Tree.Node.SplitInfo, Tree.IndexEntry)} will later be used to post the 
 		 * created index-entries to the parent node.
@@ -1706,8 +1706,7 @@ public class BPlusTree extends Tree {
          * The method is reserved for improved BPlusTree. 
          * In this implementation this method returns always false
          * 
-         * @param currentEntry
-         * @param parentNode
+         * @param path the path from the root to this node
          * @return true when redistribution succeed
          */
         protected boolean redistributeNode(Stack path){
@@ -1846,7 +1845,7 @@ public class BPlusTree extends Tree {
         /**
          * Ensures the separator value is updated, when last element is deleted 
          *  
-         * @param  current Node  <tt>Node</tt>
+         * @param node Node  <tt>Node</tt>
          * @param indexEntry
          *            the <tt>IndexEntry</tt> referring to the <tt>Node</tt>
          * @param path
@@ -1960,7 +1959,8 @@ public class BPlusTree extends Tree {
             // merge left
             if (leftNode != null) { 
                 int D = leftNode.level() == 0 ? D_LeafNode : D_IndexNode;
-                if (leftNode.number() > D) {
+                // After the merge operation, both nodes must have at least D entries
+                if (leftNode.number() > D && (this.number()+(leftNode.number()-D)) > D ) {
                     List newEntries = leftNode.entries.subList(D
                             + (leftNode.number() - D) / 2, leftNode.number());
                     this.entries.addAll(0, newEntries);
@@ -1973,7 +1973,7 @@ public class BPlusTree extends Tree {
                 }
             } else {// merge right 
                 int D = rightNode.level() == 0 ? D_LeafNode : D_IndexNode;
-                if (rightNode.number() > D) {
+                if (rightNode.number() > D && (this.number()+(rightNode.number()-D)) > D) {
                     List newEntries = rightNode.entries.subList(0, (rightNode
                             .number()
                             - D + 1) / 2);
@@ -2464,32 +2464,32 @@ public class BPlusTree extends Tree {
         /**
          * The position of the current entry in the current <tt>Node</tt>.
          */
-        private int index;
+        protected int index;
         /**
          * The position of the last entry in the last <tt>Node</tt>.
          */
-        private int lastIndex;
+        protected int lastIndex;
         /**
          * The <tt>IndexEntry</tt> of the last <tt>Node</tt>.
          */
-        private IndexEntry lastIndexEntry;
+        protected IndexEntry lastIndexEntry;
         /**
          * The last <tt>Node</tt>, i.e. the <tt>Node</tt> which contains
          * the last entry returned by the <tt>QueryCursor</tt>. It is used as
          * a history information to support remove an update.
          */
-        private Node lastNode;
+        protected Node lastNode;
         /**
          * A counter which counts how many <tt>Nodes</tt> on the target level
          * was already visited. The number of the visited <tt>Nodes</tt>
          * equals <tt>nodeChangeover+1</tt>.
          */
-        private int nodeChangeover;
+        protected int nodeChangeover;
         /**
          * The previous Separator of the lastIndexEntry. Needed to support the
          * remove-operation.
          */
-        private Separator prevSeparator;
+        protected Separator prevSeparator;
         /**
          * subRootEntry is the <tt>IndexEntry</tt> which is the root of the
          * subtree in which the query has to be executed.
@@ -2498,7 +2498,7 @@ public class BPlusTree extends Tree {
         /**
          * counts occurrence of the elements with the same separator key in the cursor 
          */
-        private int counterRightShiftDup;
+        protected int counterRightShiftDup;
         /**
          * Creates a new <tt>QueryCursor</tt>.
          * 
