@@ -182,14 +182,62 @@ public class Merger<E> extends AbstractCursor<E> {
 			cursors.add(Cursors.wrap(iterator));
 		this.queue = queue;
 	}
+	
+	/**
+	 * Creates a new merger backed on an input cursor list and a queue
+	 * delivering the strategy used for merging the input cursors. All input
+	 * cursors are inserted into the given queue.
+	 *
+	 * @param queue the queue defining the strategy the input iterations are
+	 *        accessed.
+	 * @param cursors the list of cursors to be merged.
+	 */
+	public Merger(Queue<Cursor<E>> queue, List<Cursor<E>> cursors) {
+		this.cursors = cursors;
+		this.queue = queue;
+	}
 
+	/**
+	 * Creates a new merger backed on an input cursor list and a
+	 * {@link xxl.core.collections.queues.Heap heap} for merging the input
+	 * cursors. The order is defined by the specified comparator in that
+	 * way, that a new
+	 * {@link xxl.core.comparators.FeatureComparator feature-comparator} is
+	 * used calling the <code>compare</code> method of the specified comparator
+	 * in order to compare two elements delivered by the input cursors. So
+	 * the heap manages the cursors' elements, but the order is defined by
+	 * the <code>next</code> element that would be returned by these
+	 * cursors.
+	 *
+	 * @param comparator the comparator used to compare two elements of the
+	 *        input iteration.
+	 * @param cursors the list of cursors to be merged.
+	 */
+	public Merger(Comparator<? super E> comparator, List<Cursor<E>> cursors) {
+		this(
+			new Heap<Cursor<E>>(
+				cursors.size(),
+				new FeatureComparator<E, Cursor<E>>(
+					comparator,
+					new AbstractFunction<Cursor<E>, E>() {
+						public E invoke(Cursor<E> cursor) {
+							return cursor.peek();
+						}
+					}
+				)
+			),
+			cursors
+		);
+	}
+	
+	
 	/**
 	 * Creates a new merger backed on an input iteration array and a
 	 * {@link xxl.core.collections.queues.Heap heap} for merging the input
 	 * iterations. The order is defined by the specified comparator in that
 	 * way, that a new
 	 * {@link xxl.core.comparators.FeatureComparator feature-comparator} is
-	 * usedcalling the <code>compare</code> method of the specified comparator
+	 * used calling the <code>compare</code> method of the specified comparator
 	 * in order to compare two elements delivered by the input iterations. So
 	 * the heap manages the iterations' elements, but the order is defined by
 	 * the <code>next</code> element that would be returned by these
