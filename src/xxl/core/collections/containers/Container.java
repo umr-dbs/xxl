@@ -438,11 +438,12 @@ public interface Container {
 	 *         of <tt>ids</tt> does not exist in the container.
 	 */
 	void updateAll(Iterator ids, Iterator objects) throws NoSuchElementException;
-	
-	// Test:
+
+    /**
+     * Inserts the given array of elements in a bulk into a container.
+     *
+     * @param blocks an array of elements to be inserted
+     * @return an array of <tt>ids</tt> referring to the inserted elements
+     */
 	public Object[] batchInsert(Object[] blocks);
-	
-	public Object batchReserve(int numberOfBlocks);
-	
-	public Object[] batchInsert(Object headBlockNumber,  Object[] blocks);
 }

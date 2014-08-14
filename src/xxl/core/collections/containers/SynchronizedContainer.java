@@ -481,19 +481,14 @@ public class SynchronizedContainer implements Container {
 	public synchronized void updateAll (Iterator ids, Iterator objects) {
 		container.updateAll(ids, objects);
 	}
-	
-	@Override
-	public Object[] batchInsert(Object[] blocks) {
-		throw new UnsupportedOperationException();
-	}
 
-	@Override
-	public Object batchReserve(int numberOfBlocks) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public Object[] batchInsert(Object headBlockNumber, Object[] blocks) {
-		throw new UnsupportedOperationException();
+    /**
+     * Inserts the given array of elements in a bulk into a container.
+     *
+     * @param blocks an array of elements to be inserted
+     * @return an array of <tt>ids</tt> referring to the inserted elements
+     */
+	public synchronized Object[] batchInsert(Object[] blocks) {
+		return container.batchInsert(blocks);
 	}
 }
