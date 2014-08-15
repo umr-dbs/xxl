@@ -36,7 +36,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import xxl.core.io.Convertable;
+import xxl.core.io.*;
+import xxl.core.io.ByteBufferDataOutput;
 
 /**
  * This class contains various methods connected to the serialization of
@@ -56,7 +57,20 @@ import xxl.core.io.Convertable;
  * @see OutputStream
  */
 public class Converters {
-	
+
+    /**
+     * Represents the different <tt>DataOutput</tt> resp. <tt>DataInput</tt> types
+     * used for serialization resp. deserialization.
+     */
+    public static enum SerializationMode {
+        /** Represents a ByteArrayOutputStream */
+        BYTE_ARRAY,
+        /** Represents an Unsafe object */
+        UNSAFE,
+        /** Represents a ByteBuffer */
+        BYTE_BUFFER
+    }
+
 	/**
 	 * Returns a converter that is able to read and write objects based on the
 	 * given converter. Internally the returned converter casted the objects
@@ -158,6 +172,51 @@ public class Converters {
 			return null;
 		}
 	}
+
+    /**
+     * Creates a newly allocated byte array that contains the serialization of
+     * the spezified object. Its size is the size of the serialized object as
+     * returned by <code>sizeOf(converter, object)</code>. If the creation of
+     * the byte array fails (e.g., an <code>IOException</code> is thrown) this
+     * method returns <code>null</code>.
+     *
+     * <p>This implementation creates a new <code>ByteArrayOutputStream</code>
+     * that is wrapped by a new <code>DataOutputStream</code>. Thereafter the
+     * specified object is written to the <code>DataOutputStream</code> using
+     * its write method of the converter and the result of the
+     * <code>ByteArrayOutputStream</code>'s
+     * {@link ByteArrayOutputStream#toByteArray() toByteArray} method is
+     * returned.</p>
+     *
+     * @param <T> the type of the object to be converted.
+     * @param converter the converter to be used for converting the object.
+     * @param object the object to be converted.
+     * @param serializationMode the type of <tt>DataOutput</tt> that should be used for serialization
+     * @param buffer the size of the buffer used during deserialization
+     * @return the serialized state (attributes) of the specified object, as a
+     *         byte array.
+     */
+    public static <T> byte[] toByteArray(Converter<? super T> converter, T object, SerializationMode serializationMode, int buffer) {
+        try {
+            if (serializationMode == SerializationMode.BYTE_BUFFER) {
+                ByteBufferDataOutput bbdo = new ByteBufferDataOutput(buffer);
+                converter.write(bbdo, object);
+                return bbdo.toByteArray();
+            } else if (serializationMode == SerializationMode.UNSAFE) {
+                UnsafeDataOutput udo = new UnsafeDataOutput(buffer);
+                converter.write(udo, object);
+                return udo.toByteArray();
+            } else {
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                DataOutputStream daos = new DataOutputStream(baos);
+                converter.write(daos, object);
+                return baos.toByteArray();
+            }
+        }
+        catch (IOException ie) {
+            return null;
+        }
+    }
 
 	/**
 	 * Creates a newly allocated byte array that contains the serialization of

@@ -52,7 +52,7 @@ public class ConverterContainerRawAccess extends ConverterContainer {
     public Object[] flushArrayOfBlocks(Object[] blocks) {
 		Block[] blocksToWrite = new Block[blocks.length];
 		for(int i = 0; i < blocks.length; i++){
-			byte [] array = Converters.toByteArray(converter,blocks[i]);
+			byte [] array = Converters.toByteArray(converter,blocks[i],serializationMode,bufferSize);
 			blocksToWrite[i]= new Block(array, 0, array.length);
 		}
 		return this.container.batchInsert(blocksToWrite);

@@ -35,6 +35,8 @@ import xxl.core.collections.containers.Container;
 import xxl.core.functions.AbstractFunction;
 import xxl.core.functions.Function;
 import xxl.core.io.Block;
+import xxl.core.io.ByteBufferDataInput;
+import xxl.core.io.UnsafeDataInput;
 import xxl.core.io.converters.Converter;
 import xxl.core.io.converters.Converters;
 import xxl.core.io.converters.FixedSizeConverter;
@@ -133,6 +135,33 @@ public class ConverterContainer extends ConstrainedDecoratorContainer {
 	 */
 	protected Converter converter;
 
+    /**
+     * Specified the type of <tt>DataOutput</tt> used
+     * for serialization resp. deserialization
+     */
+    protected Converters.SerializationMode serializationMode;
+
+    /**
+     * The size of the buffer used for serialization resp. deserialization.
+     * This value is only relevant for serialization modes <tt>BYTE_BUFFER</tt>
+     * and <tt>UNSAFE</tt>.
+     */
+    protected int bufferSize;
+
+    /**
+     * Constructs a new ConverterContainer that decorates the specified
+     * container and uses the specified converter for converting its
+     * elements.
+     *
+     * @param container the underlying container that is used for storing
+     *        the converted elements.
+     * @param converter the converter that is used for converting the
+     *        elements of this container.
+     */
+    public ConverterContainer (Container container, Converter converter) {
+        this(container, converter, Converters.SerializationMode.BYTE_ARRAY, 0);
+    }
+
 	/**
 	 * Constructs a new ConverterContainer that decorates the specified
 	 * container and uses the specified converter for converting its
@@ -143,9 +172,11 @@ public class ConverterContainer extends ConstrainedDecoratorContainer {
 	 * @param converter the converter that is used for converting the
 	 *        elements of this container.
 	 */
-	public ConverterContainer (Container container, Converter converter) {
+	public ConverterContainer (Container container, Converter converter, Converters.SerializationMode serializationMode, int bufferSize) {
 		super(container);
 		this.converter = converter;
+        this.serializationMode = serializationMode;
+        this.bufferSize = bufferSize;
 	}
 
 	/**
@@ -163,8 +194,14 @@ public class ConverterContainer extends ConstrainedDecoratorContainer {
 	 */
 	public Object get (Object id, boolean unfix) throws NoSuchElementException {
 		try {
-			Block block = (Block)super.get(id, unfix);
-			return converter.read(new DataInputStream(new ByteArrayInputStream(block.array, block.offset, block.size)));
+			Block block = null;
+            block = (Block)super.get(id, unfix);
+            if (serializationMode == Converters.SerializationMode.BYTE_BUFFER)
+                return converter.read(new ByteBufferDataInput(new ByteArrayInputStream(block.array, block.offset, block.size)));
+            else if (serializationMode == Converters.SerializationMode.UNSAFE)
+                return converter.read(new UnsafeDataInput(new ByteArrayInputStream(block.array, block.offset, block.size)));
+            else
+                return converter.read(new DataInputStream(new ByteArrayInputStream(block.array, block.offset, block.size)));
 		}
 		catch (IOException ie) {
 			throw new WrappingRuntimeException(ie);
@@ -187,7 +224,7 @@ public class ConverterContainer extends ConstrainedDecoratorContainer {
 	 * @return the identifier of the object.
 	 */
 	public Object insert (Object object, boolean unfix) {
-		byte [] array = Converters.toByteArray(converter, object);
+		byte [] array = Converters.toByteArray(converter, object, serializationMode, bufferSize);
 
 		return super.insert(new Block(array, 0, array.length), unfix);
 	}
@@ -232,7 +269,7 @@ public class ConverterContainer extends ConstrainedDecoratorContainer {
 		return super.reserve(
 			new AbstractFunction () {
 				public Object invoke () {
-					return new Block(Converters.toByteArray(converter, getObject.invoke()));
+					return new Block(Converters.toByteArray(converter, getObject.invoke(), serializationMode, bufferSize));
 				}
 			}
 		);
@@ -256,7 +293,7 @@ public class ConverterContainer extends ConstrainedDecoratorContainer {
 	 *         <tt>id</tt> does not exist in the container.
 	 */
 	public void update (Object id, Object object, boolean unfix) throws NoSuchElementException {
-		byte [] array = Converters.toByteArray(converter, object);
+		byte [] array = Converters.toByteArray(converter, object, serializationMode, bufferSize);
 
 		super.update(id, new Block(array, 0, array.length), unfix);
 	}
