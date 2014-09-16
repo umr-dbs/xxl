@@ -79,12 +79,12 @@ public class Taker<E> extends SecureDecoratorCursor<E> {
 	/**
 	 * The number of elements that still have to be delivered.
 	 */
-	protected int number;
+	protected long number;
 
 	/**
 	 * The initial number of elements to be delivered.
 	 */
-	protected int initialNumber;
+	protected long initialNumber;
 
 	/**
 	 * Creates a new taker.
@@ -93,7 +93,7 @@ public class Taker<E> extends SecureDecoratorCursor<E> {
 	 * @param number the number of elements which should be delivered from the
 	 *        given iterator.
 	 */
-	public Taker(Iterator<E> iterator, int number) {
+	public Taker(Iterator<E> iterator, long number) {
 		super(iterator);
 		this.number = initialNumber = number;
 	}
