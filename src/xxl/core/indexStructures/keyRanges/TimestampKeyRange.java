@@ -20,6 +20,8 @@
 
 package xxl.core.indexStructures.keyRanges;
 
+import java.sql.Timestamp;
+
 import xxl.core.functions.AbstractFunction;
 import xxl.core.functions.Function;
 import xxl.core.indexStructures.BPlusTree.KeyRange;
@@ -30,7 +32,7 @@ import xxl.core.indexStructures.BPlusTree.KeyRange;
  * the key range of the data objects stored in the tree in the member field <tt>rootDescriptor</tt>.<br/>
  * <br/>
  * 
- * This class extends <tt>KeyRange</tt> for using <b>Strings</b> as keys.<br/>
+ * This class extends <tt>KeyRange</tt> for using <b>Timestamps</b> as keys.<br/>
  * <br/>
  * 
  * You will find a <b>list of all available implemented KeyRanges</b> in
@@ -39,33 +41,49 @@ import xxl.core.indexStructures.BPlusTree.KeyRange;
  * @author Marcus Pinnecke (pinnecke@mathematik.uni-marburg.de)
  * 
  * @see xxl.core.indexStructures.BPlusTree.KeyRange
+ * @see java.sql.Timestamp
  */
-public class StringKeyRange extends KeyRange {
+public class TimestampKeyRange extends KeyRange {
 
   /**
    * Used for a functional like programming style which creates in this case a new ranges.
    */
-  public static Function<Object, StringKeyRange> FACTORY_FUNCTION =
-      new AbstractFunction<Object, StringKeyRange>() {
+  public static Function<Object, TimestampKeyRange> FACTORY_FUNCTION =
+      new AbstractFunction<Object, TimestampKeyRange>() {
         @Override
-        public StringKeyRange invoke(Object argument0, Object argument1) {
-          return new StringKeyRange((String) argument0, (String) argument1);
+        public TimestampKeyRange invoke(Object argument0, Object argument1) {
+          return new TimestampKeyRange((argument0 instanceof Long)
+              ? (Long) argument0
+              : ((Timestamp) argument0).getTime(), (argument1 instanceof Long)
+              ? (Long) argument1
+              : ((Timestamp) argument1).getTime());
         }
       };
 
   /**
    * @see xxl.core.indexStructures.BPlusTree.KeyRange
    */
-  public StringKeyRange(String min, String max) {
+  public TimestampKeyRange(long min, long max) {
     super(min, max);
   }
 
   /**
    * @see xxl.core.indexStructures.BPlusTree.KeyRange
    */
+  public TimestampKeyRange(Long min, Long max) {
+    super(min, max);
+  }
+
+  /**
+   * @see xxl.core.indexStructures.BPlusTree.KeyRange
+   */
+  public TimestampKeyRange(Timestamp min, Timestamp max) {
+    super(min.getTime(), max.getTime());
+  }
+
   @Override
   public Object clone() {
-    return new StringKeyRange(new String((String) this.sepValue), new String(
-        (String) this.maxBound));
+    return new TimestampKeyRange(new Timestamp((Long) this.sepValue),
+        new Timestamp((Long) this.maxBound));
   }
 }

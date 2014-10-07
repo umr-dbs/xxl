@@ -454,9 +454,9 @@ public class SimpleBulkLoadingExample {
 	 * 
 	 * @return
 	 */
-	public static Pair<RTree, CounterContainer>  loadRtreeBufferDoublePointRectangle(){
+	public static Pair<? extends RTree, CounterContainer>  loadRtreeBufferDoublePointRectangle(){
 		int memorySizeForBuffers= 1024*1024*10; // we provide the same amount of memory for buffers 10 MB
-		int dataSize = DIMENSION *  2 * 8; // number of bytes needed to store DoublePointRectangle
+		final int dataSize = DIMENSION *  2 * 8; // number of bytes needed to store DoublePointRectangle
 		int descriptorSize = dataSize; // in our example they are equal
 		double minMaxFactor = 0.33; // is used to define a minimal number of elements per node
 		// you can change this size 
@@ -568,7 +568,7 @@ public class SimpleBulkLoadingExample {
 	/**
 	 * 
 	 */
-	public static void testQuery(Pair<RTree, CounterContainer>  rtreePair, String queryPath){
+	public static void testQuery(Pair<? extends RTree, CounterContainer>  rtreePair, String queryPath){
 		double ios = 0;
 		double resultsPerQuery = 0; 
 		double counter = 0; 
@@ -596,7 +596,7 @@ public class SimpleBulkLoadingExample {
 	public static void showRtreeLevel(String name, int level, final RTree tree){
 		if(level > tree.height())
 			throw new RuntimeException("level!");
-		Iterator<DoublePointRectangle> levelDescriptors = new Mapper<>(new AbstractFunction<Object, DoublePointRectangle>() {
+		Iterator<DoublePointRectangle> levelDescriptors = new Mapper<Object, DoublePointRectangle>(new AbstractFunction<Object, DoublePointRectangle>() {
 			
 			@Override
 			public DoublePointRectangle invoke(Object argument) {
@@ -616,7 +616,7 @@ public class SimpleBulkLoadingExample {
 		//create opt Rtree
 		Pair<RTree, CounterContainer> optRtree = createAndLoadSortBasedOptimal();
 		//craete buffer rtree
-		Pair<RTree, CounterContainer>  bufferRTree = loadRtreeBufferDoublePointRectangle();
+		Pair<? extends RTree, CounterContainer>  bufferRTree = loadRtreeBufferDoublePointRectangle();
 		//craete buffer rtree
 		Pair<RTree, CounterContainer>  tgsRTree = createAndLoadTGS();
 		//conduct point queries

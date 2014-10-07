@@ -576,9 +576,9 @@ public class RtreeSimpleBulkLoadingExample {
 	 * 
 	 * @return
 	 */
-	public static Pair<RTree, FilteredCounterContainer>  loadRtreeBufferDoublePointRectangle(){
+	public static Pair<? extends RTree, FilteredCounterContainer>  loadRtreeBufferDoublePointRectangle(){
 		int memorySizeForBuffers= 1024*1024*10; // we provide the same amount of memory for buffers 10 MB
-		int dataSize = DIMENSION *  2 * 8; // number of bytes needed to store DoublePointRectangle
+		final int dataSize = DIMENSION *  2 * 8; // number of bytes needed to store DoublePointRectangle
 		int descriptorSize = dataSize; // in our example they are equal
 		double minMaxFactor = 0.33; // is used to define a minimal number of elements per node
 		// you can change this size 
@@ -763,7 +763,7 @@ public class RtreeSimpleBulkLoadingExample {
 	/**
 	 * 
 	 */
-	public static void testQuery(String name, Pair<RTree, FilteredCounterContainer>  rtreePair, String queryPath){
+	public static void testQuery(String name, Pair<? extends RTree, FilteredCounterContainer>  rtreePair, String queryPath){
 		double ios = 0;
 		double resultsPerQuery = 0; 
 		double counter = 0; 
@@ -795,7 +795,7 @@ public class RtreeSimpleBulkLoadingExample {
 	public static void showRtreeLevel(String name, int level, final RTree tree){
 		if(level > tree.height())
 			throw new RuntimeException("level!");
-		Iterator<DoublePointRectangle> levelDescriptors = new Mapper<>(new AbstractFunction<Object, DoublePointRectangle>() {
+		Iterator<DoublePointRectangle> levelDescriptors = new Mapper<Object, DoublePointRectangle>(new AbstractFunction<Object, DoublePointRectangle>() {
 			
 			@Override
 			public DoublePointRectangle invoke(Object argument) {
@@ -817,7 +817,7 @@ public class RtreeSimpleBulkLoadingExample {
 		//create opt Rtree
 		Pair<RTree, FilteredCounterContainer> optRtreeQuery = createAndLoadSortBasedOptimalQuery100Optimized();
 		//craete buffer rtree
-		Pair<RTree, FilteredCounterContainer>  bufferRTree = loadRtreeBufferDoublePointRectangle();
+		Pair<? extends RTree, FilteredCounterContainer>  bufferRTree = loadRtreeBufferDoublePointRectangle();
 		//craete buffer rtree
 		Pair<RTree, FilteredCounterContainer>  tgsRTree = createAndLoadTGS();
 		//craete buffer rtree

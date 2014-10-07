@@ -30,7 +30,7 @@ import xxl.core.indexStructures.BPlusTree.KeyRange;
  * the key range of the data objects stored in the tree in the member field <tt>rootDescriptor</tt>.<br/>
  * <br/>
  * 
- * This class extends <tt>KeyRange</tt> for using <b>Strings</b> as keys.<br/>
+ * This class extends <tt>KeyRange</tt> for using <b>Floats</b> as keys.<br/>
  * <br/>
  * 
  * You will find a <b>list of all available implemented KeyRanges</b> in
@@ -40,23 +40,30 @@ import xxl.core.indexStructures.BPlusTree.KeyRange;
  * 
  * @see xxl.core.indexStructures.BPlusTree.KeyRange
  */
-public class StringKeyRange extends KeyRange {
+public class FloatKeyRange extends KeyRange {
 
   /**
    * Used for a functional like programming style which creates in this case a new ranges.
    */
-  public static Function<Object, StringKeyRange> FACTORY_FUNCTION =
-      new AbstractFunction<Object, StringKeyRange>() {
+  public static Function<Object, FloatKeyRange> FACTORY_FUNCTION =
+      new AbstractFunction<Object, FloatKeyRange>() {
         @Override
-        public StringKeyRange invoke(Object argument0, Object argument1) {
-          return new StringKeyRange((String) argument0, (String) argument1);
+        public FloatKeyRange invoke(Object argument0, Object argument1) {
+          return new FloatKeyRange((Float) argument0, (Float) argument1);
         }
       };
 
   /**
    * @see xxl.core.indexStructures.BPlusTree.KeyRange
    */
-  public StringKeyRange(String min, String max) {
+  public FloatKeyRange(float min, float max) {
+    super(min, max);
+  }
+
+  /**
+   * @see xxl.core.indexStructures.BPlusTree.KeyRange
+   */
+  public FloatKeyRange(Float min, Float max) {
     super(min, max);
   }
 
@@ -65,7 +72,7 @@ public class StringKeyRange extends KeyRange {
    */
   @Override
   public Object clone() {
-    return new StringKeyRange(new String((String) this.sepValue), new String(
-        (String) this.maxBound));
+    return new FloatKeyRange(new Float((Float) this.sepValue), new Float(
+        (Float) this.maxBound));
   }
 }

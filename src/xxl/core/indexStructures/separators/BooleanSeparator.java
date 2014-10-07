@@ -30,37 +30,44 @@ import xxl.core.indexStructures.Separator;
  * <tt>Separator</tt> of a query is a closed interval [min, max]. .<br/>
  * <br/>
  * 
- * This class extends <tt>Separator</tt> for using <b>Strings</b>.<br/>
+ * This class extends <tt>Separator</tt> for using <b>Booleans</b>.<br/>
  * <br/>
  * 
  * @author Marcus Pinnecke (pinnecke@mathematik.uni-marburg.de)
  * 
  * @see xxl.core.indexStructures.Separator
  */
-public class StringSeparator extends Separator {
+public class BooleanSeparator extends Separator {
 
   /**
    * Used for a functional like programming style which forces a hard copy in this case.
    */
-  public static Function<Object, StringSeparator> FACTORY_FUNCTION =
-      new AbstractFunction<Object, StringSeparator>() {
+  public static Function<Object, BooleanSeparator> FACTORY_FUNCTION =
+      new AbstractFunction<Object, BooleanSeparator>() {
 
         @Override
-        public StringSeparator invoke(Object argument) {
-          return new StringSeparator((String) argument);
+        public BooleanSeparator invoke(Object argument) {
+          return new BooleanSeparator((Boolean) argument);
         }
       };
 
   /**
    * @see xxl.core.indexStructures.Separator#Separator(Comparable)
    */
-  public StringSeparator(String sepValue) {
+  public BooleanSeparator(boolean sepValue) {
+    super(sepValue);
+  }
+
+  /**
+   * @see xxl.core.indexStructures.Separator#Separator(Comparable)
+   */
+  public BooleanSeparator(Boolean sepValue) {
     super(sepValue);
   }
 
   @Override
   public Object clone() {
-    return new StringSeparator(new String((String) this.sepValue));
+    return new BooleanSeparator(new Boolean((Boolean) this.sepValue));
   }
 
 }

@@ -20,47 +20,66 @@
 
 package xxl.core.indexStructures.separators;
 
+import java.sql.Time;
+
 import xxl.core.functions.AbstractFunction;
 import xxl.core.functions.Function;
 import xxl.core.indexStructures.Separator;
 
 /**
  * The class {@link xxl.core.indexStructures.Separator Separator} describes the known separtors of
- * the B+ tree. A <tt>Separator</tt> is a simple key (for example an Integer). The
- * <tt>Separator</tt> of a query is a closed interval [min, max]. .<br/>
+ * the B+ tree. A <tt>Separtor</tt> is a simple key (for example an Integer). The <tt>Separator</tt>
+ * of a query is a closed intervall [min, max]. .<br/>
  * <br/>
  * 
- * This class extends <tt>Separator</tt> for using <b>Strings</b>.<br/>
+ * This class extends <tt>Separator</tt> for using <b>Time</b>.<br/>
  * <br/>
  * 
  * @author Marcus Pinnecke (pinnecke@mathematik.uni-marburg.de)
  * 
  * @see xxl.core.indexStructures.Separator
+ * @see java.sql.Time
  */
-public class StringSeparator extends Separator {
+public class TimeSeparator extends Separator {
 
   /**
    * Used for a functional like programming style which forces a hard copy in this case.
    */
-  public static Function<Object, StringSeparator> FACTORY_FUNCTION =
-      new AbstractFunction<Object, StringSeparator>() {
+  public static Function<Object, TimeSeparator> FACTORY_FUNCTION =
+      new AbstractFunction<Object, TimeSeparator>() {
 
         @Override
-        public StringSeparator invoke(Object argument) {
-          return new StringSeparator((String) argument);
+        public TimeSeparator invoke(Object argument) {
+          return new TimeSeparator((argument instanceof Long)
+              ? (Long) argument
+              : ((Time) argument).getTime());
         }
       };
 
   /**
    * @see xxl.core.indexStructures.Separator#Separator(Comparable)
    */
-  public StringSeparator(String sepValue) {
+  public TimeSeparator(long sepValue) {
     super(sepValue);
+  }
+
+  /**
+   * @see xxl.core.indexStructures.Separator#Separator(Comparable)
+   */
+  public TimeSeparator(Long sepValue) {
+    super(sepValue);
+  }
+
+  /**
+   * @see xxl.core.indexStructures.Separator#Separator(Comparable)
+   */
+  public TimeSeparator(Time sepValue) {
+    super(sepValue.getTime());
   }
 
   @Override
   public Object clone() {
-    return new StringSeparator(new String((String) this.sepValue));
+    return new TimeSeparator(new Time((Long) this.sepValue));
   }
 
 }

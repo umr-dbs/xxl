@@ -18,49 +18,48 @@
  * http://code.google.com/p/xxl/
  */
 
-package xxl.core.indexStructures.separators;
+package xxl.core.indexStructures.keyRanges;
 
 import xxl.core.functions.AbstractFunction;
 import xxl.core.functions.Function;
-import xxl.core.indexStructures.Separator;
+import xxl.core.indexStructures.BPlusTree.KeyRange;
+import xxl.core.relational.tuples.ColumnComparableTuple;
 
 /**
- * The class {@link xxl.core.indexStructures.Separator Separator} describes the known separtors of
- * the B+ tree. A <tt>Separator</tt> is a simple key (for example an Integer). The
- * <tt>Separator</tt> of a query is a closed interval [min, max]. .<br/>
- * <br/>
- * 
- * This class extends <tt>Separator</tt> for using <b>Strings</b>.<br/>
- * <br/>
+ * This class represents key ranges (i.e. intervals of keys) for
+ * {@link xxl.core.relational.tuples.ColumnComparableTuple}. It is used to specify (range) queries
+ * on the BPlusTree, see {@link xxl.core.indexStructures.BPlusTree.KeyRange KeyRange}.
  * 
  * @author Marcus Pinnecke (pinnecke@mathematik.uni-marburg.de)
  * 
- * @see xxl.core.indexStructures.Separator
  */
-public class StringSeparator extends Separator {
+public class TupleKeyRangeFunction extends KeyRange {
 
   /**
-   * Used for a functional like programming style which forces a hard copy in this case.
+   * Used for a functional like programming style which creates in this case a new ranges.
    */
-  public static Function<Object, StringSeparator> FACTORY_FUNCTION =
-      new AbstractFunction<Object, StringSeparator>() {
-
+  public static Function<ColumnComparableTuple, TupleKeyRangeFunction> FACTORY_FUNCTION =
+      new AbstractFunction<ColumnComparableTuple, TupleKeyRangeFunction>() {
         @Override
-        public StringSeparator invoke(Object argument) {
-          return new StringSeparator((String) argument);
+        public TupleKeyRangeFunction invoke(ColumnComparableTuple argument0,
+            ColumnComparableTuple argument1) {
+          return new TupleKeyRangeFunction(argument0, argument1);
         }
       };
 
   /**
-   * @see xxl.core.indexStructures.Separator#Separator(Comparable)
+   * @see xxl.core.indexStructures.BPlusTree.KeyRange
    */
-  public StringSeparator(String sepValue) {
-    super(sepValue);
+  public TupleKeyRangeFunction(Comparable min, Comparable max) {
+    super(min, max);
   }
 
+  /**
+   * @see xxl.core.indexStructures.BPlusTree.KeyRange#clone()
+   */
   @Override
   public Object clone() {
-    return new StringSeparator(new String((String) this.sepValue));
+    return new TupleKeyRangeFunction(this.sepValue, this.maxBound);
   }
 
 }

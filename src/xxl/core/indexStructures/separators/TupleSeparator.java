@@ -23,44 +23,49 @@ package xxl.core.indexStructures.separators;
 import xxl.core.functions.AbstractFunction;
 import xxl.core.functions.Function;
 import xxl.core.indexStructures.Separator;
+import xxl.core.relational.tuples.ColumnComparableTuple;
+import xxl.core.relational.tuples.ComparableTuples;
+
 
 /**
- * The class {@link xxl.core.indexStructures.Separator Separator} describes the known separtors of
+ * The class {@link xxl.core.indexStructures.Separator Separator} describes the known separators of
  * the B+ tree. A <tt>Separator</tt> is a simple key (for example an Integer). The
  * <tt>Separator</tt> of a query is a closed interval [min, max]. .<br/>
  * <br/>
  * 
- * This class extends <tt>Separator</tt> for using <b>Strings</b>.<br/>
+ * This class extends <tt>Separator</tt> for using <b>Timestamp</b>.<br/>
+ * <br/>
  * <br/>
  * 
  * @author Marcus Pinnecke (pinnecke@mathematik.uni-marburg.de)
  * 
  * @see xxl.core.indexStructures.Separator
+ * @see java.sql.Timestamp
  */
-public class StringSeparator extends Separator {
+public class TupleSeparator extends Separator {
 
   /**
    * Used for a functional like programming style which forces a hard copy in this case.
    */
-  public static Function<Object, StringSeparator> FACTORY_FUNCTION =
-      new AbstractFunction<Object, StringSeparator>() {
+  public static Function<ColumnComparableTuple, TupleSeparator> FACTORY_FUNCTION =
+      new AbstractFunction<ColumnComparableTuple, TupleSeparator>() {
 
         @Override
-        public StringSeparator invoke(Object argument) {
-          return new StringSeparator((String) argument);
+        public TupleSeparator invoke(ColumnComparableTuple argument) {
+          return new TupleSeparator(argument);
         }
       };
 
   /**
    * @see xxl.core.indexStructures.Separator#Separator(Comparable)
    */
-  public StringSeparator(String sepValue) {
-    super(sepValue);
+  public TupleSeparator(ColumnComparableTuple sepValue) {
+    super(ComparableTuples.clone(sepValue));
   }
 
   @Override
   public Object clone() {
-    return new StringSeparator(new String((String) this.sepValue));
+    return new TupleSeparator((ColumnComparableTuple) this.sepValue);
   }
 
 }

@@ -39,10 +39,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
-/*import org.testng.Assert;
+import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
-import org.testng.annotations.Test;*/
+import org.testng.annotations.Test;
 
 
 import xxl.core.collections.containers.Container;

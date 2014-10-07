@@ -30,7 +30,7 @@ import xxl.core.indexStructures.BPlusTree.KeyRange;
  * the key range of the data objects stored in the tree in the member field <tt>rootDescriptor</tt>.<br/>
  * <br/>
  * 
- * This class extends <tt>KeyRange</tt> for using <b>Strings</b> as keys.<br/>
+ * This class extends <tt>KeyRange</tt> for using <b>Longs</b> as keys.<br/>
  * <br/>
  * 
  * You will find a <b>list of all available implemented KeyRanges</b> in
@@ -40,23 +40,30 @@ import xxl.core.indexStructures.BPlusTree.KeyRange;
  * 
  * @see xxl.core.indexStructures.BPlusTree.KeyRange
  */
-public class StringKeyRange extends KeyRange {
+public class LongKeyRange extends KeyRange {
 
   /**
    * Used for a functional like programming style which creates in this case a new ranges.
    */
-  public static Function<Object, StringKeyRange> FACTORY_FUNCTION =
-      new AbstractFunction<Object, StringKeyRange>() {
+  public static Function<Object, LongKeyRange> FACTORY_FUNCTION =
+      new AbstractFunction<Object, LongKeyRange>() {
         @Override
-        public StringKeyRange invoke(Object argument0, Object argument1) {
-          return new StringKeyRange((String) argument0, (String) argument1);
+        public LongKeyRange invoke(Object argument0, Object argument1) {
+          return new LongKeyRange((Long) argument0, (Long) argument1);
         }
       };
 
   /**
    * @see xxl.core.indexStructures.BPlusTree.KeyRange
    */
-  public StringKeyRange(String min, String max) {
+  public LongKeyRange(long min, long max) {
+    super(min, max);
+  }
+
+  /**
+   * @see xxl.core.indexStructures.BPlusTree.KeyRange
+   */
+  public LongKeyRange(Long min, Long max) {
     super(min, max);
   }
 
@@ -65,7 +72,7 @@ public class StringKeyRange extends KeyRange {
    */
   @Override
   public Object clone() {
-    return new StringKeyRange(new String((String) this.sepValue), new String(
-        (String) this.maxBound));
+    return new LongKeyRange(new Long((Long) this.sepValue), new Long(
+        (Long) this.maxBound));
   }
 }

@@ -30,7 +30,7 @@ import xxl.core.indexStructures.BPlusTree.KeyRange;
  * the key range of the data objects stored in the tree in the member field <tt>rootDescriptor</tt>.<br/>
  * <br/>
  * 
- * This class extends <tt>KeyRange</tt> for using <b>Strings</b> as keys.<br/>
+ * This class extends <tt>KeyRange</tt> for using <b>Bytes</b> as keys.<br/>
  * <br/>
  * 
  * You will find a <b>list of all available implemented KeyRanges</b> in
@@ -40,32 +40,39 @@ import xxl.core.indexStructures.BPlusTree.KeyRange;
  * 
  * @see xxl.core.indexStructures.BPlusTree.KeyRange
  */
-public class StringKeyRange extends KeyRange {
+public class ByteKeyRange extends KeyRange {
 
   /**
    * Used for a functional like programming style which creates in this case a new ranges.
    */
-  public static Function<Object, StringKeyRange> FACTORY_FUNCTION =
-      new AbstractFunction<Object, StringKeyRange>() {
+  public static Function<Object, ByteKeyRange> FACTORY_FUNCTION =
+      new AbstractFunction<Object, ByteKeyRange>() {
         @Override
-        public StringKeyRange invoke(Object argument0, Object argument1) {
-          return new StringKeyRange((String) argument0, (String) argument1);
+        public ByteKeyRange invoke(Object argument0, Object argument1) {
+          return new ByteKeyRange((Byte) argument0, (Byte) argument1);
         }
       };
 
   /**
    * @see xxl.core.indexStructures.BPlusTree.KeyRange
    */
-  public StringKeyRange(String min, String max) {
+  public ByteKeyRange(byte min, byte max) {
     super(min, max);
   }
 
   /**
    * @see xxl.core.indexStructures.BPlusTree.KeyRange
    */
+  public ByteKeyRange(Byte min, Byte max) {
+    super(min, max);
+  }
+
+  /**
+   * @see xxl.core.indexStructures.BPlusTree.KeyRange#clone()
+   */
   @Override
   public Object clone() {
-    return new StringKeyRange(new String((String) this.sepValue), new String(
-        (String) this.maxBound));
+    return new ByteKeyRange(new Byte((Byte) this.sepValue), new Byte(
+        (Byte) this.maxBound));
   }
 }

@@ -20,6 +20,8 @@
 
 package xxl.core.indexStructures.keyRanges;
 
+import java.sql.Date;
+
 import xxl.core.functions.AbstractFunction;
 import xxl.core.functions.Function;
 import xxl.core.indexStructures.BPlusTree.KeyRange;
@@ -30,7 +32,7 @@ import xxl.core.indexStructures.BPlusTree.KeyRange;
  * the key range of the data objects stored in the tree in the member field <tt>rootDescriptor</tt>.<br/>
  * <br/>
  * 
- * This class extends <tt>KeyRange</tt> for using <b>Strings</b> as keys.<br/>
+ * This class extends <tt>KeyRange</tt> for using <b>Dates</b> as keys.<br/>
  * <br/>
  * 
  * You will find a <b>list of all available implemented KeyRanges</b> in
@@ -39,33 +41,34 @@ import xxl.core.indexStructures.BPlusTree.KeyRange;
  * @author Marcus Pinnecke (pinnecke@mathematik.uni-marburg.de)
  * 
  * @see xxl.core.indexStructures.BPlusTree.KeyRange
+ * @see java.sql.Date
  */
-public class StringKeyRange extends KeyRange {
+public class DateKeyRange extends KeyRange {
 
   /**
    * Used for a functional like programming style which creates in this case a new ranges.
    */
-  public static Function<Object, StringKeyRange> FACTORY_FUNCTION =
-      new AbstractFunction<Object, StringKeyRange>() {
+  public static Function<Object, DateKeyRange> FACTORY_FUNCTION =
+      new AbstractFunction<Object, DateKeyRange>() {
         @Override
-        public StringKeyRange invoke(Object argument0, Object argument1) {
-          return new StringKeyRange((String) argument0, (String) argument1);
+        public DateKeyRange invoke(Object argument0, Object argument1) {
+          return new DateKeyRange((argument0 instanceof Long)
+              ? (Long) argument0
+              : ((Date) argument0).getTime(), (argument1 instanceof Long)
+              ? (Long) argument1
+              : ((Date) argument1).getTime());
         }
       };
 
   /**
    * @see xxl.core.indexStructures.BPlusTree.KeyRange
    */
-  public StringKeyRange(String min, String max) {
+  public DateKeyRange(long min, long max) {
     super(min, max);
   }
 
-  /**
-   * @see xxl.core.indexStructures.BPlusTree.KeyRange
-   */
   @Override
   public Object clone() {
-    return new StringKeyRange(new String((String) this.sepValue), new String(
-        (String) this.maxBound));
+    return new DateKeyRange((Long) this.sepValue, (Long) this.maxBound);
   }
 }
