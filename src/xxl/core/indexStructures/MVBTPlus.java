@@ -128,7 +128,7 @@ import xxl.core.util.Triple;
  * Note in this class: uses {@link LongVersion} as default version implementation; 
  * Additionally the input of the tree are object of type @link {@link Element}.
  * 
- * Experimental version:  In this version we use map to store queue and index entries.
+ * Experimental version:  In this version we use in-memory map to store pointers to queues (buffers) 
  * 
  */
 public class MVBTPlus extends MVBT {
