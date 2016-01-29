@@ -309,7 +309,7 @@ public class PrioritySearchTree <T> {
 	 * 
 	 * @param xMax the upper bound for x values (not inclusive)
 	 * @param yRange the range for y values (inclusive)
-	 * @return all intervals [x,y] with x < xMax and y in yRange 
+	 * @return all intervals [x,y] with x &lt; xMax and y in yRange 
 	 */
 	public ArrayList<Interval1D> query (T xMax, Interval1D yRange) {
 		ArrayList<Interval1D> results = new ArrayList<Interval1D>();

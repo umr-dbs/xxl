@@ -150,7 +150,7 @@ public final class MeasuredPrimitiveConverter extends MeasuredConverter<Object> 
    *         within your <code>ResultSetMetaData</code>
    */
   @Override
-  public Object read(DataInput dataInput, Object _) throws IOException {
+  public Object read(DataInput dataInput, Object o) throws IOException {
     Object retval = null;
 
     try {

@@ -176,7 +176,7 @@ public class DBScan extends AbstractCursor {
 	 * objects implementing the {@link xxl.core.util.Classifiable classifiable}
 	 * interface.
 	 * <pre>
-	 *     f : Object (Descriptor) --> Cursor of ClassifiableObjects
+	 *     f : Object (Descriptor) &rarr; Cursor of ClassifiableObjects
 	 * </pre>
 	 */
 	protected Function rangeQuery;
@@ -186,7 +186,7 @@ public class DBScan extends AbstractCursor {
 	 * To determine this descriptor the function gets two arguments, namely the
 	 * search object and a user-defined radius <tt>eps</tt>.
 	 * <pre>
-	 *     f : Object x eps --> Object (Descriptor)
+	 *     f : Object x eps &rarr; Object (Descriptor)
 	 * </pre>
 	 */
 	protected Function getDescriptor;

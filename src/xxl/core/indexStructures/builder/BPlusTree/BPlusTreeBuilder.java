@@ -810,7 +810,7 @@ public class BPlusTreeBuilder<E>
                   new ColumnComparableArrayTuple(maxKey
                       .toArray(new Object[maxKey.size()])));
 
-        } catch (SQLException _) {};
+        } catch (SQLException error) {};
 
       }
         break;

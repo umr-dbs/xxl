@@ -31,7 +31,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 
 /**
- * Implements RawAcces with java.io.RandomAccessFile (->RAF).
+ * Implements RawAcces with java.io.RandomAccessFile (&rarr;RAF).
  */
 public class RAFRawAccess implements RawAccess {
 

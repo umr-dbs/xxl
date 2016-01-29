@@ -95,7 +95,7 @@ public class ProductKernelFunction implements KernelFunctionND {
 	}
 
 	/** Evaluates the product kernel function at given real-valued n-dimensional point x and returns
-	 * f(x) with f : R^n --> R.
+	 * f(x) with f : R^n &rarr; R.
 	 * 
 	 * @param x real-valued function argument given as <tt>double []</tt>
 	 * @return f(x)

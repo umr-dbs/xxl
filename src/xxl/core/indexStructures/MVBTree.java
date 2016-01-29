@@ -574,10 +574,10 @@ public class MVBTree extends BPlusTree {
 	
 	/** Converts a <tt>MVSeparator</tt> into a <tt>MVRegion</tt> on the following wise: 
 	 * <ul>
-	 * <li> mvSeparator.insertVersion() --> begin <tt>Version</tt> of the <tt>MVRegion</tt> </li>
-	 * <li> mvSeparator.deleteVersion() --> end <tt>Version</tt> of the <tt>MVRegion</tt> </li>
-	 * <li> mvSeparator.sepValue() --> begin key of the <tt>MVRegion</tt> </li>
-	 * <li> mvSeparator.sepValue() --> end key of the <tt>MVRegion</tt> </li>
+	 * <li> mvSeparator.insertVersion() &rarr; begin <tt>Version</tt> of the <tt>MVRegion</tt> </li>
+	 * <li> mvSeparator.deleteVersion() &rarr; end <tt>Version</tt> of the <tt>MVRegion</tt> </li>
+	 * <li> mvSeparator.sepValue() &rarr; begin key of the <tt>MVRegion</tt> </li>
+	 * <li> mvSeparator.sepValue() &rarr; end key of the <tt>MVRegion</tt> </li>
 	 * </ul>
 	 * @param mvSeparator the <tt>MVSeparator</tt> which is to convert.
 	 * @return the new <tt>MVRegion</tt>.
@@ -590,10 +590,10 @@ public class MVBTree extends BPlusTree {
 
 	/** Converts a <tt>MVRegion</tt> into a <tt>MVSeparator</tt> on the following wise: 
 	 * <ul>
-	 * <li> region.beginVersion() --> insertion <tt>Version</tt> of the <tt>MVSeparator</tt> </li>
-	 * <li> region.endVersion() --> deletion <tt>Version</tt> of the <tt>MVSeparator</tt> </li>
-	 * <li> region.minBound() --> separation key of the <tt>MVSeparator</tt> </li>
-	 * <li> region.maxBound() --> will be ignored. </li>
+	 * <li> region.beginVersion() &rarr; insertion <tt>Version</tt> of the <tt>MVSeparator</tt> </li>
+	 * <li> region.endVersion() &rarr; deletion <tt>Version</tt> of the <tt>MVSeparator</tt> </li>
+	 * <li> region.minBound() &rarr; separation key of the <tt>MVSeparator</tt> </li>
+	 * <li> region.maxBound() &rarr; will be ignored. </li>
 	 * </ul>
 	 * @param region the <tt>MVRegion</tt> which is to convert.
 	 * @return the new <tt>MVSeparator</tt>.

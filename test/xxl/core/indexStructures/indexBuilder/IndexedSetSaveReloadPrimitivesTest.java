@@ -33,7 +33,7 @@ public class IndexedSetSaveReloadPrimitivesTest {
   private static final String PATH_TO_STORE_DATA = System
       .getProperty("java.io.tmpdir")
       + "temp/tests/IndexedSetSaveReloadPrimitivesTest/"
-      + System.currentTimeMillis() + "/";
+      + System.currentTimeMillis() + "/" + Thread.currentThread().getId();
   boolean isNewDirectory = false;
   final int MAX_ITEMS_TO_INSERT = 100_000;
   final String MY_TABLE_NAME = "TableTest";

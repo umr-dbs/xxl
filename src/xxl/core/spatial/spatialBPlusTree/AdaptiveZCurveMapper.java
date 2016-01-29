@@ -183,7 +183,7 @@ public class AdaptiveZCurveMapper {
 	 * 
 	 * we cut the box along the hyperplane set 
 	 * 
-	 * query ox is split in two boxes -> 
+	 * query ox is split in two boxes &rarr; 
 	 *  1. Box 
 	 *  	low point is the old lower point 
 	 * 		high point  is dimension values | H where H := 0000000111111...11111 

@@ -79,7 +79,7 @@ public abstract class ORTree extends Tree {
 	}
 	
 	/** Initializes the tree. Both Functions <tt>getContainer</tt> and <tt>determineContainer</tt> are 
-	 * initialized with	constant functions: --> <tt>Container</tt> which always return the given container.
+	 * initialized with	constant functions: &rarr; <tt>Container</tt> which always return the given container.
 	 * The predicate {@link Tree#underflows} is initialized with:
 	 * <pre><code>
 	  		new AbstractPredicate() {
@@ -436,7 +436,7 @@ public abstract class ORTree extends Tree {
 		/** Chooses the subtree which is followed during an insertion.
 		  * @param descriptor the descriptor of the data object to insert
 		  * @param path the path from the root to this node
-		  * @param isValidEntry Function (IndexEntry->Boolean) that determines whether an indexEntry may be chosen
+		  * @param isValidEntry Function (IndexEntry&rarr;Boolean) that determines whether an indexEntry may be chosen
 		  * @return the index entry refering to the root of the chosen subtree
 		  */		
 		protected Tree.IndexEntry chooseSubtree (Descriptor descriptor, Stack path, Function isValidEntry) {

@@ -2123,8 +2123,8 @@ public class BPlusTree extends Tree {
              * <ul>
              * <li>Merge with the left sibling:
              * <ul>
-             * <li>Real merge --> <tt>IllegalStateException</tt></li>
-             * <li>Non real merge --> a copy of the <tt>Separator</tt> of the
+             * <li>Real merge &rarr; <tt>IllegalStateException</tt></li>
+             * <li>Non real merge &rarr; a copy of the <tt>Separator</tt> of the
              * <tt>Node's</tt>last entry</li>
              * @return the new <tt>Separator</tt> of the <tt>IndexEntry</tt>
              */
@@ -2136,12 +2136,12 @@ public class BPlusTree extends Tree {
              * Computes the new <tt>Separator</tt> of the sibling
              * <tt>IndexEntry</tt> after the merge. The result is as follows:
              * <ul>
-             * <li>It is the right sibling of the merged node --> a copy of the <tt>Separator</tt> of the
+             * <li>It is the right sibling of the merged node &rarr; a copy of the <tt>Separator</tt> of the
              * first entry of the sibling <tt>Node</tt></li>
              * <li>It is the right sibling
              * <ul>
-             * <li>Real merge --> <tt>IllegalStateException</tt></li>
-             * <li>Non real merge --> a copy of the <tt>Separator</tt> of the
+             * <li>Real merge &rarr; <tt>IllegalStateException</tt></li>
+             * <li>Non real merge &rarr; a copy of the <tt>Separator</tt> of the
              * first entry of the sibling <tt>Node</tt></li>
              * </ul>
              * </li>

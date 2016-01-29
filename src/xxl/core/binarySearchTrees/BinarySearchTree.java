@@ -53,7 +53,7 @@ import xxl.core.predicates.Predicate;
 public class BinarySearchTree {
 	
 	/**
-	 * Returns a Factory-Method Function (Predicate x Function -> BinarySearchTree) that
+	 * Returns a Factory-Method Function (Predicate x Function &rarr; BinarySearchTree) that
 	 * constructs new BinarySearchTrees.
 	 */
 	public static final Function FACTORY_METHOD = new AbstractFunction() {
@@ -226,8 +226,8 @@ public class BinarySearchTree {
 	 	 * @param result int[] that contains a return value (see "Returns").
 		 * @return Node that contains the object or the node
 		 * 	where the search had to be terminated
-		 * 	(result[0] is set to 0 if the object was found, <0 if object is left of that
-		 * 	node, >0 if greater than the node)
+		 * 	(result[0] is set to 0 if the object was found, &lt;0 if object is left of that
+		 * 	node, &gt;0 if greater than the node)
 		 */
 		public Node get (Comparator chooseSubtree, Object [] object, int [] result) {
 			Node node = this, child = node;
@@ -462,8 +462,8 @@ public class BinarySearchTree {
 	 * @param object Object[] that contains the object.
 	 * @param result int[] that contains a return value (see "Returns").
 	 * @return Node that contains the object or the node where the search had to 
-	 * be terminated (result[0] is set to 0 if the object was found, <0 if object 
-	 * is left of that node, >0 if greater than the node)
+	 * be terminated (result[0] is set to 0 if the object was found, &lt;0 if object 
+	 * is left of that node, &gt;0 if greater than the node)
 	 */
 	public Node get (Comparator chooseSubtree, Object [] object, int [] result) {
 		return root()==null? null: root().get(chooseSubtree, object, result);

@@ -265,7 +265,7 @@ public class Tuples {
 	/**
 	 * Returns a function that accesses a column of a tuple parameter.
 	 *
-	 * <p>The function domains: <pre>Tuple --> Object (column)</pre></p>
+	 * <p>The function domains: <pre>Tuple &rarr; Object (column)</pre></p>
 	 *
 	 * @param columnIndex index of the column: the first column is 1, the
 	 *        second is 2, ...

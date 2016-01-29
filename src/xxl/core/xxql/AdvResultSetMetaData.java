@@ -67,7 +67,7 @@ public class AdvResultSetMetaData extends ColumnMetaDataResultSetMetaData {
 	 * after</b> creating the Object with this constructor (e.g. when concatenating metadata etc). <br>
 	 * However if fillMappings is set to true, the mappings will be generated.
 	 * @param myAlias alias of the Cursor belonging to this metadata, null if none
-	 * @param fillMappings if true, mappings (alias.name->index) will be generated. If false, you 
+	 * @param fillMappings if true, mappings (alias.name&rarr;index) will be generated. If false, you 
 	 * 			have to do that yourself afterwards
 	 * @param columnMetaDatas the metadatas of each column
 	 * 
@@ -242,7 +242,7 @@ public class AdvResultSetMetaData extends ColumnMetaDataResultSetMetaData {
 	
 	/**
 	 * Returns a "clone" of this MetaData, but there are new mappings for the new alias.
-	 * (newAlias.nameOfSomeColumn -> index)<br>
+	 * (newAlias.nameOfSomeColumn &rarr; index)<br>
 	 * Please note that there will (and can) be no mapping for duplicate names (You may still acess
 	 * them with their original Alias, though).
 	 * @param newAlias the new alias

@@ -35,11 +35,11 @@ import java.util.List;
  * object space
  * 
  * <p>
- * <tt>f:O -->O^n</tt>&ensp;with&ensp;<tt>f=(f1(a),f2(a),...,fn(a))</tt>
+ * <tt>f:O &rarr;O^n</tt>&ensp;with&ensp;<tt>f=(f1(a),f2(a),...,fn(a))</tt>
  * </p>
  * 
  * <p>for given functions&ensp;<tt>f1,...,fn</tt>&ensp;with&ensp;
- * <tt>fi:O-->O, i=1,...,n</tt>&ensp; by composing them in a vector-like
+ * <tt>fi:O&rarr;O, i=1,...,n</tt>&ensp; by composing them in a vector-like
  * manner.</p>
  * 
  * @param <P> the type of the decorator list-function's parameters.

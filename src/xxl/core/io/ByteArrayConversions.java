@@ -37,7 +37,7 @@ import java.io.UnsupportedEncodingException;
 import xxl.core.util.WrappingRuntimeException;
 
 /**
- * 	Conversion routines: byte array <--> short, int, long.
+ * 	Conversion routines: byte array &harr; short, int, long.
  *	<br>
  *	There are some catogories of methods:
  *	<ul>

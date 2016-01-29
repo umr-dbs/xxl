@@ -268,7 +268,7 @@ public class HashSAImplementor<E> extends AbstractSAImplementor<E> {
 	 * An array of hash functions offering insertion, 
 	 * retrieval and reorganization depending on the 
 	 * ID passed to the method calls. Each hash function
-	 * is a map from Object -> Integer. 
+	 * is a map from Object &rarr; Integer. 
 	 */
 	protected Function<? super E,Integer>[] hashFunctions;
 
@@ -285,7 +285,7 @@ public class HashSAImplementor<E> extends AbstractSAImplementor<E> {
 	 * Constructs a new HashListSAImplementor.
 	 * 
 	 * @param hashFunctions The array of hash functions. Each is a 
-	 * 		  map from Object -> Integer. 
+	 * 		  map from Object &rarr; Integer. 
 	 * @param newList A parameterless function that returns a new 
 	 * 		  list at each invocation. These lists represent the
 	 * 		  buckets of the hash table.
@@ -302,7 +302,7 @@ public class HashSAImplementor<E> extends AbstractSAImplementor<E> {
 	 * Constructs a new HashListSAImplementor.
 	 * 
 	 * @param hashFunctions The array of hash functions. Each is a 
-	 * 		  map from Object -> Integer.
+	 * 		  map from Object &rarr; Integer.
 	 */
 	public HashSAImplementor(Function<? super E,Integer>[] hashFunctions) {
 		this.hashFunctions = hashFunctions;
@@ -321,7 +321,7 @@ public class HashSAImplementor<E> extends AbstractSAImplementor<E> {
 	 * passed to query, expire and reorganize calls.
 	 * 
 	 * @param hashFunction The hash function, which is a 
-	 * 		  map from Object -> Integer. 
+	 * 		  map from Object &rarr; Integer. 
 	 * @param newList A parameterless function that returns a new 
 	 * 		  list at each invocation. These lists represent the
 	 * 		  buckets of the hash table.
@@ -345,7 +345,7 @@ public class HashSAImplementor<E> extends AbstractSAImplementor<E> {
 	 * instances of the class {@link java.util.LinkedList LinkedList}.
 	 *  
 	 * @param hashFunction The hash function, which is a 
-	 * 		  map from Object -> Integer. 
+	 * 		  map from Object &rarr; Integer. 
 	 * @param dim The number of possible inputs or in other words,
 	 * 		  the number of different IDs that can be passed to 
 	 * 		  method calls of this implementor. 

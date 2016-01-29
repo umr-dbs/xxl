@@ -27,7 +27,7 @@ package xxl.core.util;
 
 /**
  * An interface for determining the distance between two objects (see also
- * Comparable <--> Comparator).
+ * Comparable &harr; Comparator).
  * 
  * @param <T> the type of the object whose distance related to this object can
  *        be determined.

@@ -279,8 +279,8 @@ public class Maths {
 	 * Computes the distance in the p-norm of double values treated as vectors
 	 * in a real space with dimension 1.
 	 * 
-	 * @param x argument to evaluate. That is (x,y) |--> d(x,y).
-	 * @param y argument to evaluate. That is (x,y) |--> d(x,y).
+	 * @param x argument to evaluate. That is (x,y) &rarr; d(x,y).
+	 * @param y argument to evaluate. That is (x,y) &rarr; d(x,y).
 	 * @param p norm parameter.
 	 * @throws IllegalArgumentException if the dimensions of x,y don't match or
 	 *         p&nbsp;&lt;&nbsp;1.
@@ -294,8 +294,8 @@ public class Maths {
 	 * Computes the distance in p-norm of the double[] treated as vectors in a
 	 * real space with dimension of x.length.
 	 * 
-	 * @param x argument to evaluate. That is (x,y) |--> d(x,y).
-	 * @param y argument to evaluate. That is (x,y) |--> d(x,y).
+	 * @param x argument to evaluate. That is (x,y) &rarr; d(x,y).
+	 * @param y argument to evaluate. That is (x,y) &rarr; d(x,y).
 	 * @param p norm parameter.
 	 * @throws IllegalArgumentException if the dimensions of x,y don't match or
 	 *         p&nbsp;&lt;&nbsp;1.

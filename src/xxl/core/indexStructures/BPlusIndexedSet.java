@@ -213,7 +213,7 @@ public class BPlusIndexedSet<E> extends IndexedSet<BPlusTree, E> {
             .getColumnCount())
           throw new IllegalArgumentException("The column count of entry \"" + o
               + "\" does not match the tables column count.");
-      } catch (SQLException _) {}
+      } catch (SQLException error) {}
     }
 
     Object removedObject = mTree.remove(tupleToRemove);

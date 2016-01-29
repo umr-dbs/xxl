@@ -28,7 +28,7 @@ package xxl.core.math.statistics.nonparametric.kernels;
 /** Classes implementing this interface provide a n-dimensional 
  * {@link xxl.core.math.statistics.nonparametric.kernels.KernelFunction kernel function} 
  * evaluating objects of type <tt>double []</tt> representing a n-dimensional real-valued vector.
- * A <tt>kernel function of dimension n</tt> is defined as <br>f : R^n --> R with x |--> f(x). 
+ * A <tt>kernel function of dimension n</tt> is defined as <br>f : R^n &rarr; R with x |--> f(x). 
  * <br>
  * There are two common ways to implement kernel functions of higher dimensions.
  * In the first one a {@link xxl.core.math.statistics.nonparametric.kernels.ProductKernelFunction product kernel function}
@@ -45,7 +45,7 @@ public abstract interface KernelFunctionND {
 	 * as an object of type <tt>double []</tt>.
 	 * 
 	 * @param x function argument given as <tt>double []</tt>
-	 * @return f(x) with f : R^n --> R
+	 * @return f(x) with f : R^n &rarr; R
 	 */
 	public abstract double eval(double[] x);
 }

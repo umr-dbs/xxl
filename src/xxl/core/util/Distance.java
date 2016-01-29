@@ -32,7 +32,7 @@ import xxl.core.spatial.LpMetric;
 
 /**
  * An interface for determining the distance between two objects (see also
- * Comparable <--> Comparator).
+ * Comparable &harr; Comparator).
  * 
  * @param <T> the type of the objects whose distance can be determined by this
  *        class.

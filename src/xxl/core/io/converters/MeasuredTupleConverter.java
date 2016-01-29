@@ -292,7 +292,7 @@ public final class MeasuredTupleConverter extends MeasuredConverter<Tuple> {
    *         within your <code>ResultSetMetaData</code>
    */
   @Override
-  public Tuple read(DataInput dataInput, Tuple _) throws IOException {
+  public Tuple read(DataInput dataInput, Tuple t) throws IOException {
     // Read entire tuple object size which is the tuple dimension.
     // Example: Tuple(Integer, String) has dimension 2
     int tupleDimension = IntegerConverter.DEFAULT_INSTANCE.readInt(dataInput);

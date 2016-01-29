@@ -120,7 +120,7 @@ import java.lang.reflect.Array;
  * <code><pre>
  *   ArrayResizer arrayResizer = ArrayResizer.DEFAULT_INSTANCE; // get a default instance
  *   int[] ints = new int[10]; // use a primitive type array
- * 	int size = 20; // minimal needed size (logical size) --> grow
+ * 	int size = 20; // minimal needed size (logical size) &rarr; grow
  * 	int[] resizedArray = (int[])arrayResizer.resize(ints, size); // resize-call
  * </code></pre>
  * This examples creates a new default instance of this class and calls the
@@ -139,7 +139,7 @@ import java.lang.reflect.Array;
  * <code><pre>
  * 	arrayResizer = new ArrayResizer(0.2); // create new ArrayResizer with fmin = 0.2
  * 	ints = new int[100]; // use a primitive type array
- * 	size = 10; // minimal needed size (logical size) --> shrink
+ * 	size = 10; // minimal needed size (logical size) &rarr; shrink
  * 	resizedArray = (int[])arrayResizer.resize(ints, size); // resize-call
  * </code></pre>
  * In this case a new instance of ArrayResizer is created by specifying
@@ -162,7 +162,7 @@ import java.lang.reflect.Array;
  * 	arrayResizer = new ArrayResizer(0.2, 0.6, 0.8);
  * 	// use an Object array
  * 	Integer[] objects = new Integer[]{new Integer(0), new Integer(1), new Integer(2)};
- * 	size = 10; // minimal needed size (logical size) --> grow
+ * 	size = 10; // minimal needed size (logical size) &rarr; grow
  * 	Integer[] resizedObjectArray = (Integer[])arrayResizer.resize(objects, size); // resize-call
  * 	System.out.println("initial array size:" +objects.length);
  * 	System.out.println("logical size:  " +size);

@@ -85,7 +85,7 @@ import xxl.core.math.functions.AggregationFunction;
  * 
  * <p><b>Example usage (2):</b>
  * <code><pre>
- *     // Object[0] --> name, Object[1] --> age
+ *     // Object[0] &rarr; name, Object[1] --> age
  * 
  *     Object[][] persons = new Object[][] {
  *         new Object[] {new String("Tobias"), new Integer(23)},

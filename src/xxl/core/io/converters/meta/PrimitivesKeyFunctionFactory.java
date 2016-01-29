@@ -86,7 +86,7 @@ public class PrimitivesKeyFunctionFactory extends KeyFunctionFactory {
    * {@link TupleKeyFunctionFactory} for {@link TupleType} handling.
    */
   @Override
-  public Function getKeyRangeFunction(int _) {
+  public Function getKeyRangeFunction(int i) {
     switch (mJavaType) {
       case BOOLEAN:
         return BooleanKeyRange.FACTORY_FUNCTION;

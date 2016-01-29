@@ -35,7 +35,7 @@ import java.io.IOException;
 
 
 /**
- * Conversion routines byte-Array --> short, int, long.
+ * Conversion routines byte-Array &rarr; short, int, long.
  * Little endian byte ordering is assumed:
  * 00 01 00 00 = 1, 00 00 00 01 = 65536, 00 00 80 00 = -2147483648
  */

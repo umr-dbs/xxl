@@ -40,8 +40,8 @@ public class RealFunctions {
 	 */
 	private RealFunctions() {}
 
-	/** Returns the identity function defined by f:R --> R respectively,
-	 * f:double --> double.
+	/** Returns the identity function defined by f:R &rarr; R respectively,
+	 * f:double &rarr; double.
 	 *
 	 * @see RealFunction
 	 */
@@ -122,7 +122,7 @@ public class RealFunctions {
 		};
 	}
 
-	/** Returns a pdf f:R --> R defined by<BR>
+	/** Returns a pdf f:R &rarr; R defined by<BR>
 	 * f(x) =  f1(x) * ( 0 <= x <= 1/3) + f2(x) * ( 1/3 < x <= 1)<BR>with<BR>
 	 * f1(x) = 1 + 27x^2 - 54x^3<BR>
 	 * and<BR>
@@ -146,7 +146,7 @@ public class RealFunctions {
 		};
 	}
 
-	/** Returns a pdf f:R --> R defined by<BR>
+	/** Returns a pdf f:R &rarr; R defined by<BR>
 	 * f(x) =  f1(x) * ( 0 <= x <= 0.3) + f2(x) * ( 0.3 < x < 0.6 + f3(x) * ( 0.6 <= x <= 1))<BR>with<BR>
 	 * Thereby, f1, f2, f3 are local polynomials of degree 3 such that the overall function constitutes a pdf and
 	 * contains two jumps. For the exact definition of the function we refer to the code.

@@ -72,7 +72,7 @@ import xxl.core.functions.Function;
  * This mapper maps the given numbers of the enumerator with range 0,...,20
  * concerning the above defined function
  * <pre>
- *     f : x --> 2*x.
+ *     f : x &rarr; 2*x.
  * </pre>
  * The function is applied on each element of the given enumerator, therefore
  * the following output is printed to the output stream:

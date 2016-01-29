@@ -122,14 +122,14 @@ public abstract class Tree {
 
 	/** Returns the <tt>Descriptor</tt> of a given data item.
 		<br>
-		Function: Object -> Descriptor.
+		Function: Object &rarr; Descriptor.
 		<br>
 	*/
 	public Function getDescriptor;
 
 	/** Returns the <tt>Container</tt>used to store a new <tt>Node</tt> created by a split operation.
 		<br>
-		Function: {@link Tree.Node.SplitInfo} -> {@link Container},
+		Function: {@link Tree.Node.SplitInfo} &rarr; {@link Container},
 		<br>
 		{@link Tree.Node.SplitInfo}: information on the split.
 		If the {@link Container} of a new root has to be determined, then 
@@ -140,7 +140,7 @@ public abstract class Tree {
 	/** Returns the {@link Container} that is used to store the node 
 	 * the <tt>IndexEntry</tt> is pointing to.
 		<br>
-		Function: {@link Tree.IndexEntry} -> {@link Container}
+		Function: {@link Tree.IndexEntry} &rarr; {@link Container}
 		<br>
 	*/
 	public Function getContainer;
@@ -160,7 +160,7 @@ public abstract class Tree {
 		be the number of entries of the <tt>Node</tt> that was split (before the split).
 
 		<br>
-		Function: {@link Tree.Node} -> double
+		Function: {@link Tree.Node} &rarr; double
 		<br>
 	*/
 	public Function getSplitMinRatio;
@@ -169,7 +169,7 @@ public abstract class Tree {
 	 * contain after a split. The point of reference is assumed to 
 	 * be the number of entries of the node that was split (before the split).
 	 * <br>
-	 * Function: {@link Tree.Node} -> double
+	 * Function: {@link Tree.Node} &rarr; double
 	 * <br>
 	*/
 	public Function getSplitMaxRatio;
@@ -1393,7 +1393,7 @@ public abstract class Tree {
 		/** Chooses the subtree which is followed during an insertion.
 		  * @param descriptor the Descriptor of data object
 		  * @param path the path from the root to this node
-		  * @param isValidEntry Function (IndexEntry->Boolean) that determines whether 
+		  * @param isValidEntry Function (IndexEntry&rarr;Boolean) that determines whether 
 		  * an <tt>indexEntry</tt> may be chosen.
 		  * @return the index entry refering to the root of the chosen subtree
 		  */
@@ -1404,7 +1404,7 @@ public abstract class Tree {
 		/** Chooses the subtree which is followed during an insertion.
 		 * @param object the object to be inserted. Its descriptor is used to choose the subtree
 		 * @param path the path from the root to this node
-		 * @param isValidEntry Function (IndexEntry->Boolean) that determines whether an 
+		 * @param isValidEntry Function (IndexEntry&rarr;Boolean) that determines whether an 
 		 * <tt>indexEntry</tt> may be chosen
 		 * @return the index entry refering to the root of the chosen subtree  
 		 */
@@ -1415,7 +1415,7 @@ public abstract class Tree {
 		/** Chooses the subtree which is followed during an insertion.
 		  *	@param descriptor the Descriptor of the data object
 		  *	@param path the path from the root to this node
-		  *	@param isValidEntry <tt>Predicate</tt> (IndexEntry->boolean) that determines whether an 
+		  *	@param isValidEntry <tt>Predicate</tt> (IndexEntry&rarr;boolean) that determines whether an 
 		  * <tt>indexEntry</tt> may be chosen
 		  * @return the index entry refering to the root of the chosen subtree
 		  */
@@ -1426,7 +1426,7 @@ public abstract class Tree {
 		/** Chooses the subtree which is followed during an insertion.
 		  * @param object the object to be inserted. Its descriptor is used to choose the subtree
 		  *	@param path the path from the root to this node
-		  *	@param isValidEntry <tt>Predicate</tt> (IndexEntry->boolean) that determines whether an 
+		  *	@param isValidEntry <tt>Predicate</tt> (IndexEntry&rarr;boolean) that determines whether an 
 		  * <tt>indexEntry</tt> may be chosen
 		  * @return The index-entry refering to the root of the chosen subtree
 		  */
@@ -1741,7 +1741,7 @@ public abstract class Tree {
 		protected Queue queue;
 
 		/** The level on which the query must stop and return the qualified entries
-		 * on this level. For example: targetLevel==0 --> The query stops on the leaf level 
+		 * on this level. For example: targetLevel==0 &rarr; The query stops on the leaf level 
 		 * and returns only the qualified leaf-entries.  
 		*/
 		protected int targetLevel;

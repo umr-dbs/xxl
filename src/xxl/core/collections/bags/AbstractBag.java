@@ -144,11 +144,11 @@ public abstract class AbstractBag<E> implements Bag<E> {
 	 * to the cursor method except that its result is determined by a
 	 * predicate. This implementation filters the result of the cursor method
 	 * using the following code:
-	 * <code><pre>
-	 *   return size() > 0 ?
+	 * <pre><code>
+	 *   return size() &gt; 0 ?
 	 *       (Cursor&lt;E&gt;)new Filter&lt;E&gt;(cursor(), predicate) :
 	 *       new EmptyCursor&lt;E&gt;();
-	 * </pre></code>
+	 * </code></pre>
 	 * The default implementation of this method is not very interesting,
 	 * but the method is very import for some bags. When the data
 	 * structure that is internally used for storing the elements of this

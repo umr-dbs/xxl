@@ -40,7 +40,7 @@ import xxl.core.predicates.Predicate;
 public class AVLTree extends BinarySearchTree {
 	
 	/**
-	 * Returns a Factory-Method Function (Function x Function -> BinarySearchTree) that
+	 * Returns a Factory-Method Function (Function x Function &rarr; BinarySearchTree) that
 	 * constructs new AVLTrees.
 	 */
 	public static final Function FACTORY_METHOD = new AbstractFunction() {

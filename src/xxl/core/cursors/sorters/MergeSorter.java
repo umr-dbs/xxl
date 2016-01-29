@@ -230,11 +230,11 @@ import xxl.core.predicates.AbstractPredicate;
  *         finalFanIn:             3
  * -----------------------------------------------------------
  *
- * merge: fanIn: 3  queues.size(): 41 --> 39
- * merge: fanIn: 10  queues.size(): 39 --> 30
- * merge: fanIn: 10  queues.size(): 30 --> 21
- * merge: fanIn: 10  queues.size(): 21 --> 12
- * merge: fanIn: 10  queues.size(): 12 --> 3
+ * merge: fanIn: 3  queues.size(): 41 &rarr; 39
+ * merge: fanIn: 10  queues.size(): 39 &rarr; 30
+ * merge: fanIn: 10  queues.size(): 30 &rarr; 21
+ * merge: fanIn: 10  queues.size(): 21 &rarr; 12
+ * merge: fanIn: 10  queues.size(): 12 &rarr; 3
  * final merge: fanIn: 3
  * Objects: 300000
  * </pre></p>
