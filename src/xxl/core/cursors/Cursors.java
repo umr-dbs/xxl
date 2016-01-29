@@ -464,7 +464,7 @@ public abstract class Cursors {
 	 *         order as provided by the iterator.
 	 */
 	public static <E, M> LinkedList<E> minima(Iterator<? extends E> iterator, Function<? super E, ? extends M> getFeature, Comparator<? super M> comparator) {
-		return minimize(iterator, getFeature, comparator).getValue();
+		return (LinkedList<E>) minimize(iterator, getFeature, comparator).getValue();
 	}
 
 	/**
@@ -484,7 +484,7 @@ public abstract class Cursors {
 	 *         order as provided by the iterator.
 	 */
 	public static <E, M> LinkedList<E> maxima(Iterator<? extends E> iterator, Function<? super E, ? extends M> getFeature, Comparator<? super M> comparator) {
-		return maximize(iterator, getFeature, comparator).getValue();
+		return (LinkedList<E>) maximize(iterator, getFeature, comparator).getValue();
 	}
 
 	/**
@@ -553,7 +553,7 @@ public abstract class Cursors {
 	 *         order as provided by the iterator.
 	 */
 	public static <E, M extends Comparable<M>> LinkedList<E> minima(Iterator<? extends E> iterator, Function<? super E, ? extends M> getFeature) {
-		return minimize(iterator, getFeature).getValue();
+		return (LinkedList<E>) minimize(iterator, getFeature).getValue();
 	}
 
 	/**
@@ -574,7 +574,7 @@ public abstract class Cursors {
 	 *         order as provided by the iterator.
 	 */
 	public static <E, M extends Comparable<M>> LinkedList<E> maxima(Iterator<? extends E> iterator, Function<? super E, ? extends M> getFeature) {
-		return maximize(iterator, getFeature).getValue();
+		return (LinkedList<E>) maximize(iterator, getFeature).getValue();
 	}
 
 	/**
@@ -623,7 +623,7 @@ public abstract class Cursors {
 	 *         order as provided by the iterator.
 	 */
 	public static <E> LinkedList<E> minima(Iterator<? extends E> iterator, Comparator<? super E> comparator) {
-		return minimize(iterator, comparator).getValue();
+		return (LinkedList<E>) minimize(iterator, comparator).getValue();
 	}
 
 	/**
@@ -638,7 +638,7 @@ public abstract class Cursors {
 	 *         order as provided by the iterator.
 	 */
 	public static <E> LinkedList<E> maxima(Iterator<? extends E> iterator, Comparator<? super E> comparator) {
-		return maximize(iterator, comparator).getValue();
+		return (LinkedList<E>) maximize(iterator, comparator).getValue();
 	}
 
 	/**
