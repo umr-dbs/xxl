@@ -23,13 +23,13 @@ License along with this library;  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-package xxl.core.xxlinq.usecases;
+package xxl.core.xxql.usecases;
 
 
-import static xxl.core.xxlinq.AdvPredicate.*;
-import static xxl.core.xxlinq.AggregateUtils.*;
-import static xxl.core.xxlinq.columns.ColumnUtils.*;
-import static xxl.core.xxlinq.columns.Column.SubQueryType.*;
+import static xxl.core.xxql.AdvPredicate.*;
+import static xxl.core.xxql.AggregateUtils.*;
+import static xxl.core.xxql.columns.ColumnUtils.*;
+import static xxl.core.xxql.columns.Column.SubQueryType.*;
 
 
 import java.sql.Connection;
@@ -40,9 +40,9 @@ import java.sql.Statement;
 import java.util.Arrays;
 import java.util.List;
 
-import xxl.core.xxlinq.AdvTupleCursor;
-import xxl.core.xxlinq.AdvTupleCursor.CachingStrategy;
-import xxl.core.xxlinq.AdvTupleCursor.JOIN_TYPE;
+import xxl.core.xxql.AdvTupleCursor;
+import xxl.core.xxql.AdvTupleCursor.CachingStrategy;
+import xxl.core.xxql.AdvTupleCursor.JOIN_TYPE;
 
 @SuppressWarnings("unused")
 public class JLINQTests {
