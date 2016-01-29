@@ -1,6 +1,7 @@
 package xxl.core.indexStructures.indexBuilder;
 
 import java.sql.SQLException;
+import java.util.Iterator;
 
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
@@ -11,6 +12,7 @@ import xxl.core.indexStructures.BPlusIndexedSetView;
 import xxl.core.indexStructures.Entry;
 import xxl.core.indexStructures.builder.Builders;
 import xxl.core.relational.schema.Schemas;
+import xxl.core.relational.tuples.ColumnComparableArrayTuple;
 import xxl.core.relational.tuples.Tuple;
 
 public class BPlusIndexedSetHeadSetOperationTuplesTest {
@@ -49,12 +51,13 @@ public class BPlusIndexedSetHeadSetOperationTuplesTest {
     Entry.WithKey upperBound = new Entry.WithKey(KEY_VALUE);
 
     BPlusIndexedSetView subSet =
-        (BPlusIndexedSetView) mySet1.headSet(upperBound);
+        (BPlusIndexedSetView)  mySet1.headSet(upperBound);
+    
     Object[] o = subSet.toArray();
-    Object[] b = new Object[MAX_ITEMS_TO_INSERT1 / 2];
-    for (int i = 0; i < MAX_ITEMS_TO_INSERT1 / 2; i++)
-      b[i] = new Object[] {i, "Doe"};
-    Assert.assertEquals(o, b);
+    for (int i = 0; i < o.length; i++) {
+		Object[] entry = (Object[]) o[i];
+		Assert.assertEquals(entry, new Object[] {i, "Doe"});
+	}
   }
 
   @Test
@@ -64,11 +67,10 @@ public class BPlusIndexedSetHeadSetOperationTuplesTest {
         (BPlusIndexedSetView) mySet1.headSet(upperBound);
 
     Object[] a = subSet.toArray();
-    Object[] b = new Object[MAX_ITEMS_TO_INSERT1 - 1];
-    // items in subset are strictly less than upperBound
-    for (int i = 0; i < MAX_ITEMS_TO_INSERT1 - 1; i++)
-      b[i] = new Object[] {i, "Doe"};
-    Assert.assertEquals(a, b);
+    for (int i = 0; i < a.length; i++) {
+		Object[] entry = (Object[]) a[i];
+		Assert.assertEquals(entry, new Object[] {i, "Doe"});
+	}
   }
 
 
