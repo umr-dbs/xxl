@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
+
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <title>XXL by umr-dbs</title>
+  </head>
+
+  <body>
+    <header>
+      <div class="inner">
+        <h1>XXL</h1>
+        <h2>The eXtensible and fleXible Library XXL for Java</h2>
+        <a href="https://github.com/umr-dbs/xxl" class="button"><small>View project on</small> GitHub</a>
+      </div>
+    </header>
+
+    <div id="content-wrapper">
+      <div class="inner clearfix">
+        <section id="main-content">
+          <h1>
+<a id="xxl" class="anchor" href="#xxl" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>XXL</h1>
+
+<p>The eXtensible and fleXible Library XXL is a Java library that contains a rich infrastructure for implementing advanced query processing functionality.
+The library offers low-level components like access to raw disks as well as high-level ones like a query optimizer.
+On the intermediate levels, XXL provides a demand-driven cursor algebra, a framework for indexing and a powerful package for supporting aggregation.
+The XXL project provides various packages.
+See the longer introduction to XXL for an explanation of the packages.</p>
+
+<h2>
+<a id="main-features" class="anchor" href="#main-features" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Main Features</h2>
+
+<ul>
+<li>A demand-driven cursor algebra including efficient implementations of object-relational operators such as joins, difference, MergeSort etc.</li>
+<li>An extended relational algebra based on java.sql.ResultSet</li>
+<li>A powerful framework of index-structures, e.g. B+tree, R-tree (linear and quadratic split Guttman et al), R*tree, RR*tree, 
+Hilbert R-tree, R-tree (linear split Tan et al), X-tree, M-tree etc.</li>
+<li>A framework for processing multi-way joins including spatial, temporal, and similarity joins</li>
+<li>The support of raw-I/O (using JNI), an own file system implementation, and a record manager</li>
+<li>Skyline query R-tree extension</li>
+<li>MVBT (Multiversion B+Tree)-Index Implementation</li>
+<li>MVBT+ bulk-loading approach</li>
+<li>Sort-based bulk-loading methods for R-trees (including STR and GOPT approach)</li>
+<li>Top-down buffer tree bulk-loading of R-trees</li>
+</ul>
+
+<h2>
+<a id="building" class="anchor" href="#building" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Building</h2>
+
+<p>You can add the XXL library into your local maven repository by calling <code>mvn install -DskipTests</code>.</p>
+
+<p>If you just want to generate jar files you can execute <code>mvn package</code>.
+You should find the output files in the <em>target</em> directory.</p>
+
+<p>In order to just generate JavaDoc you can execute <code>mvn javadoc:javadoc</code>.
+The <em>target</em> directory should now contain the JavaDoc HTML pages.</p>
+
+<p>To execute the tests you can call <code>mvn test</code>.
+Now maven will run all testNG testcases for XXL.</p>
+
+<h2>
+<a id="using" class="anchor" href="#using" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Using</h2>
+
+<p>All classes of XXL are documented in detail, containing examples in the JavaDoc.
+You can also look at the test cases how the different data structures were used there.
+Additionally, you can find use cases separately in <a href="http://github.com/umr-dbs/xxl-usecases">xxl-usecases</a> that simplify their understanding.</p>
+
+<h2>
+<a id="papers" class="anchor" href="#papers" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Papers</h2>
+
+<ul>
+<li><p>Michael Cammert, Christoph Heinz, Jürgen Krämer, Martin Schneider, Bernhard Seeger: <br>
+<a href="http://dbs.mathematik.uni-marburg.de/publications/myPapers/2003/CHKSS03.pdf"><strong>A Status Report on XXL - a Software Infrastructure for Efficient Query Processing.</strong></a> IEEE Data Eng. Bull. 26(2): 12-18 (2003)</p></li>
+<li><p>Jochen Van den Bercken, Björn Blohsfeld, Jens-Peter Dittrich, Jürgen Krämer, Tobias Schäfer, Martin Schneider, Bernhard Seeger: <br>
+<a href="http://www.vldb.org/conf/2001/P039.pdf"><strong>XXL - A Library Approach to Supporting Efficient Implementations of Advanced Database Queries.</strong></a> VLDB 2001: 39-48</p></li>
+<li><p>Jochen Van den Bercken, Jens-Peter Dittrich, Bernhard Seeger: <br>
+<a href="http://dl.acm.org/citation.cfm?id=336562"><strong>javax.XXL: A prototype for a Library of Query processing Algorithms.</strong></a> SIGMOD Conference 2000: 588</p></li>
+</ul>
+
+<h2>
+<a id="contributing-to-the-xxl-project" class="anchor" href="#contributing-to-the-xxl-project" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Contributing to the XXL-Project</h2>
+
+<p>Since we consider XXL as a toolbox for the entire community, we would be pleased to get feed-back from research projects that use the functionality of XXL.
+In particular, we encourage people, who have extended the functionality of XXL, to attach their code to our release in a supplement package.</p>
+
+<h2>
+<a id="license" class="anchor" href="#license" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>License</h2>
+
+<p>All versions of XXL are freely available under the terms of the GNU Lesser General Public License.</p>
+        </section>
+
+        <aside id="sidebar">
+          <a href="https://github.com/umr-dbs/xxl/zipball/master" class="button">
+            <small>Download</small>
+            .zip file
+          </a>
+          <a href="https://github.com/umr-dbs/xxl/tarball/master" class="button">
+            <small>Download</small>
+            .tar.gz file
+          </a>
+
+          <p class="repo-owner"><a href="https://github.com/umr-dbs/xxl"></a> is maintained by <a href="https://github.com/umr-dbs">umr-dbs</a>.</p>
+
+          <p>This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the Architect theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.</p>
+        </aside>
+      </div>
+    </div>
+
+  
+  </body>
+</html>
