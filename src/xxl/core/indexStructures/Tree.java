@@ -398,7 +398,7 @@ public abstract class Tree {
 		int leafMaxCap = payLoad / dataSize;
 		int innerNodeMaxCap = payLoad / (descriptorSize+8);
 		int leafMinCap = (int) (leafMaxCap * minMaxFactor);
-		int innerNodeMinCap = (int) (innerNodeMaxCap * minMaxFactor);			
+		int innerNodeMinCap = (int) (innerNodeMaxCap * minMaxFactor);		
 		return initialize(rootEntry, rootDescriptor, getDescriptor, container, innerNodeMinCap, innerNodeMaxCap, leafMinCap, leafMaxCap);
 	}
 		
@@ -1061,6 +1061,7 @@ public abstract class Tree {
 		 * @return the <tt>Node</tt> to which this <tt>IndexEntry</tt> refers
 		 */
 		public Node get(boolean unfix) {
+			// System.out.println("tree IndexEntry get() unfix " + unfix + " id() " + id());
 			return (Node)container().get(id(), unfix);
 		}
 

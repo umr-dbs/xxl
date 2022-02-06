@@ -1,0 +1,231 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Launch Current File",
+            "request": "launch",
+            "mainClass": "${file}"
+        },
+        {
+            "type": "java",
+            "name": "Launch RawAccessTest",
+            "request": "launch",
+            "mainClass": "xxl.core.indexStructures.RawAccessTest",
+            "projectName": "xxlcore"
+        },
+        {
+            "type": "java",
+            "name": "Launch Tests",
+            "request": "launch",
+            "mainClass": "xxl.core.indexStructures.Tests",
+            "projectName": "xxlcore"
+        },
+        {
+            "type": "java",
+            "name": "Launch BTreeTest",
+            "request": "launch",
+            "mainClass": "xxl.core.indexStructures.btrees.BTreeTest",
+            "projectName": "xxlcore"
+        },
+        {
+            "type": "java",
+            "name": "Launch MultiDiskBTreeTest",
+            "request": "launch",
+            "mainClass": "xxl.core.indexStructures.btrees.MultiDiskBTreeTest",
+            "projectName": "xxlcore"
+        },
+        {
+            "type": "java",
+            "name": "Launch SimpleBPlusTreeTest",
+            "request": "launch",
+            "mainClass": "xxl.core.indexStructures.btrees.SimpleBPlusTreeTest",
+            "projectName": "xxlcore"
+        },
+        {
+            "type": "java",
+            "name": "Launch IndexedSetExample",
+            "request": "launch",
+            "mainClass": "xxl.core.indexStructures.indexBuilder.IndexedSetExample",
+            "projectName": "xxlcore"
+        },
+        {
+            "type": "java",
+            "name": "Launch MTreeReopenTest",
+            "request": "launch",
+            "mainClass": "xxl.core.indexStructures.mtrees.MTreeReopenTest",
+            "projectName": "xxlcore"
+        },
+        {
+            "type": "java",
+            "name": "Launch MTreeTest",
+            "request": "launch",
+            "mainClass": "xxl.core.indexStructures.mtrees.MTreeTest",
+            "projectName": "xxlcore"
+        },
+        {
+            "type": "java",
+            "name": "Launch MVBTPlusLoadingExample",
+            "request": "launch",
+            "mainClass": "xxl.core.indexStructures.mvbts.MVBTPlusLoadingExample",
+            "projectName": "xxlcore"
+        },
+        {
+            "type": "java",
+            "name": "Launch MVBTreeDemo",
+            "request": "launch",
+            "mainClass": "xxl.core.indexStructures.mvbts.MVBTreeDemo",
+            "projectName": "xxlcore"
+        },
+        {
+            "type": "java",
+            "name": "Launch SimpleLoadMVBTree",
+            "request": "launch",
+            "mainClass": "xxl.core.indexStructures.mvbts.SimpleLoadMVBTree",
+            "projectName": "xxlcore"
+        },
+        {
+            "type": "java",
+            "name": "Launch RTreeSkyLineQueryTest",
+            "request": "launch",
+            "mainClass": "xxl.core.indexStructures.rtrees.RTreeSkyLineQueryTest",
+            "projectName": "xxlcore"
+        },
+        {
+            "type": "java",
+            "name": "Launch RTreeTest",
+            "request": "launch",
+            "mainClass": "xxl.core.indexStructures.rtrees.RTreeTest",
+            "projectName": "xxlcore"
+        },
+        {
+            "type": "java",
+            "name": "Launch RtreeSimpleBulkLoadingExample",
+            "request": "launch",
+            "mainClass": "xxl.core.indexStructures.rtrees.RtreeSimpleBulkLoadingExample",
+            "projectName": "xxlcore"
+        },
+        {
+            "type": "java",
+            "name": "Launch SimpleBulkLoadingExample",
+            "request": "launch",
+            "mainClass": "xxl.core.indexStructures.rtrees.SimpleBulkLoadingExample",
+            "projectName": "xxlcore"
+        },
+        {
+            "type": "java",
+            "name": "Launch SimpleHilbertRTreeTest",
+            "request": "launch",
+            "mainClass": "xxl.core.indexStructures.rtrees.SimpleHilbertRTreeTest",
+            "projectName": "xxlcore"
+        },
+        {
+            "type": "java",
+            "name": "Launch SimpleKPERTreeTest",
+            "request": "launch",
+            "mainClass": "xxl.core.indexStructures.rtrees.SimpleKPERTreeTest",
+            "projectName": "xxlcore"
+        },
+        {
+            "type": "java",
+            "name": "Launch SimpleRTreeTest",
+            "request": "launch",
+            "mainClass": "xxl.core.indexStructures.rtrees.SimpleRTreeTest",
+            "projectName": "xxlcore"
+        },
+        {
+            "type": "java",
+            "name": "Launch ContainerTest",
+            "request": "launch",
+            "mainClass": "xxl.core.io.ContainerTest",
+            "projectName": "xxlcore"
+        },
+        {
+            "type": "java",
+            "name": "Launch FatTest",
+            "request": "launch",
+            "mainClass": "xxl.core.io.FatTest",
+            "projectName": "xxlcore"
+        },
+        {
+            "type": "java",
+            "name": "Launch FileSystemTest",
+            "request": "launch",
+            "mainClass": "xxl.core.io.FileSystemTest",
+            "projectName": "xxlcore"
+        },
+        {
+            "type": "java",
+            "name": "Launch NativeRawAccessTest",
+            "request": "launch",
+            "mainClass": "xxl.core.io.NativeRawAccessTest",
+            "projectName": "xxlcore"
+        },
+        {
+            "type": "java",
+            "name": "Launch RAFTest",
+            "request": "launch",
+            "mainClass": "xxl.core.io.RAFTest",
+            "projectName": "xxlcore"
+        },
+        {
+            "type": "java",
+            "name": "Launch RecordManagerTest",
+            "request": "launch",
+            "mainClass": "xxl.core.io.RecordManagerTest",
+            "projectName": "xxlcore"
+        },
+        {
+            "type": "java",
+            "name": "Launch TestRelational",
+            "request": "launch",
+            "mainClass": "xxl.core.relational.TestRelational",
+            "projectName": "xxlcore"
+        },
+        {
+            "type": "java",
+            "name": "Launch SpaceFillingCurves",
+            "request": "launch",
+            "mainClass": "xxl.core.spatial.SpaceFillingCurves",
+            "projectName": "xxlcore"
+        },
+        {
+            "type": "java",
+            "name": "Launch SpatialBPlusTreeTest",
+            "request": "launch",
+            "mainClass": "xxl.core.spatial.SpatialBPlusTreeTest",
+            "projectName": "xxlcore"
+        },
+        {
+            "type": "java",
+            "name": "Launch TestM4",
+            "request": "launch",
+            "mainClass": "xxl.core.spatial.TestM4",
+            "projectName": "xxlcore"
+        },
+        {
+            "type": "java",
+            "name": "Launch TestPlot",
+            "request": "launch",
+            "mainClass": "xxl.core.spatial.TestPlot",
+            "projectName": "xxlcore"
+        },
+        {
+            "type": "java",
+            "name": "Launch STHist",
+            "request": "launch",
+            "mainClass": "xxl.core.spatial.histograms.utils.STHist",
+            "projectName": "xxlcore"
+        },
+        {
+            "type": "java",
+            "name": "Launch JLINQTests",
+            "request": "launch",
+            "mainClass": "xxl.core.xxql.usecases.JLINQTests",
+            "projectName": "xxlcore"
+        }
+    ]
+}

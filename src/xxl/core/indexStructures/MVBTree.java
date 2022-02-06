@@ -224,6 +224,11 @@ public class MVBTree extends BPlusTree {
 					return getKey.invoke(entry);	
 				}
 			};
+
+		// System.out.print("Before super.initialize "+
+		// 	"B_IndexNode " + B_IndexNode + " D_IndexNode " + D_IndexNode +
+		// 	" B_LeafNode " + B_LeafNode + " D_LeafNode " + D_LeafNode + "\n");
+		
 		super.initialize(rootEntry, liveRootDescriptor, newGetKey, treeContainer, keyConverter, 
 								dataConverter, createMVSeparator, createMVRegion, getSplitMinRatio, getSplitMaxRatio);
 		this.getDescriptor= new AbstractFunction() {
@@ -239,7 +244,14 @@ public class MVBTree extends BPlusTree {
 					throw new IllegalArgumentException(entry.toString());
 				}
 			};
+
+		System.out.print("After super.initialize "+
+		"B_IndexNode " + B_IndexNode + " D_IndexNode " + D_IndexNode +
+		" B_LeafNode " + B_LeafNode + " D_LeafNode " + D_LeafNode + "\n");
+		
 		this.rootConverter=rootConverter(lifespanConverter);
+
+
 		roots.initialize(rootsRootEntry,rootsRootDescriptor, new AbstractFunction() {
 									public Object invoke(Object object) {
 										// Roots have always bounded intervals
@@ -265,6 +277,11 @@ public class MVBTree extends BPlusTree {
 //										return ((IndexEntry)object).separator();
 //									}
 //								};
+
+
+		// System.out.print("After roots.initialize\n");
+		// System.out.print("B_LeafNode " + B_LeafNode + " D_LeafNode "+D_LeafNode+"\n");
+
 			this.underflows = new AbstractPredicate() {
 				public boolean invoke(Object object) {
 					Node node = (Node)object;
@@ -273,7 +290,8 @@ public class MVBTree extends BPlusTree {
 			};
 			if (!checkFactors(B_LeafNode, D_LeafNode, EPSILON, B_LeafNode / D_LeafNode)) throw new IllegalArgumentException();
 			if (!checkFactors(B_IndexNode, D_IndexNode, EPSILON, B_IndexNode / D_IndexNode)) throw new IllegalArgumentException();
-			return this;						
+			
+			return this;					
 	}
 	/** Initializes the <tt>MVBTree</tt> with the given parameters.
 	 * @param getKey a <tt>Function</tt> to extract the key of a data object.
@@ -854,6 +872,10 @@ public class MVBTree extends BPlusTree {
 			}
 		);
 	}
+
+
+
+
 	/** Gives the maximal number of entries which a new created <tt>Node</tt> may contain after a split.
 	 * @return the maximal number of entries which a new created <tt>Node</tt> may contain after a split.
 	 */
@@ -1154,9 +1176,7 @@ public class MVBTree extends BPlusTree {
 		if(c1.compareTo(c2)<=0) return c1;
 		return c2;
 	}
-	/**
-	 * 
-	 */
+
 	private Version minVersion = new Version() {
 		public Object clone() {
 			return this;
@@ -1167,6 +1187,7 @@ public class MVBTree extends BPlusTree {
 		}
 		
 	};
+
 	/** This class represents the entries which can be stored in the leaves of the <tt>MVBTree</tt>. A 
 	 * <tt>LeafEntry</tt> has a <tt>Lifespan</tt> and capsules a data object.
 	 * @author Husain Aljazzar
@@ -1905,8 +1926,8 @@ public class MVBTree extends BPlusTree {
 			}
 			return splitInfo;
 		}
+		
 		/**
-		 * 
 		 * @param splitInfo
 		 */
 		protected  void adjustPredecessors(SplitInfo splitInfo){
@@ -1993,7 +2014,6 @@ public class MVBTree extends BPlusTree {
 			return mergeEntry;
 		}
 		
-		
 		public class SplitInfo extends BPlusTree.Node.SplitInfo {
 			
 			protected Version splitVersion = null;
@@ -2078,12 +2098,10 @@ public class MVBTree extends BPlusTree {
 				isMergePerformed = true;
 			}
 		}
-		
-		
-		
 	}
+
+
 	/**
-	 * 
 	 * Need to handle root in the bplus tree with max key 
 	 *
 	 */
@@ -2107,8 +2125,6 @@ public class MVBTree extends BPlusTree {
 		
 	}
 	
-	
-
 	/** The instances of this class are refernces pointing to a root node 
 	 * of the MVBTree. Also they are leaf entries stored in the BTree "roots". 
 	 * @author Husain Aljazzar
@@ -2516,7 +2532,6 @@ public class MVBTree extends BPlusTree {
 	/** This is an interface for version instances used by the MVBTree. 
 	 * The <tt>MVBTree</tt> can work with any version objects. 
 	 */
-	
 	public static interface Version extends Comparable {
 		public Object clone();
 		public int hashCode();
@@ -2525,7 +2540,6 @@ public class MVBTree extends BPlusTree {
 	/**
 	 * 
 	 * 
-	 *
 	 */
 	protected class MVBTreeQueryCursor extends xxl.core.indexStructures.QueryCursor {
 		
@@ -2550,7 +2564,7 @@ public class MVBTree extends BPlusTree {
 			this.indexEntry=indexEntry;
 			this.nodeRegion=nodeRegion;
 			currentNode=  indexEntry.get(false);
-			//if regio is alive
+			//if region is alive
 			if (queryRegion.endVersion() == null){
 				keySortedEntries = keySortCurrentNodeEntries(((Node)currentNode).getCurrentEntries());
 			}else{
@@ -2774,9 +2788,9 @@ public class MVBTree extends BPlusTree {
 				return new EmptyCursor();				
 		}
 	} // end of class MVBTreeQueryCursor
+
 	/**
 	 * Test Cursor 
-	 * 
 	 */
 	public class PriorityQueryCursor extends Query{
 		/**Query Region */
@@ -3093,5 +3107,19 @@ firstFor:	for (int i = 0; i < candidates.size(); i++ ){
         public int getMaxRecordSize() {
             return Math.max(dataConverter.getMaxObjectSize() + lifespanConverter.getMaxObjectSize(), indexEntrySize());
         }	
+	}
+
+
+	public void printStrucure(Iterator rootsIterator) {
+		while(rootsIterator.hasNext()){
+			Root rootEntry = (Root)rootsIterator.next();
+			System.out.print(rootEntry.toString()+"\n");
+			// System.out.print(rootEntry.getRegion()+"\n");
+			System.out.print("rootNodeId " + rootEntry.rootNodeId() + "\n");
+			System.out.print("parentLevel " + rootEntry.parentLevel() + "\n");
+
+			// IndexEntry indexEntry = rootEntry.toIndexEntry();
+			// System.out.print(indexEntry.toString()+"\n");
+		}
 	}
 }

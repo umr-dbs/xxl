@@ -232,7 +232,7 @@ public class MVBTPlusLoadingExample {
 	 * if a persistent container is used
 	 * 
 	 */
-	public static final String TREE_PATH = "F:/mvbt/mvbt_"; // change for your needs
+	public static final String TREE_PATH = "D:/Code/java/xxl/temp/bulk/mvbt_"; // change for your needs
 	/**
 	 * LRU_SLOTS or AVAILABLE Memory slots
 	 */
@@ -286,7 +286,7 @@ public class MVBTPlusLoadingExample {
 	/**
 	 * Number of records to insert
 	 */
-	public static final int OPERATIONS_NUMBER = 200_000;
+	public static final int OPERATIONS_NUMBER = 100_000;
 	/**
 	 * Number of blocks if RAW access container is used
 	 */
@@ -580,70 +580,70 @@ public class MVBTPlusLoadingExample {
 		/*****************************************************************************************
 		 * bulk load MVBT naive tuple-by-tuple
 		 ******************************************************************************************/
-		System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-		System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-		// create MVBT
-		MVBT tree = new MVBT(BLOCK_SIZE, D, E, Long.MIN_VALUE);
-		LRUBuffer memMVBT = new LRUBuffer<>(LRU_SLOTS);
-		//1.Init MVBT roots tree and main nodes are in the same container
-		CounterContainer cContainerMVBT_LRU = new CounterContainer(getContainer((TREE_PATH + "mvbtLRU.dat"), conatinerType));
-		Container containerMVBT_LRU = new ConverterContainer(cContainerMVBT_LRU, tree.nodeConverter()); // mvbt main
-		Container cContainerMVBT_LRU_roots = new ConverterContainer(cContainerMVBT_LRU, tree.roots.nodeConverter()); // roots
-		Container fMVBTContainer_LRU = new BufferedContainer(containerMVBT_LRU, memMVBT);
-		CounterContainer cfMVBTContainer_LRU = new CounterContainer(fMVBTContainer_LRU);
-		Container fMVBTContainer_LRU_roots = new BufferedContainer(cContainerMVBT_LRU_roots, memMVBT);
-		//CounterContainer cfMVBTContainer = new CounterContainer(containerMVBT);
-		Container mvbtStorageContainer_LRU = cfMVBTContainer_LRU;
-		Container mvbtRootsContainer_LRU = fMVBTContainer_LRU_roots;
-		tree.initialize(null, // rootEntry
-				null, // Descriptor MVRegion
-				null, // roots tree root Entry
-				null, // descriptro KeyRange
-				getKey, // getKey Function
-				mvbtRootsContainer_LRU, // container roots tree
-				mvbtStorageContainer_LRU, // main container
-				LongVersion.VERSION_MEASURED_CONVERTER, // converter for version object 
-				keyConverter, // key converter 
-				dataConverter, // data converter mapEntry
-				LongMVSeparator.FACTORY_FUNCTION, // factory function for separator
-				LongMVRegion.FACTORY_FUNCTION); // factory function for MultiVersion Regions
-		// create iterator for reading dat set
-		it = getIteratorDataSet(TREE_PATH+"data.dat");
-		System.out.println();
-		// 
-		mapper = new Mapper<>(new AbstractFunction<Element, Element>() {
-					int k = 1;
-					  @Override
-					public Element invoke(Element argument) {
-							if(k % 10_000 == 0 )
-								System.out.print(".");
-							k++;
-						return argument;
-					}
+		// System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+		// System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+		// // create MVBT
+		// MVBT tree = new MVBT(BLOCK_SIZE, D, E, Long.MIN_VALUE);
+		// LRUBuffer memMVBT = new LRUBuffer<>(LRU_SLOTS);
+		// //1.Init MVBT roots tree and main nodes are in the same container
+		// CounterContainer cContainerMVBT_LRU = new CounterContainer(getContainer((TREE_PATH + "mvbtLRU.dat"), conatinerType));
+		// Container containerMVBT_LRU = new ConverterContainer(cContainerMVBT_LRU, tree.nodeConverter()); // mvbt main
+		// Container cContainerMVBT_LRU_roots = new ConverterContainer(cContainerMVBT_LRU, tree.roots.nodeConverter()); // roots
+		// Container fMVBTContainer_LRU = new BufferedContainer(containerMVBT_LRU, memMVBT);
+		// CounterContainer cfMVBTContainer_LRU = new CounterContainer(fMVBTContainer_LRU);
+		// Container fMVBTContainer_LRU_roots = new BufferedContainer(cContainerMVBT_LRU_roots, memMVBT);
+		// //CounterContainer cfMVBTContainer = new CounterContainer(containerMVBT);
+		// Container mvbtStorageContainer_LRU = cfMVBTContainer_LRU;
+		// Container mvbtRootsContainer_LRU = fMVBTContainer_LRU_roots;
+		// tree.initialize(null, // rootEntry
+		// 		null, // Descriptor MVRegion
+		// 		null, // roots tree root Entry
+		// 		null, // descriptro KeyRange
+		// 		getKey, // getKey Function
+		// 		mvbtRootsContainer_LRU, // container roots tree
+		// 		mvbtStorageContainer_LRU, // main container
+		// 		LongVersion.VERSION_MEASURED_CONVERTER, // converter for version object 
+		// 		keyConverter, // key converter 
+		// 		dataConverter, // data converter mapEntry
+		// 		LongMVSeparator.FACTORY_FUNCTION, // factory function for separator
+		// 		LongMVRegion.FACTORY_FUNCTION); // factory function for MultiVersion Regions
+		// // create iterator for reading dat set
+		// it = getIteratorDataSet(TREE_PATH+"data.dat");
+		// System.out.println();
+		// // 
+		// mapper = new Mapper<>(new AbstractFunction<Element, Element>() {
+		// 			int k = 1;
+		// 			  @Override
+		// 			public Element invoke(Element argument) {
+		// 					if(k % 10_000 == 0 )
+		// 						System.out.print(".");
+		// 					k++;
+		// 				return argument;
+		// 			}
 					
-		}, it);
-		time = System.currentTimeMillis();
-		int k = 0;
-		// insert elements
-		while(mapper.hasNext()){
-			Element record = (Element) mapper.next();
-			OperationType ops = record.getElement3();
-			LongVersion version = (LongVersion) record.getElement2().clone();
-			Pair<Long, PayLoadEntry> object = (Pair<Long, PayLoadEntry>)record.getElement1();
-			if(ops == OperationType.INSERT){
-				tree.insert(version, object);
-			}else if (ops == OperationType.DELETE){
-				tree.remove(version, object);
-			}else if (ops == OperationType.UPDATE){
-				tree.update(version, object, object);
-			}
-			k++;
-		}
-		System.out.println();
-		time = System.currentTimeMillis()-time;
-		main = cContainerMVBT_LRU.gets +  cContainerMVBT_LRU.updates + cContainerMVBT_LRU.inserts;
-		System.out.printf(Locale.GERMANY, "overlall I/O %d ; time %d ; \n",  main, time);
-		System.out.println();
+		// }, it);
+		// time = System.currentTimeMillis();
+		// int k = 0;
+		// // insert elements
+		// while(mapper.hasNext()){
+		// 	Element record = (Element) mapper.next();
+		// 	OperationType ops = record.getElement3();
+		// 	LongVersion version = (LongVersion) record.getElement2().clone();
+		// 	Pair<Long, PayLoadEntry> object = (Pair<Long, PayLoadEntry>)record.getElement1();
+		// 	if(ops == OperationType.INSERT){
+		// 		tree.insert(version, object);
+		// 	}else if (ops == OperationType.DELETE){
+		// 		tree.remove(version, object);
+		// 	}else if (ops == OperationType.UPDATE){
+		// 		tree.update(version, object, object);
+		// 	}
+		// 	k++;
+		// }
+		// System.out.println();
+		// time = System.currentTimeMillis()-time;
+		// main = cContainerMVBT_LRU.gets +  cContainerMVBT_LRU.updates + cContainerMVBT_LRU.inserts;
+		// System.out.printf(Locale.GERMANY, "overlall I/O %d ; time %d ; \n",  main, time);
+		// System.out.println();
 		/*****************************************************************************************
 		 * bulk load MVBTtree naive tuple-by-tuple
 		 ******************************************************************************************/
@@ -690,7 +690,7 @@ public class MVBTPlusLoadingExample {
 					
 		}, it);
 		time = System.currentTimeMillis();
-		k = 0;
+		int k = 0;
 		// insert elements
 		while(mapper.hasNext()){
 			Element record = (Element) mapper.next();
@@ -715,60 +715,60 @@ public class MVBTPlusLoadingExample {
 		/*****************************************************************************************
 		 * bulk load MVBTPlus naive tuple-by-tuple
 		 ******************************************************************************************/
-		System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-		System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-		// create MVBT
-		MVBTPlus mvbttreePlus = new MVBTPlus(BLOCK_SIZE, D, E, Long.MIN_VALUE);
-		LRUBuffer memMVBTreePlus = new LRUBuffer<>(LRU_SLOTS);
-		//1.Init MVBT roots tree and main nodes are in the same container
-		CounterContainer cContainerMVBT_LRUtreePlus = new CounterContainer(getContainer((TREE_PATH + "mvbttreeLRUPlus.dat"), conatinerType));
-		Container containerMVBT_LRUtreePlus = new ConverterContainer(cContainerMVBT_LRUtreePlus, mvbttreePlus.nodeConverter()); // mvbt main
-		Container cContainerMVBT_LRU_rootstreePlus = new ConverterContainer(cContainerMVBT_LRUtreePlus, mvbttreePlus.roots.nodeConverter()); // roots
-		Container fMVBTContainer_LRUtreePlus = new BufferedContainer(containerMVBT_LRUtreePlus, memMVBTreePlus);
-		CounterContainer cfMVBTContainer_LRUtreePlus = new CounterContainer(fMVBTContainer_LRUtreePlus);
-		Container fMVBTContainer_LRU_rootstreePlus = new BufferedContainer(cContainerMVBT_LRU_rootstreePlus, memMVBTreePlus);
-		//CounterContainer cfMVBTContainer = new CounterContainer(containerMVBT);
-		Container mvbtStorageContainer_LRUtreePlus = cfMVBTContainer_LRUtreePlus;
-		Container mvbtRootsContainer_LRUtreePlus = fMVBTContainer_LRU_rootstreePlus;
-		mvbttreePlus.initialize(null, // rootEntry
-				null, // Descriptor MVRegion
-				null, // roots tree root Entry
-				null, // descriptro KeyRange
-				getKey, // getKey Function
-				mvbtRootsContainer_LRUtreePlus, // container roots tree
-				mvbtStorageContainer_LRUtreePlus, // main container
-				keyConverter, // key converter 
-				dataConverter, // data converter mapEntry
-				LongMVSeparator.FACTORY_FUNCTION, // factory function for separator
-				LongMVRegion.FACTORY_FUNCTION); // factory function for MultiVersion Regions
-		// create iterator for reading dat set
-		it = getIteratorDataSet(TREE_PATH+"data.dat");
-		System.out.println();
-		// 
-		mapper = new Mapper<>(new AbstractFunction<Element, Element>() {
-					int k = 1;
-					  @Override
-					public Element invoke(Element argument) {
-							if(k % 10_000 == 0 )
-								System.out.print(".");
-							k++;
-						return argument;
-					}
+		// System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+		// System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+		// // create MVBT
+		// MVBTPlus mvbttreePlus = new MVBTPlus(BLOCK_SIZE, D, E, Long.MIN_VALUE);
+		// LRUBuffer memMVBTreePlus = new LRUBuffer<>(LRU_SLOTS);
+		// //1.Init MVBT roots tree and main nodes are in the same container
+		// CounterContainer cContainerMVBT_LRUtreePlus = new CounterContainer(getContainer((TREE_PATH + "mvbttreeLRUPlus.dat"), conatinerType));
+		// Container containerMVBT_LRUtreePlus = new ConverterContainer(cContainerMVBT_LRUtreePlus, mvbttreePlus.nodeConverter()); // mvbt main
+		// Container cContainerMVBT_LRU_rootstreePlus = new ConverterContainer(cContainerMVBT_LRUtreePlus, mvbttreePlus.roots.nodeConverter()); // roots
+		// Container fMVBTContainer_LRUtreePlus = new BufferedContainer(containerMVBT_LRUtreePlus, memMVBTreePlus);
+		// CounterContainer cfMVBTContainer_LRUtreePlus = new CounterContainer(fMVBTContainer_LRUtreePlus);
+		// Container fMVBTContainer_LRU_rootstreePlus = new BufferedContainer(cContainerMVBT_LRU_rootstreePlus, memMVBTreePlus);
+		// //CounterContainer cfMVBTContainer = new CounterContainer(containerMVBT);
+		// Container mvbtStorageContainer_LRUtreePlus = cfMVBTContainer_LRUtreePlus;
+		// Container mvbtRootsContainer_LRUtreePlus = fMVBTContainer_LRU_rootstreePlus;
+		// mvbttreePlus.initialize(null, // rootEntry
+		// 		null, // Descriptor MVRegion
+		// 		null, // roots tree root Entry
+		// 		null, // descriptro KeyRange
+		// 		getKey, // getKey Function
+		// 		mvbtRootsContainer_LRUtreePlus, // container roots tree
+		// 		mvbtStorageContainer_LRUtreePlus, // main container
+		// 		keyConverter, // key converter 
+		// 		dataConverter, // data converter mapEntry
+		// 		LongMVSeparator.FACTORY_FUNCTION, // factory function for separator
+		// 		LongMVRegion.FACTORY_FUNCTION); // factory function for MultiVersion Regions
+		// // create iterator for reading dat set
+		// it = getIteratorDataSet(TREE_PATH+"data.dat");
+		// System.out.println();
+		// // 
+		// mapper = new Mapper<>(new AbstractFunction<Element, Element>() {
+		// 			int k = 1;
+		// 			  @Override
+		// 			public Element invoke(Element argument) {
+		// 					if(k % 10_000 == 0 )
+		// 						System.out.print(".");
+		// 					k++;
+		// 				return argument;
+		// 			}
 					
-		}, it);
-		time = System.currentTimeMillis();
-		k = 0;
-		// insert elements
-		while(mapper.hasNext()){
-			Element record = (Element) mapper.next();
-			mvbttreePlus.insert(record);
-			k++;
-		}
-		System.out.println();
-		time = System.currentTimeMillis()-time;
-		main = cContainerMVBT_LRUtreePlus.gets +  cContainerMVBT_LRUtreePlus.updates + cContainerMVBT_LRUtreePlus.inserts;
-		System.out.printf(Locale.GERMANY, "overall I/O  %d ; time %d ; \n",  main, time);
-		System.out.println();
+		// }, it);
+		// time = System.currentTimeMillis();
+		// k = 0;
+		// // insert elements
+		// while(mapper.hasNext()){
+		// 	Element record = (Element) mapper.next();
+		// 	mvbttreePlus.insert(record);
+		// 	k++;
+		// }
+		// System.out.println();
+		// time = System.currentTimeMillis()-time;
+		// main = cContainerMVBT_LRUtreePlus.gets +  cContainerMVBT_LRUtreePlus.updates + cContainerMVBT_LRUtreePlus.inserts;
+		// System.out.printf(Locale.GERMANY, "overall I/O  %d ; time %d ; \n",  main, time);
+		// System.out.println();
 	}
 
 }

@@ -242,6 +242,11 @@ public class BPlusTree extends Tree {
         this.B_LeafNode = space / nodeConverter.leafEntrySize();
         this.D_IndexNode = (int) (minCapacityRatio * this.B_IndexNode);
         this.D_LeafNode = (int) (minCapacityRatio * this.B_LeafNode);
+
+		System.out.print("BPlusTree After initialize "+
+		"headerSize " + nodeConverter.headerSize() + " space " + space +
+		" indexEntrySize " + nodeConverter.indexEntrySize() + " leafEntrySize " + nodeConverter.leafEntrySize() + "\n");
+
         Function getDescriptor = new AbstractFunction() {
             public Object invoke(Object o) {
                 if (o instanceof Separator) return o;
@@ -574,6 +579,11 @@ public class BPlusTree extends Tree {
             Function getSplitMaxRatio) {
         Function getContainer = new Constant(container);
         Function determineContainer = new Constant(container);
+
+        // System.out.print("BPlusTree before initialize "+
+        // "B_IndexNode " + B_IndexNode + " D_IndexNode " + D_IndexNode +
+        // " B_LeafNode " + B_LeafNode + " D_LeafNode " + D_LeafNode + "\n");
+
         return initialize(rootEntry, rootDescriptor, getKey, getContainer,
                 determineContainer, keyConverter, dataConverter,
                 createSeparator, createKeyRange, getSplitMinRatio,
@@ -626,8 +636,18 @@ public class BPlusTree extends Tree {
             Function getSplitMaxRatio) {
         this.getContainer = getContainer;
         this.determineContainer = determineContainer;
+
+        // System.out.print("BPlusTree 2nd before initialize "+
+        // "B_IndexNode " + B_IndexNode + " D_IndexNode " + D_IndexNode +
+        // " B_LeafNode " + B_LeafNode + " D_LeafNode " + D_LeafNode + "\n");
+
         initialize(getKey, keyConverter, dataConverter, createSeparator, createKeyRange,
                 getSplitMinRatio, getSplitMaxRatio); 
+
+        // System.out.print("BPlusTree 2nd after initialize "+
+        // "B_IndexNode " + B_IndexNode + " D_IndexNode " + D_IndexNode +
+        // " B_LeafNode " + B_LeafNode + " D_LeafNode " + D_LeafNode + "\n");
+
         this.rootEntry = rootEntry;
         this.rootDescriptor = rootDescriptor;
         return this;
@@ -645,6 +665,7 @@ public class BPlusTree extends Tree {
      * @see xxl.core.indexStructures.Tree#createNode(int)
      */
     public Tree.Node createNode(int level) {
+        System.out.print("BPlusTree createNode level "+ level + "\n");
         Node node = new Node(level);
         return node;
     }
@@ -657,6 +678,7 @@ public class BPlusTree extends Tree {
      * @see xxl.core.indexStructures.BPlusTree.IndexEntry
      */
     public Tree.IndexEntry createIndexEntry(int parentLevel) {
+        // System.out.print("BPlusTree createIndexEntry parentLevel "+ parentLevel + "\n");
         return new IndexEntry(parentLevel);
     }
     /**
@@ -681,6 +703,7 @@ public class BPlusTree extends Tree {
      * @return the new created <tt>KeyRange</tt>.
      */
     protected  KeyRange createKeyRange(Comparable min, Comparable max) {
+        System.out.print("BPlusTree createKeyRange min "+ min + " max " + max + "\n");
         return (KeyRange) createKeyRange.invoke(min, max);
     }
     /**
@@ -876,6 +899,10 @@ public class BPlusTree extends Tree {
      *            suitable leaf node)
      */
     protected void insert(Object data, Descriptor descriptor, int targetLevel) {
+        // System.out.print("BPlusTree insert -"+
+        // " height() " + height() + " rootEntry() "+ rootEntry() + " data "+ data +
+		// " descriptor " + descriptor + " targetLevel " + targetLevel + "\n");
+
         if (rootEntry() == null) {
             Comparable key = ((Separator) descriptor).sepValue();
             rootDescriptor = createKeyRange(key, key);
@@ -890,6 +917,11 @@ public class BPlusTree extends Tree {
             	((IndexEntry)rootEntry()).separator().updateSepValue(entrySep.sepValue());
             }
         }
+        
+        // System.out.print("BPlusTree insert -"+
+        // " height() " + height() + " rootEntry() "+ rootEntry() + " data "+ data +
+		// " descriptor " + descriptor + " targetLevel " + targetLevel + "\n");
+
     }
     /**
      * This method computes the path from the root to the leaf node referred by

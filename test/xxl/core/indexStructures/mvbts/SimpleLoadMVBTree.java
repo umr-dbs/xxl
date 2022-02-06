@@ -58,11 +58,15 @@ import xxl.core.util.Triple;
  * 
  */
 public class SimpleLoadMVBTree {
-	public static final String file = "F:/mvbt_";// change for your needs
+	public static final String file = "D:/Code/java/xxl/temp/mvb_normal/mvbt_";// change for your needs
+
 	public static final int LRU_SLOTS = 1_00; // LRU buffer slots
 	public static final int BLOCK_SIZE = 4096*2; // page size in bytes 
 	public static final float D = 0.25f; // minimum number of live elements per node
-	public static final float E = 0.5f; //  fraction of live number 
+	public static final float E = 0.6f; //  fraction of live number 
+
+	public static final int num_operations = 50_000; 
+
 	/**
 	 * Type of operation 
 	 */
@@ -454,7 +458,7 @@ public class SimpleLoadMVBTree {
 		/*****************************************************************************************
 		 * Initialize and insert data
 		 ******************************************************************************************/
-		int operations = 50_000;
+		int operations = num_operations;
 		MVBTree tree = new MVBTree(BLOCK_SIZE, D, E, Long.MIN_VALUE);
 		if (!reload){
 			// create delete workload consisting of 50_000 elements
