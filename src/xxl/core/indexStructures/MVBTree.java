@@ -69,7 +69,7 @@ import xxl.core.predicates.Predicate;
  */
 public class MVBTree extends BPlusTree {
 	/** Defalut value for KeyDomain minValue*/
-	public static final Integer DEAFUALT_KEYDOMAIN_MINVALUE = Integer.MIN_VALUE;
+	public static final Integer DEFAULT_KEYDOMAIN_MINVALUE = Integer.MIN_VALUE;
 	
 	/** Is used to define the bounds of the <tt>strong version condition</tt>.*/
 	protected final float EPSILON;
@@ -82,7 +82,7 @@ public class MVBTree extends BPlusTree {
 	
 	/**A <tt>MeasuredConverter</tt> to convert <tt>Version-Objects</tt>.*/
 	protected MeasuredConverter versionConverter;
-	
+
 	/**A <tt>MeasuredConverter</tt> to convert <tt>Lifespans</tt>.*/
 	protected MeasuredConverter lifespanConverter;
 	
@@ -127,7 +127,7 @@ public class MVBTree extends BPlusTree {
 	protected Queue<BlockDelInfo> purgeQueue = new ListQueue<BlockDelInfo>();
 	
 	/**Creates a new <tt>MVBTree</tt>.
-	 * KeyDomainMinValue set to default value @see {@link MVBTree#DEAFUALT_KEYDOMAIN_MINVALUE}
+	 * KeyDomainMinValue set to default value @see {@link MVBTree#DEFAULT_KEYDOMAIN_MINVALUE}
 	 * @param blockSize the block size of the underlaying <tt>Container</tt>.
 	 * @param minCapRatio the minimal capacity ratio of the tree's nodes.
 	 * @param e the epsilon of the <tt>strong version condition</tt>.
@@ -136,7 +136,7 @@ public class MVBTree extends BPlusTree {
 		super(blockSize, minCapRatio);
 		EPSILON=e;
 		roots=new BPlusTree(blockSize);
-		this.keyDomainMinValue = MVBTree.DEAFUALT_KEYDOMAIN_MINVALUE;
+		this.keyDomainMinValue = MVBTree.DEFAULT_KEYDOMAIN_MINVALUE;
 	}
 	
 	/**Creates a new <tt>MVBTree</tt>.  The minimal capacity ratio of the tree's nodes is set ot 50%.
@@ -172,18 +172,18 @@ public class MVBTree extends BPlusTree {
 	 * @param createMVRegion a <tt>Function</tt> to create <tt>MVRegion</tt>.
 	 * @return the initialized <tt>MVBTree</tt>.
 	 */	
-	public MVBTree initialize(	Function getKey,
-								final Container rootsContainer, 
-								final Container treeContainer, 
-								MeasuredConverter versionConverter, 
-								MeasuredConverter keyConverter, 
-								MeasuredConverter dataConverter,
-								Function createMVSeparator,
-								Function createMVRegion) {
-		Function getRootsContainer = new Constant(rootsContainer);
-		Function determineRootsContainer= getRootsContainer;
-		Function getContainer = new Constant(treeContainer);
-		Function determineContainer= new Constant(treeContainer);
+	public MVBTree initialize(Function<Object, Object> getKey,
+							  final Container rootsContainer,
+							  final Container treeContainer,
+							  MeasuredConverter versionConverter,
+							  MeasuredConverter keyConverter,
+							  MeasuredConverter dataConverter,
+							  Function createMVSeparator,
+							  Function createMVRegion) {
+		Function<Object, Container> getRootsContainer = new Constant<>(rootsContainer);
+		Function<Object, Container> determineRootsContainer= getRootsContainer;
+		Function<Object, Container> getContainer = new Constant<>(treeContainer);
+		Function<Object, Container> determineContainer= new Constant<>(treeContainer);
 		return initialize(getKey, getRootsContainer, determineRootsContainer, 
 							getContainer, determineContainer, versionConverter, keyConverter, 
 							dataConverter, createMVSeparator, createMVRegion);
@@ -216,12 +216,12 @@ public class MVBTree extends BPlusTree {
 			Function createMVRegion){
 		this.versionConverter=versionConverter;
 		this.lifespanConverter=lifespanConverter();
-		Function getSplitMinRatio= new Constant(new Float((1+EPSILON)*minCapacityRatio));
-		Function getSplitMaxRatio= new Constant(new Float(1- EPSILON*minCapacityRatio));
+		Function<Object, Float> getSplitMinRatio= new Constant<>((float) ((1 + EPSILON) * minCapacityRatio));
+		Function<Object, Float> getSplitMaxRatio= new Constant<>((float) (1 - EPSILON * minCapacityRatio));
 		Function newGetKey=	new AbstractFunction() {
 				public Object invoke(Object entry) {
 					if(entry instanceof LeafEntry) return getKey.invoke(((LeafEntry)entry).data());
-					return getKey.invoke(entry);	
+					return getKey.invoke(entry);
 				}
 			};
 
@@ -310,20 +310,20 @@ public class MVBTree extends BPlusTree {
 	 * @param createMVRegion a <tt>Function</tt> to create <tt>MVRegion</tt>.
 	 * @return the initialized <tt>MVBTree</tt>.
 	 */	
-	public MVBTree initialize(	final Function getKey,
-								Function getRootsContainer,
-								Function determineRootsContainer,
-								Function getContainer,
-								Function determineContainer,
-								MeasuredConverter versionConverter, 
-								MeasuredConverter keyConverter, 
-								MeasuredConverter dataConverter,
-								Function createMVSeparator,
-								Function createMVRegion) {
+	public MVBTree initialize(final Function<Object, Object> getKey,
+							  Function<Object, Container> getRootsContainer,
+							  Function<Object, Container> determineRootsContainer,
+							  Function<Object, Container> getContainer,
+							  Function<Object, Container> determineContainer,
+							  MeasuredConverter versionConverter,
+							  MeasuredConverter keyConverter,
+							  MeasuredConverter dataConverter,
+							  Function createMVSeparator,
+							  Function createMVRegion) {
 		this.versionConverter=versionConverter;
 		this.lifespanConverter=lifespanConverter();
-		Function getSplitMinRatio= new Constant(new Float((1+EPSILON)*minCapacityRatio));
-		Function getSplitMaxRatio= new Constant(new Float(1- EPSILON*minCapacityRatio));
+		Function<Object, Float> getSplitMinRatio= new Constant<>(new Float((1+EPSILON)*minCapacityRatio));
+		Function<Object, Float> getSplitMaxRatio= new Constant<>(new Float(1- EPSILON*minCapacityRatio));
 		Function newGetKey=	new AbstractFunction() {
 			public Object invoke(Object entry) {
 				if(entry instanceof LeafEntry) return getKey.invoke(((LeafEntry)entry).data());
@@ -485,9 +485,9 @@ public class MVBTree extends BPlusTree {
 	public MVSeparator createMVSeparator(Version insertVersion, Version deleteVersion, Comparable sepValue) {
 		// CHANGE: convert array to list
 		return (MVSeparator)createSeparator.invoke(java.util.Arrays.asList(
-				new Object[] {	insertVersion, 
-								deleteVersion, 
-								sepValue}));
+				insertVersion,
+				deleteVersion,
+				sepValue));
 	}
 	
 	/** Creates a new <tt>MVRegion</tt>.
@@ -501,10 +501,10 @@ public class MVBTree extends BPlusTree {
 											Comparable minBound, Comparable maxBound) {
 		// CHANGE: convert array to list
 		return (MVRegion)createKeyRange.invoke(java.util.Arrays.asList(
-				new Object[] {	beginVersion, 
-								endVersion, 
-								minBound,
-								maxBound}));
+				beginVersion,
+				endVersion,
+				minBound,
+				maxBound));
 	}
  
  	/** Gives the <tt>BPlusTree</tt> used to manage the historical <tt>Roots</tt> of the <tt>MVBTree</tt>.
@@ -743,7 +743,7 @@ public class MVBTree extends BPlusTree {
 			rootNode.onInsert(id);
 			rootEntry.initialize(id);
 		}
-		return new MapEntry(rootEntry, rootNode);
+		return new MapEntry<>(rootEntry, rootNode);
 	}
 	
 	/** Unsupported Operation.
@@ -1177,7 +1177,7 @@ public class MVBTree extends BPlusTree {
 		return c2;
 	}
 
-	private Version minVersion = new Version() {
+	private final Version minVersion = new Version() {
 		public Object clone() {
 			return this;
 		}
@@ -1460,10 +1460,8 @@ public class MVBTree extends BPlusTree {
 							else if ((nodeRegion.endVersion().compareTo(referenceTime)>0)){
 								return true;
 							}//sonder fall EntryIntervall endet in rechte Grenze von NodeIntervall 
-							else if ((entryLifeSpan.isDead()) 
-									&& entryLifeSpan.endVersion().compareTo(nodeRegion.endVersion()) == 0){
-								return true;
-							}
+							else return (entryLifeSpan.isDead())
+										&& entryLifeSpan.endVersion().compareTo(nodeRegion.endVersion()) == 0;
 						}
 					}
 					return false;
@@ -1565,7 +1563,7 @@ public class MVBTree extends BPlusTree {
 		/**
 		 * 
 		 */
-		private Comparator separatorComp = new Comparator() {
+		private final Comparator separatorComp = new Comparator() {
 			public int compare(Object o1, Object o2) {
 				return separator(o1).compareTo(separator(o2));
 			}
@@ -2174,12 +2172,12 @@ public class MVBTree extends BPlusTree {
 		
 		protected Lifespan lifespan;
 		
-		public MVSeparator(Version insertVersion, Comparable sepValue) {
+		public MVSeparator(Version insertVersion, Comparable<Long> sepValue) {
 			this(insertVersion, null, sepValue);
 		}
 		
-		protected MVSeparator( Version insertVersion, Version deleteVersion, 
-								Comparable sepValue) {
+		protected MVSeparator(Version insertVersion, Version deleteVersion,
+							  Comparable<Long> sepValue) {
 			super(sepValue);
 			this.lifespan=new Lifespan(insertVersion, deleteVersion);						
 		}
@@ -2226,7 +2224,7 @@ public class MVBTree extends BPlusTree {
 		
 		protected Lifespan lifespan;
 		
-		public MVRegion(Version beginVersion, Version endVersion, Comparable beginKey, Comparable endKey) {
+		public MVRegion(Version beginVersion, Version endVersion, Comparable<Long> beginKey, Comparable<Long> endKey) {
 			super(beginKey, endKey);
 			this.lifespan=new Lifespan(beginVersion, endVersion, true);
 		}
@@ -2532,9 +2530,9 @@ public class MVBTree extends BPlusTree {
 	/** This is an interface for version instances used by the MVBTree. 
 	 * The <tt>MVBTree</tt> can work with any version objects. 
 	 */
-	public static interface Version extends Comparable {
-		public Object clone();
-		public int hashCode();
+	public interface Version extends Comparable {
+		Object clone();
+		int hashCode();
 	}
 	
 	/**
@@ -2552,7 +2550,7 @@ public class MVBTree extends BPlusTree {
 		/**
 		 * List with entries which overlap right bound of query  time interval, sorted according the key
 		 */
-		private List keySortedEntries; 
+		private final List keySortedEntries;
 		/**
 		 * 
 		 * @param indexEntry
@@ -2633,8 +2631,8 @@ public class MVBTree extends BPlusTree {
 				Comparable key = itemSeparator.sepValue();
 				if(((MVRegion)queryRegion).lifespan().overlaps(itemSeparator.lifespan()) ){
 					// check if the key is already 
-					Comparable lastKey = ((MVSeparator)separator(sortedList.get(sortedList.size()-1))).sepValue();
-					Comparable firstKey = ((MVSeparator)separator(sortedList.get(0))).sepValue();
+					Comparable lastKey = separator(sortedList.get(sortedList.size()-1)).sepValue();
+					Comparable firstKey = separator(sortedList.get(0)).sepValue();
 					if (lastKey.compareTo(key) < 0 ){
 						// append key 
 						sortedList.add(item);
@@ -2707,7 +2705,7 @@ public class MVBTree extends BPlusTree {
 				Lifespan lifespan=new Lifespan(currentVersion());
 				LeafEntry newEntry= new LeafEntry(lifespan, newData);
 				if(!hasPath()) path= pathToNode(nodeRegion, 0);
-				((Node)currentNode).grow(newEntry, path);
+				currentNode.grow(newEntry, path);
 				treatOverflow(path);
 			}
 			else nodeQuery.update(newData);
@@ -2731,17 +2729,17 @@ public class MVBTree extends BPlusTree {
 			if (((Node)currentNode).predecessors.size() == 2){
 				IndexEntry predecessor1 = (IndexEntry)((Node)currentNode).predecessors.get(0);
 				IndexEntry predecessor2 = (IndexEntry)((Node)currentNode).predecessors.get(1);
-				Comparable upperBound = max(((MVSeparator)predecessor1.separator).sepValue(), 
-						((MVSeparator)predecessor2.separator).sepValue());
+				Comparable upperBound = max(predecessor1.separator.sepValue(),
+						predecessor2.separator.sepValue());
 				Comparable minBoundQueryRegion = ((MVRegion)queryRegion).minBound();
-				if (upperBound.compareTo(((MVSeparator)predecessor.separator).sepValue()) > 0 
+				if (upperBound.compareTo(predecessor.separator.sepValue()) > 0
 						&& minBoundQueryRegion.compareTo(upperBound)  > 0){
 					return new EmptyCursor();
 				}
 			}
-			Comparable referenceKey= max(((MVSeparator)predecessor.separator).sepValue(), 
+			Comparable referenceKey= max(predecessor.separator.sepValue(),
 											((MVRegion)queryRegion).minBound());
-			Comparable predecessorMinBound = ((MVSeparator)predecessor.separator).sepValue();
+			Comparable predecessorMinBound = predecessor.separator.sepValue();
 			if(referenceKey.compareTo(nodeRegion.minBound())>=0){
 				if (referenceKey.compareTo(nodeRegion.minBound()) == 0 //new code
 						&& predecessorMinBound.compareTo(nodeRegion.minBound()) < 0
@@ -3110,9 +3108,9 @@ firstFor:	for (int i = 0; i < candidates.size(); i++ ){
 	}
 
 
-	public void printStrucure(Iterator rootsIterator) {
+	public void printStrucure(Iterator<Root> rootsIterator) {
 		while(rootsIterator.hasNext()){
-			Root rootEntry = (Root)rootsIterator.next();
+			Root rootEntry = rootsIterator.next();
 			System.out.print(rootEntry.toString()+"\n");
 			// System.out.print(rootEntry.getRegion()+"\n");
 			System.out.print("rootNodeId " + rootEntry.rootNodeId() + "\n");
