@@ -37,8 +37,9 @@ import xxl.core.functions.AbstractFunction;
 
 
 public class MVBTreeDemo {
-    public static final String file = "D:/Code/java/xxl/temp/mvb_demo/mvbt_";// change for your needs
-	
+	public static String operatingSystem= System.getProperty("os.name");
+	public static String file = null;// change for your needs
+
 	public static final int LRU_SLOTS = 1000; // LRU buffer slots
 	public static final int BLOCK_SIZE = 512; // page size in bytes 
 	public static final float D = 0.20f; // minimum number of live elements per node
@@ -50,7 +51,7 @@ public class MVBTreeDemo {
 	/**
 	 * Type of operation 
 	 */
-	public static enum OperationType{
+	public enum OperationType{
 		INSERT, 
 		UPDATE,
 		DELETE,
@@ -109,8 +110,8 @@ public class MVBTreeDemo {
 		
 		public Long invoke(Object argument) {
 			return ((Pair<Long, Integer>)argument).getFirst();
-		};
-		
+		}
+
 	}; 
 
 
@@ -145,7 +146,7 @@ public class MVBTreeDemo {
 			@Override
 			public Element next() {
 				String[] plainrecord = line.split(" ");
-				int ops = new Integer(plainrecord[0]);
+				int ops = Integer.valueOf(plainrecord[0]);
 				OperationType type = null;
 				switch(ops){
 					case 1 : type = OperationType.INSERT; break;
@@ -153,9 +154,9 @@ public class MVBTreeDemo {
 					case 3 : type = OperationType.DELETE; break;
 					default : throw new IllegalArgumentException(); 
 				}
-				Long key = new Long(plainrecord[1]);
-				Integer info = new Integer(plainrecord[2]);
-				Long time = new Long(timeStamp);
+				Long key = Long.valueOf(plainrecord[1]);
+				Integer info = Integer.valueOf(plainrecord[2]);
+				Long time = Long.valueOf(timeStamp);
 				Element record = new Element(new Pair<Long, Integer>(key, info),  new LongVersion(time), type);
 				timeStamp++;
 				try {
@@ -178,6 +179,11 @@ public class MVBTreeDemo {
 	
 
     public static void main(String[] args) throws IOException {
+		if(operatingSystem.equals("Mac OS X")||operatingSystem.equals("Linux")){
+			file = System.getProperty("user.dir")+"/temp/mvb_demo/mvbt_";
+		}else{
+			file = System.getProperty("user.dir")+"\\temp\\mvb_demo\\mvbt_";
+		}
         MVBTree tree = new MVBTree(BLOCK_SIZE, D, E, Long.MIN_VALUE);
 
 			// container for node serialization
@@ -192,7 +198,7 @@ public class MVBTreeDemo {
 			// important  tree.rootsTree().nodeConverter() converter for nodes of roots tree
 			Container mvbtRootsContainer_LRU = new ConverterContainer(cContainerMVBT_LRU, tree.rootsTree().nodeConverter());
 			// LRU buffer
-			Buffer LRUBuffer = new LRUBuffer(LRU_SLOTS); 
+			Buffer LRUBuffer = new LRUBuffer(LRU_SLOTS);
 			Container fMVBTContainer_LRU_main = new BufferedContainer(mvbtStorageContainer_LRU, LRUBuffer);
 			Container fMVBTContainer_LRU_roots = new BufferedContainer(mvbtRootsContainer_LRU, LRUBuffer);
 
@@ -232,7 +238,7 @@ public class MVBTreeDemo {
 				OperationType ops = record.getElement3();
 				LongVersion version = (LongVersion) record.getElement2().clone();
 				Pair<Long, Integer> object = (Pair<Long,Integer>)record.getElement1();				
-				// System.out.print("--> Record: ops "+ ops + " version " + version + " pair "+ object +" \n");
+				System.out.print("[NEW] --> Record: ops "+ ops + " version " + version + " pair "+ object +" \n");
 				if(ops == OperationType.INSERT){
 					tree.insert(version, object);
 				}else if (ops == OperationType.DELETE){
